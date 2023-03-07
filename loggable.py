@@ -47,4 +47,11 @@ class Loggable(HasTraits):
 
     def debug(self, msg):
         self.logger.info(msg)
+
+    def debug_exception(self):
+        import traceback
+
+        exc = traceback.format_exc()
+        self.debug(exc)
+        return exc
 # ============= EOF =============================================

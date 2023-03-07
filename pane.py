@@ -33,6 +33,10 @@ class DashboardTabularAdapter(TabularAdapter):
     columns = [('Name', 'name')]
 
 
+class AutomationTabularAdapter(TabularAdapter):
+    columns = [('Name', 'name')]
+
+
 class DevicesPane(TraitsDockPane):
     id = 'plv.devices'
     name = 'Devices'
@@ -45,7 +49,18 @@ class DevicesPane(TraitsDockPane):
 class DashboardsPane(TraitsDockPane):
     id = 'plv.dashboards'
     name = 'Dashboards'
+
     def traits_view(self):
         return View(UItem('dashboards', editor=TabularEditor(selected='selection',
                                                              adapter=DashboardTabularAdapter())))
+
+
+class AutomationsPane(TraitsDockPane):
+    id = 'plv.automations'
+    name = 'Automations'
+
+    def traits_view(self):
+        return View(UItem('automations', editor=TabularEditor(selected='selection',
+                                                              adapter=AutomationTabularAdapter())))
+
 # ============= EOF =============================================

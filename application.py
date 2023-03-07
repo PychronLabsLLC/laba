@@ -43,7 +43,6 @@ class Application(TasksApplication, Loggable):
         for device_cfg in init.get('devices'):
             if device_cfg.get('enabled', True):
                 device = self._make_device(device_cfg)
-                print('asdfreiasd', device)
                 if device:
                     self.register_service(Device, device)
 

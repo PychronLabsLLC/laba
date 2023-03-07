@@ -17,10 +17,11 @@ from pyface.tasks.task import Task
 from pyface.tasks.task_layout import TaskLayout, PaneItem
 from traits.api import Instance, List, Any
 
+from automation import Automation
 from dashboard import Dashboard
 from device import Device
 from loggable import Loggable
-from pane import HardwareCentralPane, DevicesPane, DashboardsPane
+from pane import HardwareCentralPane, DevicesPane, DashboardsPane, AutomationsPane
 
 
 class BaseTask(Task):
@@ -31,10 +32,12 @@ class HardwareTask(BaseTask):
     selection = Instance(Loggable)
     devices = List(Device)
     dashboards = List(Dashboard)
+    automations = List(Automation)
 
     def create_dock_panes(self):
         return [DevicesPane(model=self),
-                DashboardsPane(model=self)]
+                DashboardsPane(model=self),
+                AutomationsPane(model=self)]
 
     def create_central_pane(self):
         return HardwareCentralPane(model=self)

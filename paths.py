@@ -23,7 +23,11 @@ class Paths:
         self.root = Path(home, 'plv')
         self.initialization_path = Path(self.root, 'init.yml')
         self.dashboards_path = Path(self.root, 'dashboard.yml')
+        self.automations_path = Path(self.root, 'automations.yml')
         print(self.initialization_path)
+
+    def get_automation_path(self, name):
+        return Path(self.root, 'automations', name)
 
 
 paths = Paths()

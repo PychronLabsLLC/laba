@@ -17,6 +17,7 @@ import yaml
 from envisage.plugin import Plugin
 from envisage.ui.tasks.task_factory import TaskFactory
 
+from automation import Automation
 from dashboard import Dashboard
 from device import Device
 from loggable import Loggable
@@ -43,7 +44,13 @@ class HardwarePlugin(BasePlugin):
             for d in yobj:
                 ds.append(Dashboard.bootstrap(d))
 
-        return HardwareTask(devices=devices, dashboards=ds)
+        automations = []
+        with open(paths.automations_path, 'r') as rfile:
+            yobj = yaml.load(rfile, yaml.SafeLoader)
+            for automation in yobj:
+                automations.append(Automation.bootstrap(automation))
+
+        return HardwareTask(devices=devices, dashboards=ds, automations=automations)
 
     def _tasks_default(self):
         return [TaskFactory(

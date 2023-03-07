@@ -22,6 +22,8 @@ from loggable import Loggable
 
 
 class Server(Loggable):
+    _thread = None
+
     def run(self):
         self._thread = Thread(target=self._run)
         self._thread.start()
