@@ -1,0 +1,5 @@
+envisage
+pyyaml
+pyqt
+zmq
+importlib_resources
