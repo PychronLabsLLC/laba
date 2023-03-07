@@ -16,30 +16,9 @@
 from loggable import Loggable
 
 
-class Communicator(Loggable):
-
+class Dashboard(Loggable):
     @classmethod
     def bootstrap(cls, cfg):
-        obj = cls()
+        obj = cls(name=cfg['name'])
         return obj
-
-    def ask(self, *args, **kw):
-        pass
-
-
-class SerialCommunicator(Communicator):
-    pass
-
-
-class EthernetCommunicator(Communicator):
-    pass
-
-
-class TCPCommunicator(EthernetCommunicator):
-    pass
-
-
-class UDPCommunicator(EthernetCommunicator):
-    pass
-
 # ============= EOF =============================================

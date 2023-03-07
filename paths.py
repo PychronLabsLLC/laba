@@ -22,7 +22,9 @@ class Paths:
 
         self.root = Path(home, 'plv')
         self.initialization_path = Path(self.root, 'init.yml')
+        self.dashboards_path = Path(self.root, 'dashboard.yml')
         print(self.initialization_path)
+
 
 paths = Paths()
 # ============= EOF =============================================

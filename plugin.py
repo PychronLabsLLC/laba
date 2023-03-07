@@ -13,13 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import yaml
 from envisage.plugin import Plugin
 from envisage.ui.tasks.task_factory import TaskFactory
 
+from dashboard import Dashboard
 from device import Device
 from loggable import Loggable
 from traits.api import List
 
+from paths import paths
 from task import HardwareTask
 
 
@@ -33,7 +36,14 @@ class BasePlugin(Plugin, Loggable):
 class HardwarePlugin(BasePlugin):
     def _task_factory(self):
         devices = self.application.get_services(Device)
-        return HardwareTask(devices=devices)
+
+        ds = []
+        with open(paths.dashboards_path, 'r') as rfile:
+            yobj = yaml.load(rfile, yaml.SafeLoader)
+            for d in yobj:
+                ds.append(Dashboard.bootstrap(d))
+
+        return HardwareTask(devices=devices, dashboards=ds)
 
     def _tasks_default(self):
         return [TaskFactory(

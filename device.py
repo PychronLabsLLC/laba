@@ -17,10 +17,13 @@ from traits.api import Instance
 from communicator import Communicator
 from loggable import Loggable
 from util import import_klass
-
+from traitsui.api import View, Item
 
 class Device(Loggable):
     communicator = Instance(Communicator)
+
+    def traits_view(self):
+        return View(Item('name'))
 
     @classmethod
     def bootstrap(cls, cfg):

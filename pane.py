@@ -22,17 +22,30 @@ from traitsui.tabular_adapter import TabularAdapter
 
 class HardwareCentralPane(TraitsTaskPane):
     def traits_view(self):
-        return View(UItem('selected_device', style='custom'))
+        return View(UItem('selection', style='custom'))
 
 
-class DevicaTabularAdapter(TabularAdapter):
+class DeviceTabularAdapter(TabularAdapter):
+    columns = [('Name', 'name')]
+
+
+class DashboardTabularAdapter(TabularAdapter):
     columns = [('Name', 'name')]
 
 
 class DevicesPane(TraitsDockPane):
-
     id = 'plv.devices'
+    name = 'Devices'
+
     def traits_view(self):
-        return View(UItem('devices', editor=TabularEditor(selected='selected_device',
-                                                          adapter=DevicaTabularAdapter())))
+        return View(UItem('devices', editor=TabularEditor(selected='selection',
+                                                          adapter=DeviceTabularAdapter())))
+
+
+class DashboardsPane(TraitsDockPane):
+    id = 'plv.dashboards'
+    name = 'Dashboards'
+    def traits_view(self):
+        return View(UItem('dashboards', editor=TabularEditor(selected='selection',
+                                                             adapter=DashboardTabularAdapter())))
 # ============= EOF =============================================
