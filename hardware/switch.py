@@ -102,8 +102,8 @@ class SwitchController(Device):
                 if self._cancel_ramp.is_set():
                     break
 
-                msg = self.driver.set_voltage(s.channel, si)
-                self.communicator.ask(msg)
+                self.driver.set_voltage(s.channel, si)
+
 
                 self.debug(f'set output {si}')
                 time.sleep(s.ramp_period)

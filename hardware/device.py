@@ -18,19 +18,19 @@ import random
 
 from traits.api import Instance
 from hardware.communicator import Communicator
+from hardware.driver.driver import Driver
 from loggable import Loggable
 from util import import_klass
 from traitsui.api import View, Item
 
 
 class Device(Loggable):
-    communicator = Instance(Communicator)
+    driver = Instance(Driver)
 
     def traits_view(self):
         return View(Item('name'))
 
     def bootstrap(self, cfg):
-        self.setup_communicator(cfg['communicator'])
         self.setup_driver(cfg['driver'])
         if self.initialize():
             if self.open():
@@ -40,11 +40,7 @@ class Device(Loggable):
         kind = cfg['kind']
         klass = import_klass(f'hardware.driver.{kind}')
         self.driver = klass(cfg)
-
-    def setup_communicator(self, cfg):
-        kind = cfg['kind']
-        klass = import_klass(f'hardware.communicator.{kind.capitalize()}Communicator')
-        self.communicator = klass(cfg)
+        self.driver.bootstrap(cfg)
 
     def initialize(self):
         return True

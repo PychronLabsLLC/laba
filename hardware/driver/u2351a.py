@@ -17,15 +17,16 @@ from hardware.driver.driver import Driver
 from loggable import Loggable
 
 
-
-
-
 class U2351A(Driver):
     def actuate_channel(self, channel, state):
         v = 10 if state else 0
-        return f"SOUR:VOLT {v},(@{channel})"
+        msg = f"SOUR:VOLT {v},(@{channel})"
+        self.ask(msg)
 
     def set_voltage(self, channel, output):
-        return f"SOUR:VOLT {output}, (@{channel})"
+        msg = f"SOUR:VOLT {output:0.3f}, (@{channel})"
+        self.ask(msg)
 
+    def ask(self, *args, **kw):
+        self.communicator.ask(*args, **kw)
 # ============= EOF =============================================
