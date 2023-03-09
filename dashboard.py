@@ -24,8 +24,9 @@ from chaco.plot_containers import VPlotContainer
 from enable.component_editor import ComponentEditor
 from numpy import hstack
 
+from device import Device
 from loggable import Loggable
-from traits.api import Instance, Button, Bool, Float
+from traits.api import Instance, Button, Bool, Float, List
 from traitsui.api import View, UItem, VGroup, HGroup, spring
 
 
@@ -65,7 +66,21 @@ class Figure(Loggable):
         return v
 
 
-class Scan(Loggable):
+class Card(Loggable):
+    device_functions = List
+
+    def __init__(self, application, cfg, *args, **kw):
+        super().__init__(*args, **kw)
+        dfs =[]
+        for dev in cfg['devices']:
+            dd = application.get_service(Device, f"name=='{dev['name']}'")
+            print(dd, dev['name'])
+            dfs.append(getattr(dd, dev['function']))
+
+        self.device_functions = dfs
+
+
+class Scan(Card):
     figure = Instance(Figure, ())
     start_button = Button('Start')
     active = Bool(False)
@@ -86,7 +101,8 @@ class Scan(Loggable):
         def _scan():
             st = time.time()
             while not self._scan_evt.is_set():
-                self.figure.add_datum('s0', time.time() - st, random.random())
+                for i, df in enumerate(self.device_functions):
+                    self.figure.add_datum(f's{i}', time.time() - st, df())
                 time.sleep(sp)
 
             self.active = False
@@ -109,11 +125,12 @@ class Scan(Loggable):
 
 
 class Dashboard(Loggable):
-    @classmethod
-    def bootstrap(cls, cfg):
-        obj = cls(name=cfg['name'],
-                  cards=cfg['cards'])
-        return obj
+    def __init__(self, application, cfg, *args, **kw):
+        super().__init__(cards=cfg['cards'], *args, **kw)
+        self.application = application
+
+    def traits_view(self):
+        return View(self._build_dashboard_elements())
 
     def _build_dashboard_elements(self):
         gs = []
@@ -122,13 +139,14 @@ class Dashboard(Loggable):
             if kind == 'Scan':
                 factory = Scan
 
-            card = factory(**c)
+            card = factory(self.application, c)
+
             self.add_trait(c['name'], card)
             gs.append(UItem(c['name'], style='custom'))
 
         return VGroup(*gs)
 
-    def traits_view(self):
-        v = View(self._build_dashboard_elements())
-        return v
+    # def traits_view(self):
+    #     v = View(self._build_dashboard_elements())
+    #     return v
 # ============= EOF =============================================

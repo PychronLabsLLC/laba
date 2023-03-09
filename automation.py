@@ -31,12 +31,10 @@ class Automation(Loggable):
 
     _runthread = None
 
-    @classmethod
-    def bootstrap(cls, cfg):
-        obj = cls(name=cfg['name'])
-        obj.load(cfg['path'])
-
-        return obj
+    def __init__(self, cfg=None, *args, **kw):
+        super().__init__(cfg=cfg, *args, **kw)
+        if cfg:
+            self.load(cfg['path'])
 
     def load(self, path=None):
         if path is None:

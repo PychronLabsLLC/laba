@@ -53,8 +53,9 @@ class Application(TasksApplication, Loggable):
 
     # private
     def _make_device(self, cfg):
-        klass = Device
-        return klass.bootstrap(cfg)
+        dev = Device(cfg)
+        dev.bootstrap(cfg)
+        return dev
 
     def _get_initization(self):
         p = paths.initialization_path

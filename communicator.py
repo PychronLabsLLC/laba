@@ -18,11 +18,6 @@ from loggable import Loggable
 
 class Communicator(Loggable):
 
-    @classmethod
-    def bootstrap(cls, cfg):
-        obj = cls()
-        return obj
-
     def ask(self, *args, **kw):
         pass
 

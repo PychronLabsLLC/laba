@@ -25,8 +25,12 @@ class Loggable(HasTraits):
     name = Str
     logger = None
 
-    def __init__(self, *args, **kw):
-        super().__init__(*args, **kw)
+    def __init__(self, cfg=None, *args, **kw):
+        if cfg is None:
+            cfg = {}
+
+        name = cfg.get('name', self.__class__.__name__)
+        super().__init__(name=name, *args, **kw)
 
         if self.logger_name:
             name = self.logger_name

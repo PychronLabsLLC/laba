@@ -42,13 +42,13 @@ class HardwarePlugin(BasePlugin):
         with open(paths.dashboards_path, 'r') as rfile:
             yobj = yaml.load(rfile, yaml.SafeLoader)
             for d in yobj:
-                ds.append(Dashboard.bootstrap(d))
+                ds.append(Dashboard(self.application, d))
 
         automations = []
         with open(paths.automations_path, 'r') as rfile:
             yobj = yaml.load(rfile, yaml.SafeLoader)
             for automation in yobj:
-                automations.append(Automation.bootstrap(automation))
+                automations.append(Automation(automation))
 
         return HardwareTask(devices=devices, dashboards=ds, automations=automations)
 

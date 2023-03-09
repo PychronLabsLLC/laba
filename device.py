@@ -13,11 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import math
+import random
+
 from traits.api import Instance
 from communicator import Communicator
 from loggable import Loggable
 from util import import_klass
 from traitsui.api import View, Item
+
 
 class Device(Loggable):
     communicator = Instance(Communicator)
@@ -25,24 +29,23 @@ class Device(Loggable):
     def traits_view(self):
         return View(Item('name'))
 
-    @classmethod
-    def bootstrap(cls, cfg):
-        obj = cls(name=cfg['name'])
-        print(obj, obj.name, cfg['name'])
-        obj.setup_communicator(cfg['communicator'])
-
-        if obj.initialize():
-            if obj.open():
-                return obj
+    def bootstrap(self, cfg):
+        self.setup_communicator(cfg['communicator'])
+        if self.initialize():
+            if self.open():
+                return True
 
     def setup_communicator(self, cfg):
         kind = cfg['kind']
         klass = import_klass(f'communicator.{kind.capitalize()}Communicator')
-        self.communicator = klass.bootstrap(cfg)
+        self.communicator = klass(cfg)
 
     def initialize(self):
         return True
 
     def open(self):
         return True
+
+    def get_value(self):
+        return random.random()+math.log(id(self))
 # ============= EOF =============================================
