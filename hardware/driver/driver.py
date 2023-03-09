@@ -16,25 +16,6 @@
 from loggable import Loggable
 
 
-class Communicator(Loggable):
-
-    def ask(self, msg, *args, **kw):
-        self.debug(f'asking msg={msg}')
-
-
-class SerialCommunicator(Communicator):
+class Driver(Loggable):
     pass
-
-
-class EthernetCommunicator(Communicator):
-    pass
-
-
-class TCPCommunicator(EthernetCommunicator):
-    pass
-
-
-class UDPCommunicator(EthernetCommunicator):
-    pass
-
 # ============= EOF =============================================

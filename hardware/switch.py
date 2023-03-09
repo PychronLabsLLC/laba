@@ -92,7 +92,7 @@ class SwitchController(Device):
         if slow:
             self._ramp_channel(s, state)
         else:
-            self._actuate_channel(s.channel, state, slow)
+            self._actuate_channel(s.channel, state)
 
     def _ramp_channel(self, s, state):
         self.debug(f'ramp switch {s} state={state}')
@@ -102,6 +102,9 @@ class SwitchController(Device):
                 if self._cancel_ramp.is_set():
                     break
 
+                msg = self.driver.set_voltage(s.channel, si)
+                self.communicator.ask(msg)
+
                 self.debug(f'set output {si}')
                 time.sleep(s.ramp_period)
 
@@ -109,7 +112,9 @@ class SwitchController(Device):
         self._ramp_thread = Thread(target=ramp)
         self._ramp_thread.start()
 
-    def _actuate_channel(self, channel, state, slow):
+    def _actuate_channel(self, channel, state):
         self.debug(f'actuate channel {channel} state={state}')
+        msg = self.driver.actuate_channel(channel, state)
+        self.communicator.ask(msg)
 
 # ============= EOF =============================================

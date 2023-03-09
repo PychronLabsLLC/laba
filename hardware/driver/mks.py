@@ -13,28 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from loggable import Loggable
+from hardware.driver.driver import Driver
 
 
-class Communicator(Loggable):
-
-    def ask(self, msg, *args, **kw):
-        self.debug(f'asking msg={msg}')
-
-
-class SerialCommunicator(Communicator):
+class MKS(Driver):
     pass
-
-
-class EthernetCommunicator(Communicator):
-    pass
-
-
-class TCPCommunicator(EthernetCommunicator):
-    pass
-
-
-class UDPCommunicator(EthernetCommunicator):
-    pass
-
 # ============= EOF =============================================

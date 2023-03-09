@@ -13,28 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from hardware.driver.driver import Driver
 from loggable import Loggable
 
 
-class Communicator(Loggable):
-
-    def ask(self, msg, *args, **kw):
-        self.debug(f'asking msg={msg}')
 
 
-class SerialCommunicator(Communicator):
-    pass
 
+class U2351A(Driver):
+    def actuate_channel(self, channel, state):
+        v = 10 if state else 0
+        return f"SOUR:VOLT {v},(@{channel})"
 
-class EthernetCommunicator(Communicator):
-    pass
-
-
-class TCPCommunicator(EthernetCommunicator):
-    pass
-
-
-class UDPCommunicator(EthernetCommunicator):
-    pass
+    def set_voltage(self, channel, output):
+        return f"SOUR:VOLT {output}, (@{channel})"
 
 # ============= EOF =============================================

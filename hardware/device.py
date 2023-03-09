@@ -31,9 +31,15 @@ class Device(Loggable):
 
     def bootstrap(self, cfg):
         self.setup_communicator(cfg['communicator'])
+        self.setup_driver(cfg['driver'])
         if self.initialize():
             if self.open():
                 return True
+
+    def setup_driver(self, cfg):
+        kind = cfg['kind']
+        klass = import_klass(f'hardware.driver.{kind}')
+        self.driver = klass(cfg)
 
     def setup_communicator(self, cfg):
         kind = cfg['kind']
@@ -47,5 +53,5 @@ class Device(Loggable):
         return True
 
     def get_value(self):
-        return random.random()+math.log(id(self))
+        return random.random() + math.log(id(self))
 # ============= EOF =============================================
