@@ -4,3 +4,4 @@ pyqt
 zmq
 importlib_resources
 chaco
+bezier

@@ -19,7 +19,7 @@ from traits.api import Instance, List, Any
 
 from automation import Automation
 from dashboard import Dashboard
-from device import Device
+from hardware.device import Device
 from loggable import Loggable
 from pane import HardwareCentralPane, DevicesPane, DashboardsPane, AutomationsPane
 

@@ -17,7 +17,7 @@ import math
 import random
 
 from traits.api import Instance
-from communicator import Communicator
+from hardware.communicator import Communicator
 from loggable import Loggable
 from util import import_klass
 from traitsui.api import View, Item
@@ -37,7 +37,7 @@ class Device(Loggable):
 
     def setup_communicator(self, cfg):
         kind = cfg['kind']
-        klass = import_klass(f'communicator.{kind.capitalize()}Communicator')
+        klass = import_klass(f'hardware.communicator.{kind.capitalize()}Communicator')
         self.communicator = klass(cfg)
 
     def initialize(self):

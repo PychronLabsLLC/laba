@@ -23,11 +23,12 @@ from chaco.plot import Plot
 from chaco.plot_containers import VPlotContainer
 from enable.component_editor import ComponentEditor
 from numpy import hstack
+from traitsui.qt4.extra.led_editor import LEDEditor
 
-from device import Device
+from hardware.device import Device
 from loggable import Loggable
 from traits.api import Instance, Button, Bool, Float, List
-from traitsui.api import View, UItem, VGroup, HGroup, spring
+from traitsui.api import View, UItem, VGroup, HGroup, spring, Item
 
 
 class Figure(Loggable):
@@ -68,27 +69,30 @@ class Figure(Loggable):
 
 class Card(Loggable):
     device_functions = List
+    devices = List
 
     def __init__(self, application, cfg, *args, **kw):
-        super().__init__(*args, **kw)
-        dfs =[]
+        super().__init__(cfg, *args, **kw)
+        dfs = []
+        dvs = []
         for dev in cfg['devices']:
             dd = application.get_service(Device, f"name=='{dev['name']}'")
-            print(dd, dev['name'])
-            dfs.append(getattr(dd, dev['function']))
+            dvs.append(dd)
+            func = dev.get('function')
+            if func:
+                dfs.append(getattr(dd, func))
 
+        self.devices = dvs
         self.device_functions = dfs
 
 
-class Scan(Card):
-    figure = Instance(Figure, ())
-    start_button = Button('Start')
+class BaseScan(Card):
     active = Bool(False)
     period = Float(1)
 
     _scan_evt = None
 
-    def _start_button_fired(self):
+    def _scan(self):
         if self.active:
             self._scan_evt.set()
             return
@@ -102,15 +106,29 @@ class Scan(Card):
             st = time.time()
             while not self._scan_evt.is_set():
                 for i, df in enumerate(self.device_functions):
-                    self.figure.add_datum(f's{i}', time.time() - st, df())
+                    self._scan_hook(i, df, st)
                 time.sleep(sp)
 
             self.active = False
 
-        self.figure.clear_data('s0')
         t = Thread(target=_scan)
         self._scan_thread = t
         self._scan_thread.start()
+
+    def _scan_hook(self, i, df, st):
+        pass
+
+
+class Scan(BaseScan):
+    figure = Instance(Figure, ())
+    start_button = Button('Start')
+
+    def _start_button_fired(self):
+        self.figure.clear_data('s0')
+        self._scan()
+
+    def _scan_hook(self, i, df, st):
+        self.figure.add_datum(f's{i}', time.time() - st, df())
 
     def _figure_default(self):
         f = Figure()
@@ -122,6 +140,78 @@ class Scan(Card):
     def traits_view(self):
         return View(HGroup(spring, UItem('start_button')),
                     UItem('figure', style='custom'))
+
+
+class LEDReadOut(BaseScan):
+    value = Float
+
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+        self._scan()
+
+    def _scan_hook(self, i, df, st):
+        self.value = df()
+
+    def traits_view(self):
+        v = View(Item('value',
+                      label=self.name,
+                      editor=LEDEditor()))
+        return v
+
+
+class Switch(Card):
+    open_button = Button('Open')
+    close_button = Button('Close')
+    state = Bool
+
+    def __init__(self, application, cfg, *args, **kw):
+        super().__init__(application, cfg, *args, **kw)
+        self.switch_name = cfg['switch']['name']
+
+    def _open_button_fired(self):
+        dev = self.devices[0]
+        dev.open_switch(self.switch_name)
+        self.state = True
+
+    def _close_button_fired(self):
+        dev = self.devices[0]
+        dev.close_switch(self.switch_name)
+        self.state = False
+
+    def traits_view(self):
+        v = View(HGroup(UItem('open_button'),
+                        UItem('close_button'),
+                        Item('state',
+                             style='readonly',
+                             label='State')))
+        return v
+
+
+class EMSwitch(Switch):
+    slow_open_button = Button('Slow Open')
+    slow_close_button = Button('Slow Close')
+
+    def _slow_close_button_fired(self):
+        dev = self.devices[0]
+        dev.close_switch(self.switch_name, slow=True)
+        self.state = False
+
+    def _slow_open_button_fired(self):
+        dev = self.devices[0]
+        dev.open_switch(self.switch_name, slow=True)
+        self.state = True
+
+    def traits_view(self):
+        v = View(HGroup(UItem('open_button'),
+                        UItem('close_button'),
+                        spring,
+                        UItem('slow_open_button'),
+                        UItem('slow_close_button'),
+
+                        Item('state',
+                             style='readonly',
+                             label='State')))
+        return v
 
 
 class Dashboard(Loggable):
@@ -136,8 +226,15 @@ class Dashboard(Loggable):
         gs = []
         for c in self.cards:
             kind = c['kind']
-            if kind == 'Scan':
-                factory = Scan
+            factory = globals().get(kind)
+            # if kind == 'Scan':
+            #     factory = Scan
+            # elif kind == 'LEDReadOut':
+            #     factory = LEDReadOut
+            # elif kind == 'Switch':
+            #     factory = Switch
+            # elif kind == 'EMSwitch':
+            #     factory = EMSwitch
 
             card = factory(self.application, c)
 

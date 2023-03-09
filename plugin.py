@@ -19,7 +19,7 @@ from envisage.ui.tasks.task_factory import TaskFactory
 
 from automation import Automation
 from dashboard import Dashboard
-from device import Device
+from hardware.device import Device
 from loggable import Loggable
 from traits.api import List
 

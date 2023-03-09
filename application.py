@@ -18,11 +18,12 @@ from envisage.core_plugin import CorePlugin
 from envisage.ui.tasks.tasks_application import TasksApplication
 from envisage.ui.tasks.tasks_plugin import TasksPlugin
 
-from device import Device
+from hardware.device import Device
 from loggable import Loggable
 from paths import paths
 from plugin import HardwarePlugin
 from server import Server
+from util import import_klass
 
 
 class Application(TasksApplication, Loggable):
@@ -53,7 +54,12 @@ class Application(TasksApplication, Loggable):
 
     # private
     def _make_device(self, cfg):
-        dev = Device(cfg)
+        klass = cfg.get('klass')
+        if klass:
+            klass = import_klass(f'hardware.{klass}')
+        else:
+            klass = Device
+        dev = klass(cfg)
         dev.bootstrap(cfg)
         return dev
 
