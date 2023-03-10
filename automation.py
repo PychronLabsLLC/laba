@@ -16,6 +16,7 @@
 import time
 from threading import Thread
 
+from hardware import SwitchController
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import Button, Str, File, Any
@@ -61,12 +62,28 @@ class Automation(Loggable):
 
     # commands
     def _get_context(self):
-        sw = self.application.get_service(Device, "name=='switch_controller'")
         ctx = dict(info=self.info,
                    sleep=self.sleep,
-                   open_switch=sw.open_switch,
-                   close_switch=sw.close_switch)
+                   open_switch=self.open_switch,
+                   close_switch=self.close_switch)
         return ctx
+
+    def open_switch(self, name, *args, **kw):
+        self._actuate_switch(name, True, *args, **kw)
+
+    def close_switch(self, name, *args, **kw):
+        self._actuate_switch(name, False, *args, **kw)
+
+    def _actuate_switch(self, name, state, *args, **kw):
+        for sw in self.application.get_services(Device):
+            if not hasattr(sw, 'switches'):
+                continue
+
+            for si in sw.switches:
+                if si.name == name:
+                    func = sw.open_switch if state else sw.close_switch
+                    func(name, *args, **kw)
+                    break
 
     def sleep(self, nseconds):
         self.debug(f'sleep {nseconds}')
