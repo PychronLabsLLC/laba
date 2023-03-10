@@ -13,33 +13,54 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-import time
+
 from threading import Thread, Event
+from traits.api import Any, Int
 
 import zmq
 
+from hardware.device import Device
 from loggable import Loggable
 
 
 class Server(Loggable):
     _thread = None
+    application = Any
+    port = Int
 
     def run(self):
         self._thread = Thread(target=self._run)
         self._thread.start()
 
     def _run(self):
+        self.debug(f'Starting server. {self.port}')
+
         context = zmq.Context()
         socket = context.socket(zmq.REP)
+
+        socket.bind(f"tcp://*:{self.port}")
         self._active = Event()
-        while self._active.is_set():
-            message = socket.recv()
-            print(f"Received request: {message}")
+        while not self._active.is_set():
+            message = socket.recv_json()
+            self.debug(f"Received request: {message}")
 
-            #  Do some 'work'
-            time.sleep(1)
+            device_name = message.get('device')
+            reply = {"message": "no device"}
+            if device_name:
+                func_name = message.get('function')
+                reply = {"message": "no function"}
+                if func_name:
+                    reply = {"message": f"invalid device={device_name}"}
+                    dev = self.application.get_service(Device, f"name=='{device_name}'")
+                    if dev:
+                        try:
+                            func = getattr(dev, func_name)
+                            kwargs = message.get('kwargs', {})
+                            reply = {"message": "OK", "response": func(**kwargs)}
+                        except AttributeError:
+                            reply = {"message": f"invalid function={func_name}"}
 
-            #  Send reply back to client
-            socket.send_string("World")
+            # Send reply back to client
+            socket.send_json(reply)
 
 # ============= EOF =============================================

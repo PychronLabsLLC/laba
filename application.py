@@ -49,7 +49,8 @@ class Application(TasksApplication, Loggable):
 
         server = init.get('server')
         if server:
-            self.server = Server()
+            self.server = Server(application=self,
+                                 port=server.get('port', 5555))
             self.server.run()
 
     # private

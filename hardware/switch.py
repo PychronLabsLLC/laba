@@ -74,28 +74,33 @@ class SwitchController(Device):
             self.switches.append(klass(sw))
 
     def get_switch(self, name):
-        return next((s for s in self.switches if s.name == name))
+        self.debug(f'get {name}')
+        return next((s for s in self.switches if s.name == name), None)
 
-    def open_switch(self, name, slow=False):
-        self._actuate_switch(name, True, slow)
+    def open_switch(self, name, slow=False, block=False):
+        return self._actuate_switch(name, True, slow, block)
 
-    def close_switch(self, name, slow=False):
-        self._actuate_switch(name, False, slow)
+    def close_switch(self, name, slow=False, block=False):
+        return self._actuate_switch(name, False, slow, block)
 
     def cancel_ramp(self):
         self.debug('canceling ramp')
         self._cancel_ramp.set()
 
-    def _actuate_switch(self, name, state, slow):
-        self.debug(f'actuate switch {name} state={state}')
+    def _actuate_switch(self, name, state, slow, block):
+        self.debug(f'actuate switch {name} state={state} block={block}')
         s = self.get_switch(name)
-        if slow:
-            self._ramp_channel(s, state)
+        if s:
+            if slow:
+                self._ramp_channel(s, state, block)
+            else:
+                self._actuate_channel(s.channel, state)
         else:
-            self._actuate_channel(s.channel, state)
+            return f'invalid switch={name}'
 
-    def _ramp_channel(self, s, state):
-        self.debug(f'ramp switch {s} state={state}')
+    def _ramp_channel(self, s, state, block):
+        self.debug(f'ramp switch {s} state={state} block={block}')
+        self._cancel_ramp = Event()
 
         def ramp():
             for si in s.ramp():
@@ -104,13 +109,15 @@ class SwitchController(Device):
 
                 self.driver.set_voltage(s.channel, si)
 
-
                 self.debug(f'set output {si}')
                 time.sleep(s.ramp_period)
 
-        self._cancel_ramp = Event()
-        self._ramp_thread = Thread(target=ramp)
-        self._ramp_thread.start()
+        if block:
+            ramp()
+        else:
+
+            self._ramp_thread = Thread(target=ramp)
+            self._ramp_thread.start()
 
     def _actuate_channel(self, channel, state):
         self.debug(f'actuate channel {channel} state={state}')
