@@ -16,18 +16,20 @@
 import time
 from threading import Thread
 
+from hardware.device import Device
 from loggable import Loggable
-from traits.api import Button, Str, File
+from traits.api import Button, Str, File, Any
 from traitsui.api import View, UItem, HGroup, spring
 
 from paths import paths
 
 
 class Automation(Loggable):
+    application = Any
     text = Str
     path = File
-    start_button = Button
-    stop_button = Button
+    # start_button = Button
+    # stop_button = Button
 
     _runthread = None
 
@@ -55,12 +57,15 @@ class Automation(Loggable):
             self._run()
         else:
             self._runthread = Thread(target=self._run)
-            self._runthread.run()
+            self._runthread.start()
 
     # commands
     def _get_context(self):
+        sw = self.application.get_service(Device, "name=='switch_controller'")
         ctx = dict(info=self.info,
-                   sleep=self.sleep)
+                   sleep=self.sleep,
+                   open_switch=sw.open_switch,
+                   close_switch=sw.close_switch)
         return ctx
 
     def sleep(self, nseconds):
@@ -89,26 +94,25 @@ class Automation(Loggable):
 
         try:
 
-            st = time.time()
+            # st = time.time()
             func()
             # self.debug(
             #     "executed snippet estimated_duration={}, duration={}".format(
             #         self._estimated_duration, time.time() - st
             #     )
             # )
-            print('asdfasasfasdfasd')
             self.debug('run complete')
         except Exception as e:
             exc = self.debug_exception()
             self.exception_trace = exc
             return exc
 
-    def _start_button_fired(self):
-        self.run()
-
-    def traits_view(self):
-
-        return View(HGroup(spring,
-                           UItem('start_button'),
-                           UItem('stop_button')))
+    # def _start_button_fired(self):
+    #     self.run()
+    #
+    # def traits_view(self):
+    #
+    #     return View(HGroup(spring,
+    #                        UItem('start_button'),
+    #                        UItem('stop_button')))
 # ============= EOF =============================================

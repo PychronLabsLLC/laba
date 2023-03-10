@@ -121,7 +121,6 @@ class SwitchController(Device):
 
     def _actuate_channel(self, channel, state):
         self.debug(f'actuate channel {channel} state={state}')
-        msg = self.driver.actuate_channel(channel, state)
-        self.communicator.ask(msg)
+        self.driver.actuate_channel(channel, state)
 
 # ============= EOF =============================================

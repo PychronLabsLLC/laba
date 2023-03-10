@@ -17,6 +17,7 @@ import random
 import time
 from threading import Thread, Event
 
+import yaml
 from chaco.array_plot_data import ArrayPlotData
 from chaco.base_plot_container import BasePlotContainer
 from chaco.plot import Plot
@@ -25,10 +26,13 @@ from enable.component_editor import ComponentEditor
 from numpy import hstack
 from traitsui.qt4.extra.led_editor import LEDEditor
 
+from automation import Automation
 from hardware.device import Device
 from loggable import Loggable
-from traits.api import Instance, Button, Bool, Float, List
-from traitsui.api import View, UItem, VGroup, HGroup, spring, Item
+from traits.api import Instance, Button, Bool, Float, List, Str
+from traitsui.api import View, UItem, VGroup, HGroup, spring, Item, EnumEditor
+
+from paths import paths
 
 
 class Figure(Loggable):
@@ -75,7 +79,7 @@ class Card(Loggable):
         super().__init__(cfg, *args, **kw)
         dfs = []
         dvs = []
-        for dev in cfg['devices']:
+        for dev in cfg.get('devices', []):
             dd = application.get_service(Device, f"name=='{dev['name']}'")
             dvs.append(dd)
             func = dev.get('function')
@@ -84,6 +88,15 @@ class Card(Loggable):
 
         self.devices = dvs
         self.device_functions = dfs
+
+    def traits_view(self):
+        v = View(VGroup(*self.make_view(),
+                        show_border=True,
+                        label=self.name))
+        return v
+
+    def make_view(self):
+        raise NotImplementedError
 
 
 class BaseScan(Card):
@@ -137,9 +150,8 @@ class Scan(BaseScan):
 
         return f
 
-    def traits_view(self):
-        return View(HGroup(spring, UItem('start_button')),
-                    UItem('figure', style='custom'))
+    def make_view(self):
+        return HGroup(spring, UItem('start_button')), UItem('figure', style='custom'),
 
 
 class LEDReadOut(BaseScan):
@@ -152,11 +164,10 @@ class LEDReadOut(BaseScan):
     def _scan_hook(self, i, df, st):
         self.value = df()
 
-    def traits_view(self):
-        v = View(Item('value',
-                      label=self.name,
-                      editor=LEDEditor()))
-        return v
+    def make_view(self):
+        return Item('value',
+                    label=self.name,
+                    editor=LEDEditor()),
 
 
 class Switch(Card):
@@ -178,13 +189,12 @@ class Switch(Card):
         dev.close_switch(self.switch_name)
         self.state = False
 
-    def traits_view(self):
-        v = View(HGroup(UItem('open_button'),
-                        UItem('close_button'),
-                        Item('state',
-                             style='readonly',
-                             label='State')))
-        return v
+    def make_view(self):
+        return HGroup(UItem('open_button'),
+                      UItem('close_button'),
+                      Item('state',
+                           style='readonly',
+                           label='State')),
 
 
 class EMSwitch(Switch):
@@ -201,17 +211,57 @@ class EMSwitch(Switch):
         dev.open_switch(self.switch_name, slow=True)
         self.state = True
 
-    def traits_view(self):
-        v = View(HGroup(UItem('open_button'),
-                        UItem('close_button'),
-                        spring,
-                        UItem('slow_open_button'),
-                        UItem('slow_close_button'),
+    def make_view(self):
+        return HGroup(UItem('open_button'),
+                      UItem('close_button'),
+                      spring,
+                      UItem('slow_open_button'),
+                      UItem('slow_close_button'),
 
-                        Item('state',
-                             style='readonly',
-                             label='State')))
-        return v
+                      Item('state',
+                           style='readonly',
+                           label='State')),
+
+
+class Procedures(Card):
+    start_button = Button("Start")
+    stop_button = Button("Stop")
+    script_name = Str
+    names = List
+
+    automation = Instance(Automation)
+
+    def __init__(self, application, cfg, *args, **kw):
+        super().__init__(application, cfg, *args, **kw)
+        names = []
+        with open(paths.automations_path, 'r') as rfile:
+            yobj = yaml.load(rfile, yaml.SafeLoader)
+            for automation in yobj:
+                names.append(automation['name'])
+
+        self.application = application
+        self.names = names
+
+    def make_view(self):
+        return HGroup(UItem('script_name', editor=EnumEditor(name='names')),
+                      UItem('start_button'),
+                      UItem('stop_button')),
+
+    def _start_button_fired(self):
+        with open(paths.automations_path, 'r') as rfile:
+            yobj = yaml.load(rfile, yaml.SafeLoader)
+            for automation in yobj:
+                if automation['name'] == self.script_name:
+                    a = Automation({"name": self.script_name,
+                                    "path": paths.get_automation_path(automation['path'])},
+                                   application=self.application)
+
+                    self.automation = a
+                    self.automation.run()
+
+    def _stop_button_fired(self):
+        if self.automation:
+            self.automation.cancel()
 
 
 class Dashboard(Loggable):
@@ -227,14 +277,6 @@ class Dashboard(Loggable):
         for c in self.cards:
             kind = c['kind']
             factory = globals().get(kind)
-            # if kind == 'Scan':
-            #     factory = Scan
-            # elif kind == 'LEDReadOut':
-            #     factory = LEDReadOut
-            # elif kind == 'Switch':
-            #     factory = Switch
-            # elif kind == 'EMSwitch':
-            #     factory = EMSwitch
 
             card = factory(self.application, c)
 
