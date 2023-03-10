@@ -32,7 +32,7 @@ class Persister(Loggable):
 
     def __enter__(self):
         self.path = self._new_path(self.path_name)
-        self._handle = open(self.path)
+        self._handle = open(self.path, 'w')
         self._enter_hook()
 
         return self
@@ -53,11 +53,10 @@ class Persister(Loggable):
         pass
 
 
-class CSVPersister(Loggable):
+class CSVPersister(Persister):
     def _enter_hook(self):
         self._writer = csv.writer(self._handle)
 
     def _write_hook(self, data):
-        data = []
         self._writer.writerow(data)
 # ============= EOF =============================================

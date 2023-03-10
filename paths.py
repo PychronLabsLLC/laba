@@ -32,6 +32,10 @@ class Paths:
         return Path(self.root, 'automations', name)
 
     def new_path(self, base, name, extension='.csv'):
+        rp = Path(self.root, base)
+        if not rp.is_dir():
+            rp.mkdir()
+
         for i in itertools.count():
             p = Path(self.root, base, f'{name}{i:04n}{extension}')
             if not os.path.isfile(p):
