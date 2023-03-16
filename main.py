@@ -20,6 +20,7 @@ import zmq
 
 from application import Application
 
+
 def demo():
     def func():
         time.sleep(5)
@@ -37,6 +38,7 @@ def demo():
 
     t = Thread(target=func)
     t.start()
+
 
 def main():
     app = Application()

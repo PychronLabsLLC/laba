@@ -33,6 +33,24 @@ class Server(Loggable):
         self._thread.start()
 
     def _run(self):
+        """
+
+        API.
+
+        {
+            "device": <name of a device>,
+            "function": <name of the function>
+            "kwargs": <keyward arguments to pass into the function when its is called>
+        }
+
+        :returns
+        {
+            "message": ...
+            "response": ...
+        }
+
+        """
+
         self.debug(f'Starting server. {self.port}')
 
         context = zmq.Context()

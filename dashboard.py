@@ -20,9 +20,11 @@ from threading import Thread, Event
 import yaml
 from chaco.array_plot_data import ArrayPlotData
 from chaco.base_plot_container import BasePlotContainer
+from chaco.data_view import DataView
 from chaco.plot import Plot
 from chaco.plot_containers import VPlotContainer
 from enable.component_editor import ComponentEditor
+from enable.container import Container
 from numpy import hstack
 from traitsui.qt4.extra.led_editor import LEDEditor
 
@@ -72,6 +74,21 @@ class Figure(Loggable):
 
 
 class Card(Loggable):
+    def __init__(self, application, *args, **kw):
+        super().__init__(*args, **kw)
+        self.application = application
+
+    def traits_view(self):
+        v = View(VGroup(*self.make_view(),
+                        show_border=True,
+                        label=self.name))
+        return v
+
+    def make_view(self):
+        raise NotImplementedError
+
+
+class DeviceCard(Card):
     device_functions = List
     devices = List
 
@@ -89,17 +106,24 @@ class Card(Loggable):
         self.devices = dvs
         self.device_functions = dfs
 
-    def traits_view(self):
-        v = View(VGroup(*self.make_view(),
-                        show_border=True,
-                        label=self.name))
-        return v
+
+class Canvas(Card):
+    container = Instance(Container)
+
+    def __init__(self, application, cfg, *args, **kw):
+        super().__init__(cfg, *args, **kw)
+        self.render()
+
+    def render(self):
+        self.container = dv = DataView()
+        dv.padding = 0
+        dv.bgcolor = 'orange'
 
     def make_view(self):
-        raise NotImplementedError
+        return UItem('container', editor=ComponentEditor()),
 
 
-class BaseScan(Card):
+class BaseScan(DeviceCard):
     active = Bool(False)
     period = Float(1)
 
@@ -232,14 +256,14 @@ class Procedures(Card):
     automation = Instance(Automation)
 
     def __init__(self, application, cfg, *args, **kw):
-        super().__init__(application, cfg, *args, **kw)
+        super().__init__(application, cfg=cfg, *args, **kw)
         names = []
         with open(paths.automations_path, 'r') as rfile:
             yobj = yaml.load(rfile, yaml.SafeLoader)
             for automation in yobj:
                 names.append(automation['name'])
 
-        self.application = application
+        # self.application = application
         self.names = names
 
     def make_view(self):
@@ -277,7 +301,7 @@ class Dashboard(Loggable):
         for c in self.cards:
             kind = c['kind']
             factory = globals().get(kind)
-
+            print(factory, c)
             card = factory(self.application, c)
 
             self.add_trait(c['name'], card)
