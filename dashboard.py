@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-import random
 import time
 from threading import Thread, Event
 
 import yaml
 from chaco.array_plot_data import ArrayPlotData
-from chaco.base_plot_container import BasePlotContainer
 from chaco.data_view import DataView
 from chaco.plot import Plot
 from chaco.plot_containers import VPlotContainer
@@ -29,6 +27,8 @@ from numpy import hstack
 from traitsui.qt4.extra.led_editor import LEDEditor
 
 from automation import Automation
+from canvas.elements import CanvasOverlay, CanvasSwitch
+from canvas.tools import CanvasInteractor
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import Instance, Button, Bool, Float, List, Str
@@ -111,11 +111,29 @@ class Canvas(Card):
     container = Instance(Container)
 
     def __init__(self, application, cfg, *args, **kw):
+        self._cfg = cfg['elements']
         super().__init__(cfg, *args, **kw)
         self.render()
 
     def render(self):
         self.container = dv = DataView()
+
+        tool = CanvasInteractor(component=dv)
+        self.container.tools.append(tool)
+        cv = CanvasOverlay(component=dv)
+        dv.overlays.append(cv)
+
+        # vv = SwitchOverlay(component=dv)
+        # dv.overlays.append(vv)
+
+        for ei in self._cfg:
+            t = ei.get('translate', {'x': 0, 'y': 0})
+            d = ei.get('dimension', {'w': 25, 'h': 25})
+            vv = CanvasSwitch(component=dv, x=t['x'], y=t['y'],
+                              width=d['w'],
+                              height=d['h'])
+            dv.overlays.append(vv)
+
         dv.padding = 0
         dv.bgcolor = 'orange'
 
