@@ -105,22 +105,27 @@ class MeasurementTbl(Base, IDMixin):
     datastream_id = foreignkey('DatastreamTbl')
     value = Column(Float)
     timestamp = Column(DateTime, default=func.now())
+    relative_time_seconds = Column(Float)
+    value_string = stringcolumn(140)
 
 
 class DBClient(Loggable):
     session = None
 
-    def build(self):
+    def build(self, drop=False):
         engine = self._get_engine()
 
-        Base.metadata.drop_all(bind=engine)
+        if drop:
+            Base.metadata.drop_all(bind=engine)
+
         Base.metadata.create_all(bind=engine)
 
-    def add_measurement(self, value, name, device_name):
+    def add_measurement(self, value, name, device_name, **kw):
         d = self.get_datastream(name, device_name)
         if d:
             self._add(MeasurementTbl(value=value,
-                                     datastream_id=d.id))
+                                     datastream_id=d.id,
+                                     **kw))
 
     def add_datastream(self, name, device_name):
         d = self.get_datastream(name, device_name)
@@ -157,9 +162,9 @@ class DBClient(Loggable):
             record = table(**kw)
             self._add(record, sess=sess)
 
-    def _fetch_first(self, q, verbose=True):
+    def _fetch_first(self, q, verbose=False):
         if verbose:
-            print(literalquery(q.statement))
+            self.debug(literalquery(q.statement))
         return q.first()
 
     def _add(self, record, commit=True, sess=None):

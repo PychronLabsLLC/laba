@@ -43,11 +43,13 @@ def demo():
 
 def main():
     app = Application()
-    db = DBClient()
-    db.build()
-    db.add_device('bar')
-    db.add_datastream('scan', 'bar')
-    db.add_measurement(1.3232, 'scan', 'bar')
+
+    app.dbclient.build(drop=True)
+    # db = DBClient()
+    # db.build()
+    # db.add_device('bar')
+    # db.add_datastream('scan', 'bar')
+    # db.add_measurement(1.3232, 'scan', 'bar')
     app.run()
 
 

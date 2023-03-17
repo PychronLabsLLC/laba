@@ -143,7 +143,9 @@ class SwitchController(Device):
                 self.update = {'voltage': si,
                                'time': time.time() - st,
                                'max_time': max_time,
-                               'max_voltage': max_voltage}
+                               'max_voltage': max_voltage,
+                               'value': si
+                               }
 
                 # time.sleep(s.ramp_period)
 
