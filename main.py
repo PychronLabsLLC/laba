@@ -19,6 +19,7 @@ from threading import Thread
 import zmq
 
 from application import Application
+from db.db import DBClient
 
 
 def demo():
@@ -42,7 +43,13 @@ def demo():
 
 def main():
     app = Application()
+    db = DBClient()
+    db.build()
+    db.add_device('bar')
+    db.add_datastream('scan', 'bar')
+    db.add_measurement(1.3232, 'scan', 'bar')
     app.run()
+
 
 
 if __name__ == '__main__':
