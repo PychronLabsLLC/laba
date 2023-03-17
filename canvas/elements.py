@@ -14,6 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 from enable.abstract_overlay import AbstractOverlay
+from kiva.fonttools import str_to_font
+from traits.api import Str, Bool, Enum, Float
 
 
 # ============= EOF =============================================
@@ -27,17 +29,102 @@ class CanvasOverlay(AbstractOverlay):
 
 
 class CanvasElement(AbstractOverlay):
+    name = Str
+    font = 'arial 14'
+
     def hittest(self, x, y):
-        return self.x < x < self.x + self.width and self.y < y <self.y + self.height
+        (sx, sy), sw, sh = self._map_screen()
+        return sx < x < sx + sw and sy < y < sy + sh
+
+    def _map_screen(self):
+        (x, y), (zx, zy), (wx, wy) = self.component.map_screen([(self.x, self.y),
+                                                                (0, 0),
+                                                                (self.width, self.height)])
+        return (x, y), wx - zx, zy - wy
+
+    def _render_name(self, gc, x, y, w, h):
+        if self.name:
+            with gc:
+                gc.set_font(str_to_font(self.font))
+                # c = self.text_color if self.text_color else self.default_color
+                # gc.set_fill_color(self._convert_color(self.name_color))
+                txt = str(self.name)
+                self._render_textbox(gc, x, y, w, h, txt)
+
+    def _render_textbox(self, gc, x, y, w, h, txt):
+        tw, th, _, _ = gc.get_full_text_extent(txt)
+        x = x + w / 2.0 - tw / 2.0
+        y = y + h / 2.0 - th / 2.0
+
+        self._render_text(gc, txt, x, y)
+
+    def _render_text(self, gc, t, x, y):
+        with gc:
+            gc.translate_ctm(x, y)
+            gc.set_fill_color((0, 0, 0))
+            gc.set_text_position(0, 0)
+            gc.show_text(t)
+
+
+def rounded_rect(gc, x, y, width, height, corner_radius):
+    with gc:
+        gc.translate_ctm(x, y)  # draw a rounded rectangle
+        x = y = 0
+        gc.begin_path()
+
+        hw = width * 0.5
+        hh = height * 0.5
+        if hw < corner_radius:
+            corner_radius = hw * 0.5
+        elif hh < corner_radius:
+            corner_radius = hh * 0.5
+
+        gc.move_to(x + corner_radius, y)
+        gc.arc_to(x + width, y, x + width, y + corner_radius, corner_radius)
+        gc.arc_to(
+            x + width, y + height, x + width - corner_radius, y + height, corner_radius
+        )
+        gc.arc_to(x, y + height, x, y, corner_radius)
+        gc.arc_to(x, y, x + width + corner_radius, y, corner_radius)
+        gc.draw_path()
 
 
 class CanvasSwitch(CanvasElement):
+    corner_radius = 10
+    state = Enum('unknown', 'open', 'closed', 'moving')
+    voltage = Float
+
+    def hittest(self, x, y):
+        (sx, sy), sw, sh = self._map_screen()
+        return sx < x < sx + sw and sy < y < sy + sw
+
     def overlay(self, other_component, gc, view_bounds=None, mode="normal"):
+        color = (0.5, 0.5, 0.5)
+        if self.state == 'open':
+            color = (0, 1, 0)
+        elif self.state == 'closed':
+            color = (1, 0, 0)
+        elif self.state == 'moving':
+            color = (1, 1, 0)
+
+        (x, y), w, h = self._map_screen()
         with gc:
-            print('asdf', self.x, self.y)
-            gc.translate_ctm(self.x, self.y)
-            gc.rect(0, 0, self.width, self.height)
-            gc.stroke_path()
+            scale = 0.5
+            mcolor = [c * scale for c in color]
+            gc.set_line_width(10)
+            gc.set_stroke_color(mcolor)
+            gc.set_fill_color(color)
+            rounded_rect(gc, x, y, w, w, self.corner_radius)
+
+            self._render_name(gc, x, y, w, w)
+            # voltage
+            with gc:
+                gc.translate_ctm(0, -10)
+                gc.set_font(str_to_font(self.font))
+                # c = self.text_color if self.text_color else self.default_color
+                # gc.set_fill_color(self._convert_color(self.name_color))
+                txt = f'{self.voltage:0.3f}'
+                self._render_textbox(gc, x, y, w, h, txt)
 
 # class SwitchOverlay(AbstractOverlay):
 #     def __init__(self, *args, **kw):

@@ -21,11 +21,12 @@ from numpy import array, linspace
 
 from hardware.device import Device
 from loggable import Loggable
-from traits.api import List, Str, Float, Int
+from traits.api import List, Str, Float, Int, Bool, Array
 
 
 class Switch(Loggable):
     channel = Str
+    state = Bool
 
     def __init__(self, cfg, *args, **kw):
         super().__init__(cfg, *args, **kw)
@@ -36,18 +37,28 @@ class RampSwitch(Switch):
     ramp_period = Float
     min_value = Float
     max_value = Float
-    control_points = List
+    # control_points = List
     nsteps = Int
+    open_nodes = Array
+    close_nodes = Array
 
     def __init__(self, cfg, *args, **kw):
         super().__init__(cfg, *args, **kw)
         self.ramp_period = cfg['ramp'].get('period', 1)
         self.nsteps = cfg['ramp'].get('nsteps', 10)
-        self.control_points = cfg['ramp'].get('control_points', [])
+        ocpts = cfg['ramp']['open'].get('control_points', [])
+        ccpts = cfg['ramp']['close'].get('control_points', [])
+        self.degree = len(ocpts)-1
+        self.open_nodes = array([p.split(",") for p in ocpts], dtype=float).T
+        self.close_nodes = array([p.split(",") for p in ccpts], dtype=float).T
 
-    def ramp(self):
-        nodes = array([p.split(",") for p in self.control_points], dtype=float).T
-        curve = bezier.Curve(nodes, degree=len(self.control_points)-1)
+    def ramp_max(self):
+        return self.open_nodes.max()
+
+    def ramp(self, state):
+        # nodes = array([p.split(",") for p in self.control_points], dtype=float).T
+        nodes = self.open_nodes if state else self.close_nodes
+        curve = bezier.Curve(nodes, degree=self.degree)
         ma = nodes.max()
 
         for i in linspace(0.0, 1.0, self.nsteps):
@@ -77,6 +88,16 @@ class SwitchController(Device):
         self.debug(f'get {name}')
         return next((s for s in self.switches if s.name == name), None)
 
+    def toggle_switch(self, name):
+        s = self.get_switch(name)
+        if s:
+            if s.state:
+                self.close_switch(name)
+                return 'closed'
+            else:
+                self.open_switch(name)
+                return 'open'
+
     def open_switch(self, name, slow=False, block=False):
         return self._actuate_switch(name, True, slow, block)
 
@@ -94,7 +115,7 @@ class SwitchController(Device):
             if slow:
                 self._ramp_channel(s, state, block)
             else:
-                self._actuate_channel(s.channel, state)
+                self._actuate_channel(s, state)
         else:
             return f'invalid switch={name}'
 
@@ -103,14 +124,31 @@ class SwitchController(Device):
         self._cancel_ramp = Event()
 
         def ramp():
-            for si in s.ramp():
+            self.canvas.set_switch_state(s.name, 'moving')
+            st = time.time()
+            max_time = s.nsteps * s.ramp_period * 1.1
+            max_voltage = s.ramp_max()*1.1
+            self.update = {'clear': True}
+
+            for i, si in enumerate(s.ramp(state)):
                 if self._cancel_ramp.is_set():
                     break
-
-                self.driver.set_voltage(s.channel, si)
+                if i:
+                    time.sleep(s.ramp_period)
 
                 self.debug(f'set output {si}')
-                time.sleep(s.ramp_period)
+                self.driver.set_voltage(s.channel, si)
+
+                self.canvas.set_switch_voltage(s.name, si)
+                self.update = {'voltage': si,
+                               'time': time.time() - st,
+                               'max_time': max_time,
+                               'max_voltage': max_voltage}
+
+                # time.sleep(s.ramp_period)
+
+            s.state = state
+            self.canvas.set_switch_state(s.name, state)
 
         if block:
             ramp()
@@ -119,8 +157,13 @@ class SwitchController(Device):
             self._ramp_thread = Thread(target=ramp)
             self._ramp_thread.start()
 
-    def _actuate_channel(self, channel, state):
+    def _actuate_channel(self, switch, state):
+        channel = switch.channel
+
         self.debug(f'actuate channel {channel} state={state}')
         self.driver.actuate_channel(channel, state)
+
+        switch.state = state
+        self.canvas.set_switch_state(switch.name, state)
 
 # ============= EOF =============================================

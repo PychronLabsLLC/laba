@@ -50,7 +50,8 @@ class HardwarePlugin(BasePlugin):
             for automation in yobj:
                 automations.append(Automation(automation))
 
-        return HardwareTask(devices=devices, dashboards=ds, automations=automations)
+        return HardwareTask(devices=devices, dashboards=ds, automations=automations,
+                            selection=ds[0])
 
     def _tasks_default(self):
         return [TaskFactory(

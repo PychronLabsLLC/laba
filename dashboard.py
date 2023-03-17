@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import math
 import time
 from threading import Thread, Event
 
@@ -24,6 +25,8 @@ from chaco.plot_containers import VPlotContainer
 from enable.component_editor import ComponentEditor
 from enable.container import Container
 from numpy import hstack
+from traits.has_traits import on_trait_change
+from traitsui.group import VSplit
 from traitsui.qt4.extra.led_editor import LEDEditor
 
 from automation import Automation
@@ -32,7 +35,7 @@ from canvas.tools import CanvasInteractor
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import Instance, Button, Bool, Float, List, Str
-from traitsui.api import View, UItem, VGroup, HGroup, spring, Item, EnumEditor
+from traitsui.api import View, UItem, VGroup, HGroup, spring, Item, EnumEditor, HSplit
 
 from paths import paths
 
@@ -40,20 +43,46 @@ from paths import paths
 class Figure(Loggable):
     plotcontainer = Instance(VPlotContainer, ())
 
-    def new_plot(self, **kw):
+    def new_plot(self, xtitle=None, ytitle=None, **kw):
         p = Plot(data=ArrayPlotData(), **kw)
+
+        if xtitle:
+            p.x_axis.title = xtitle
+        if ytitle:
+            p.y_axis.title = ytitle
+
         self.plotcontainer.add(p)
 
-    def new_series(self, name, plotid=0):
+        return p
+
+    def new_series(self, name, plotid=0, type='line', **kw):
         plot = self.get_plot(plotid)
         plot.data.set_data('x0', [])
         plot.data.set_data('y0', [])
-        plot.plot(('x0', 'y0'), name=name, type='line')
+        plot.plot(('x0', 'y0'), name=name, type=type, **kw)
 
     def add_datum(self, name, x, y, plotid=0):
         series = self.get_series(name, plotid)
-        series.index.set_data(hstack((x, series.index.get_data())))
+
+        xx = hstack((x, series.index.get_data()))
+        series.index.set_data(xx)
+
         series.value.set_data(hstack((y, series.value.get_data())))
+        plot = self.get_plot(plotid)
+        l = plot.index_range.low
+        h = plot.index_range.high
+
+        if x >= h:
+            lx = len(xx)
+            if lx > 2:
+                step = math.ceil((xx[0] - xx[-1]) / lx)
+        # step = 0
+        # if x > (h * 0.95):
+        #     lx = len(xx)
+        #     if lx > 2 and not step:
+        #         step = math.ceil((xx[0] - xx[-1]) / lx)
+        #
+            self.set_x_limits(l + step, h + step, plotid)
 
     def clear_data(self, name, plotid=0):
         series = self.get_series(name, plotid)
@@ -66,6 +95,16 @@ class Figure(Loggable):
 
     def get_plot(self, idx):
         return self.plotcontainer.components[idx]
+
+    def set_x_limits(self, l, h, idx=0):
+        plot = self.get_plot(idx)
+        plot.index_range.low = l
+        plot.index_range.high = h
+
+    def set_y_limits(self, l, h, idx=0):
+        plot = self.get_plot(idx)
+        plot.value_range.low = l
+        plot.value_range.high = h
 
     def traits_view(self):
         v = View(
@@ -112,24 +151,53 @@ class Canvas(Card):
 
     def __init__(self, application, cfg, *args, **kw):
         self._cfg = cfg['elements']
-        super().__init__(cfg, *args, **kw)
+        super().__init__(application, cfg, *args, **kw)
         self.render()
+
+    def get_switch(self, name):
+        return next((o for o in self.container.overlays
+                     if hasattr(o, 'name') and o.name == name))
+
+    def set_switch_voltage(self, name, si):
+        o = self.get_switch(name)
+        o.voltage = si
+        o.request_redraw()
+
+    def set_switch_state(self, name, state):
+        o = self.get_switch(name)
+        if isinstance(state, bool):
+            state = 'open' if state else 'closed'
+        o.state = state
+        o.request_redraw()
 
     def render(self):
         self.container = dv = DataView()
+        # dv.aspect_ratio = 1
+        dv.index_range.low = 0
+        dv.index_range.high = 100
+        dv.value_range.low = 0
+        dv.value_range.high = 100
 
-        tool = CanvasInteractor(component=dv)
+        dv.index_range.low = -50
+        dv.index_range.high = 50
+        dv.value_range.low = -50
+        dv.value_range.high = 50
+
+        controller = self.application.get_service(Device, f"name=='switch_controller'")
+        tool = CanvasInteractor(component=dv,
+                                controller=controller)
+
+        controller.canvas = self
+
         self.container.tools.append(tool)
         cv = CanvasOverlay(component=dv)
         dv.overlays.append(cv)
 
-        # vv = SwitchOverlay(component=dv)
-        # dv.overlays.append(vv)
-
         for ei in self._cfg:
             t = ei.get('translate', {'x': 0, 'y': 0})
-            d = ei.get('dimension', {'w': 25, 'h': 25})
+            d = ei.get('dimension', {'w': 5, 'h': 5})
             vv = CanvasSwitch(component=dv, x=t['x'], y=t['y'],
+                              name=ei['name'],
                               width=d['w'],
                               height=d['h'])
             dv.overlays.append(vv)
@@ -146,6 +214,10 @@ class BaseScan(DeviceCard):
     period = Float(1)
 
     _scan_evt = None
+
+    def __init__(self, application, cfg, *args, **kw):
+        super().__init__(application, cfg, *args, **kw)
+        self.period = cfg.get('period', 1.0)
 
     def _scan(self):
         if self.active:
@@ -187,8 +259,10 @@ class Scan(BaseScan):
 
     def _figure_default(self):
         f = Figure()
-        f.new_plot()
+        f.new_plot(xtitle='Time(s)', ytitle='Valve',
+                   padding_left=50, padding_bottom=50, padding_top=20, padding_right=20)
         f.new_series('s0')
+        f.set_x_limits(0, 5)
 
         return f
 
@@ -212,7 +286,7 @@ class LEDReadOut(BaseScan):
                     editor=LEDEditor()),
 
 
-class Switch(Card):
+class Switch(DeviceCard):
     open_button = Button('Open')
     close_button = Button('Close')
     state = Bool
@@ -242,6 +316,21 @@ class Switch(Card):
 class EMSwitch(Switch):
     slow_open_button = Button('Slow Open')
     slow_close_button = Button('Slow Close')
+    figure = Instance(Figure)
+
+    def _figure_default(self):
+        fig = Figure()
+        p = fig.new_plot(padding_left=50, padding_bottom=50, padding_top=20, padding_right=20)
+        p.x_axis.title = 'Time (s)'
+        p.y_axis.title = 'Voltage (V)'
+        fig.new_series('vt', type='line')
+        p.index_range.low = 0
+        p.index_range.high = 60
+
+        p.value_range.low = 0
+        p.value_range.high = 10
+
+        return fig
 
     def _slow_close_button_fired(self):
         dev = self.devices[0]
@@ -253,16 +342,28 @@ class EMSwitch(Switch):
         dev.open_switch(self.switch_name, slow=True)
         self.state = True
 
-    def make_view(self):
-        return HGroup(UItem('open_button'),
-                      UItem('close_button'),
-                      spring,
-                      UItem('slow_open_button'),
-                      UItem('slow_close_button'),
+    @on_trait_change('devices:update')
+    def _handle_device_update(self, new):
+        if new:
+            if new.get('clear'):
+                self.figure.clear_data('vt')
+            else:
+                self.figure.add_datum('vt', new['time'], new['voltage'])
+                self.figure.set_x_limits(-1, new['max_time'])
+                self.figure.set_y_limits(-1, new['max_voltage'])
 
-                      Item('state',
-                           style='readonly',
-                           label='State')),
+    def make_view(self):
+        return VGroup(HGroup(UItem('open_button'),
+                             UItem('close_button'),
+                             spring,
+                             UItem('slow_open_button'),
+                             UItem('slow_close_button'),
+
+                             Item('state',
+                                  style='readonly',
+                                  label='State')),
+                      UItem('figure', style='custom')
+                      ),
 
 
 class Procedures(Card):
@@ -315,17 +416,21 @@ class Dashboard(Loggable):
         return View(self._build_dashboard_elements())
 
     def _build_dashboard_elements(self):
-        gs = []
-        for c in self.cards:
+        ga = []
+        gb = []
+        for i, c in enumerate(self.cards):
             kind = c['kind']
             factory = globals().get(kind)
-            print(factory, c)
             card = factory(self.application, c)
 
             self.add_trait(c['name'], card)
-            gs.append(UItem(c['name'], style='custom'))
+            item = UItem(c['name'], style='custom')
+            if i % 2:
+                gb.append(item)
+            else:
+                ga.append(item)
 
-        return VGroup(*gs)
+        return HSplit(VSplit(*ga), VSplit(*gb))
 
     # def traits_view(self):
     #     v = View(self._build_dashboard_elements())

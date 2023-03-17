@@ -31,7 +31,7 @@ def demo():
         socket.connect("tcp://localhost:5555")
         socket.send_json({"device": "switch_controller",
                           "function": "open_switch",
-                          "kwargs": {"name": "Af",
+                          "kwargs": {"name": "A",
                                      "block": True,
                                      "slow": True}})
         print(socket.recv_json())

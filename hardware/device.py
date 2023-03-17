@@ -16,7 +16,7 @@
 import math
 import random
 
-from traits.api import Instance
+from traits.api import Instance, Event
 from hardware.communicator import Communicator
 from hardware.driver.driver import Driver
 from loggable import Loggable
@@ -26,7 +26,7 @@ from traitsui.api import View, Item
 
 class Device(Loggable):
     driver = Instance(Driver)
-
+    update = Event
     def traits_view(self):
         return View(Item('name'))
 
