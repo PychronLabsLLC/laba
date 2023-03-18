@@ -128,7 +128,8 @@ class SwitchController(Device):
             st = time.time()
             max_time = s.nsteps * s.ramp_period * 1.1
             max_voltage = s.ramp_max()*1.1
-            self.update = {'clear': True}
+            self.update = {'clear': True,
+                           'datastream': 'ramp'}
 
             for i, si in enumerate(s.ramp(state)):
                 if self._cancel_ramp.is_set():
@@ -141,10 +142,11 @@ class SwitchController(Device):
 
                 self.canvas.set_switch_voltage(s.name, si)
                 self.update = {'voltage': si,
-                               'time': time.time() - st,
+                               'relative_time_seconds': time.time() - st,
                                'max_time': max_time,
                                'max_voltage': max_voltage,
-                               'value': si
+                               'value': si,
+                               'datastream': 'ramp'
                                }
 
                 # time.sleep(s.ramp_period)

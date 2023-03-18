@@ -18,7 +18,7 @@ from envisage.plugin import Plugin
 from envisage.ui.tasks.task_factory import TaskFactory
 
 from automation import Automation
-from dashboard import Dashboard
+from dashboard import Dashboard, HistoryDashboard
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import List
@@ -38,7 +38,8 @@ class HardwarePlugin(BasePlugin):
     def _task_factory(self):
         devices = self.application.get_services(Device)
 
-        ds = []
+        ds = [HistoryDashboard(self.application)]
+
         with open(paths.dashboards_path, 'r') as rfile:
             yobj = yaml.load(rfile, yaml.SafeLoader)
             for d in yobj:

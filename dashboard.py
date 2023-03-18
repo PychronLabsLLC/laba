@@ -24,7 +24,7 @@ from chaco.plot import Plot
 from chaco.plot_containers import VPlotContainer
 from enable.component_editor import ComponentEditor
 from enable.container import Container
-from numpy import hstack
+from numpy import hstack, array
 from traits.has_traits import on_trait_change
 from traitsui.group import VSplit
 from traitsui.qt4.extra.led_editor import LEDEditor
@@ -32,6 +32,7 @@ from traitsui.qt4.extra.led_editor import LEDEditor
 from automation import Automation
 from canvas.elements import CanvasOverlay, CanvasSwitch
 from canvas.tools import CanvasInteractor
+from db.db import DBClient
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import Instance, Button, Bool, Float, List, Str
@@ -55,10 +56,14 @@ class Figure(Loggable):
 
         return p
 
-    def new_series(self, name, plotid=0, type='line', **kw):
+    def new_series(self, name, plotid=0, type='line', xdata=None, ydata=None, **kw):
+        if xdata is None:
+            xdata = []
+        if ydata is None:
+            ydata = []
         plot = self.get_plot(plotid)
-        plot.data.set_data('x0', [])
-        plot.data.set_data('y0', [])
+        plot.data.set_data('x0', xdata)
+        plot.data.set_data('y0', ydata)
         plot.plot(('x0', 'y0'), name=name, type=type, **kw)
 
     def add_datum(self, name, x, y, plotid=0):
@@ -76,15 +81,16 @@ class Figure(Loggable):
             lx = len(xx)
             if lx > 2:
                 step = math.ceil((xx[0] - xx[-1]) / lx)
-        # step = 0
-        # if x > (h * 0.95):
-        #     lx = len(xx)
-        #     if lx > 2 and not step:
-        #         step = math.ceil((xx[0] - xx[-1]) / lx)
-        #
+            # step = 0
+            # if x > (h * 0.95):
+            #     lx = len(xx)
+            #     if lx > 2 and not step:
+            #         step = math.ceil((xx[0] - xx[-1]) / lx)
+            #
             self.set_x_limits(l + step, h + step, plotid)
 
-    def clear_data(self, name, plotid=0):
+    def clear_data(self, name=None, plotid=0):
+
         series = self.get_series(name, plotid)
         series.index.set_data([])
         series.value.set_data([])
@@ -348,7 +354,7 @@ class EMSwitch(Switch):
             if new.get('clear'):
                 self.figure.clear_data('vt')
             else:
-                self.figure.add_datum('vt', new['time'], new['voltage'])
+                self.figure.add_datum('vt', new['relative_time_seconds'], new['voltage'])
                 self.figure.set_x_limits(-1, new['max_time'])
                 self.figure.set_y_limits(-1, new['max_voltage'])
 
@@ -407,7 +413,57 @@ class Procedures(Card):
             self.automation.cancel()
 
 
-class Dashboard(Loggable):
+class BaseDashboard(Loggable):
+    pass
+
+
+class HistoryDashboard(BaseDashboard):
+    device_name = Str
+    device_names = List
+    figure = Instance(Figure)
+
+    datastream_name = Str('default')
+    datastream_names = List
+
+    def __init__(self, application, *args, **kw):
+        super().__init__(*args, **kw)
+        self.application = application
+        ds = application.get_services(Device)
+        self.device_names = [d.name for d in ds]
+        self.figure = Figure()
+        self.figure.new_plot()
+        self.figure.new_series('default')
+        # self.dbclient = DBClient()
+
+    def _device_name_changed(self, new):
+        if new:
+            self.figure.clear_data('default')
+            dbclient = DBClient()
+            with dbclient.session() as sess:
+                ds = dbclient.get_datastream_names(new, sess=sess)
+
+                self.datastream_names = ds
+                self.datastream_name = ds[0]
+
+    def _datastream_name_changed(self, new):
+        if new:
+            dbclient = DBClient()
+            with dbclient.session() as sess:
+                dbdev = dbclient.get_datastream(new, self.device_name, sess=sess)
+                if ms := dbdev.measurements:
+                    x, y = zip(*[(mi.timestamp.timestamp(), mi.value) for mi in ms])
+                    x = array(x)
+                    x -= x.min()
+                    self.figure.new_series('default', xdata=x, ydata=y)
+
+    def traits_view(self):
+        cgrp = VGroup(HGroup(Item('device_name', editor=EnumEditor(name='device_names')),
+                             Item('datastream_name', editor=EnumEditor(name='datastream_names'))))
+        fgrp = VGroup(UItem('figure', style='custom'))
+        return View(VGroup(cgrp, fgrp))
+
+
+class Dashboard(BaseDashboard):
     def __init__(self, application, cfg, *args, **kw):
         super().__init__(cards=cfg['cards'], *args, **kw)
         self.application = application

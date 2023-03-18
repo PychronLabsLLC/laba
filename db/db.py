@@ -17,7 +17,7 @@ import os
 
 from sqlalchemy import Column, Integer, String, create_engine, ForeignKey, Float, DateTime, func
 from sqlalchemy.engine.default import DefaultDialect
-from sqlalchemy.orm import declarative_base, declared_attr, sessionmaker
+from sqlalchemy.orm import declarative_base, declared_attr, sessionmaker, relationship
 from sqlalchemy.sql.sqltypes import NullType, String as SQLString
 
 from loggable import Loggable
@@ -100,6 +100,8 @@ class DeviceTbl(Base, NameMixin):
 class DatastreamTbl(Base, NameMixin):
     device_id = foreignkey('DeviceTbl')
 
+    measurements = relationship('MeasurementTbl')
+
 
 class MeasurementTbl(Base, IDMixin):
     datastream_id = foreignkey('DatastreamTbl')
@@ -109,93 +111,142 @@ class MeasurementTbl(Base, IDMixin):
     value_string = stringcolumn(140)
 
 
+class SessionCTX(object):
+    def __init__(self, sess):
+        self._sess = sess
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if isinstance(self._sess, SessionCTX):
+            return
+        else:
+            self._sess.__exit__(exc_type, exc_val, exc_tb)
+
+    def query(self, *args, **kw):
+        return self._sess.query(*args, **kw)
+
+    def add(self, *args, **kw):
+        return self._sess.add(*args, **kw)
+
+    def flush(self, *args, **kw):
+        return self._sess.flush(*args, **kw)
+
+    def commit(self, *args, **kw):
+        return self._sess.commit(*args, **kw)
+
+
 class DBClient(Loggable):
-    session = None
+    _session_factory = None
 
-    def build(self, drop=False):
+    def build(self):
         engine = self._get_engine()
-
-        if drop:
-            Base.metadata.drop_all(bind=engine)
-
+        Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
 
-    def add_measurement(self, value, name, device_name, **kw):
-        d = self.get_datastream(name, device_name)
-        if d:
-            self._add(MeasurementTbl(value=value,
-                                     datastream_id=d.id,
-                                     **kw))
+    def get_device(self, name, sess=None):
+        with self.session(sess) as sess:
+            q = sess.query(DeviceTbl)
+            q = q.filter(DeviceTbl.name == name)
+            return self._fetch_first(q)
 
-    def add_datastream(self, name, device_name):
-        d = self.get_datastream(name, device_name)
-        if not d:
-            dev = self.get_device(device_name)
-            self._add(DatastreamTbl(name=name, device_id=dev.id))
+    def get_datastream_names(self, device_name, sess=None):
+        with self.session(sess) as sess:
+            q = sess.query(DatastreamTbl)
+            q = q.join(DeviceTbl)
+            q = q.filter(DeviceTbl.name == device_name)
+            q = q.order_by(DatastreamTbl.name)
 
-    def get_device(self, name):
-        sess = self.get_session()
-        q = sess.query(DeviceTbl)
-        q = q.filter(DeviceTbl.name == name)
-        return self._fetch_first(q)
+            return [d.name for d in q.all()]
 
-    def get_datastream(self, name, device_name):
-        sess = self.get_session()
-        q = sess.query(DatastreamTbl)
-        q = q.join(DeviceTbl)
-        q = q.filter(DeviceTbl.name == device_name)
-        q = q.filter(DatastreamTbl.name == name)
-        return self._fetch_first(q)
+    def get_datastream(self, name, device_name, sess=None):
+        with self.session(sess) as sess:
+            q = sess.query(DatastreamTbl)
+            q = q.join(DeviceTbl)
+            q = q.filter(DeviceTbl.name == device_name)
+            q = q.filter(DatastreamTbl.name == name)
+            q = q.order_by(DatastreamTbl.id.desc())
+            return self._fetch_first(q)
 
     def add_device(self, name):
-        self._add_unique(DeviceTbl, name)
+        with self.session() as sess:
+            self._add_unique(sess, DeviceTbl, name)
 
-    def _add_unique(self, table, idenfitier, attr='name', sess=None, **kw):
-        if sess is None:
-            sess = self.get_session()
+    def add_datastream(self, name, device_name, unique=True):
+        with self.session() as sess:
+            d = None
+            if unique:
+                d = self.get_datastream(name, device_name, sess=sess)
 
-        q = sess.query(table)
-        q = q.filter(getattr(table, attr) == idenfitier)
+            if not d:
+                dev = self.get_device(device_name, sess=sess)
+                self._add(sess, DatastreamTbl(name=name, device_id=dev.id))
 
-        if not self._fetch_first(q):
-            kw[attr] = idenfitier
-            record = table(**kw)
-            self._add(record, sess=sess)
+    def add_measurement(self, name, device_name, **kw):
+        with self.session() as sess:
+            d = self.get_datastream(name, device_name, sess=sess)
+            if d:
+                kw = {k: v for k, v in kw.items() if k in ('name', 'value',
+                                                           'value_string',
+                                                           'relative_time_seconds')}
+                self._add(sess, MeasurementTbl(datastream_id=d.id, **kw))
+
+    def _add_unique(self, sess, table, idenfitier, attr='name', **kw):
+        with self.session(sess) as sess:
+            q = sess.query(table)
+            q = q.filter(getattr(table, attr) == idenfitier)
+
+            if not self._fetch_first(q):
+                kw[attr] = idenfitier
+                record = table(**kw)
+                self._add(sess, record)
 
     def _fetch_first(self, q, verbose=False):
         if verbose:
             self.debug(literalquery(q.statement))
         return q.first()
 
-    def _add(self, record, commit=True, sess=None):
-        if sess is None:
-            sess = self.get_session()
-
-        sess.add(record)
-        sess.flush()
-        if commit:
-            sess.commit()
+    def _add(self, sess, record, commit=True):
+        with self.session(sess) as sess:
+            sess.add(record)
+            sess.flush()
+            if commit:
+                sess.commit()
 
     # def connect(self):
     #     pass
     # sess = self.get_session()
     # self.session_factory = sessionmaker(engine=engine)
 
-    def get_session(self, force=False):
-        if not self.session or force:
-            self.session = self.session_factory()
-        return self.session
+    # def get_session(self, force=False):
+    #     if not self.session or force:
+    #         self.session = self.session_factory()
+    #     return self.session
 
     def _get_engine(self):
         url = paths.database_path
         engine = create_engine(f'sqlite:///{url}')
         return engine
 
+    def session(self, sess=None):
+        if sess is None:
+            factory = self.session_factory()
+            sess = factory()
+
+        sess = SessionCTX(sess)
+        return sess
+
     def session_factory(self):
-        return sessionmaker(
-            bind=self._get_engine(),
-            # autoflush=self.autoflush,
-            # expire_on_commit=False,
-            # autocommit=self.autocommit,
-        )()
+        factory = self._session_factory
+        if not factory:
+            factory = sessionmaker(
+                bind=self._get_engine(),
+                # autoflush=self.autoflush,
+                # expire_on_commit=False,
+                # autocommit=self.autocommit,
+            )
+            self._session_factory = factory
+
+        return factory
 # ============= EOF =============================================

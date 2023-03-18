@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import os
+
 import yaml
 from envisage.core_plugin import CorePlugin
 from envisage.ui.tasks.tasks_application import TasksApplication
@@ -31,13 +33,12 @@ from util import import_klass
 
 class Application(TasksApplication, Loggable):
     server = None
-    dbclient = None
+
+    # dbclient = None
     # devices = List
 
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
-        self.dbclient = DBClient()
-
         self.add_plugin(CorePlugin())
         self.add_plugin(TasksPlugin())
         self.add_plugin(HardwarePlugin())
@@ -48,6 +49,9 @@ class Application(TasksApplication, Loggable):
 
     def initialize(self):
         init = self._get_initization()
+        self.dbclient = dbclient = DBClient()
+        if bool(int(os.environ.get('BUILD_DB', '0'))):
+            dbclient.build()
 
         for device_cfg in init.get('devices'):
             if device_cfg.get('enabled', True):
@@ -55,22 +59,25 @@ class Application(TasksApplication, Loggable):
                 if device:
                     self.register_service(Device, device)
 
-                    self.dbclient.add_device(device.name)
-                    self.dbclient.add_datastream('default', device.name)
+                    dbclient.add_device(device.name)
+                    dbclient.add_datastream('default', device.name)
                     device.on_trait_change(self._handle_device_update, 'update')
 
         server = init.get('server')
+
         if server:
             self.server = Server(application=self,
                                  port=server.get('port', 5555))
             self.server.run()
 
     def _handle_device_update(self, obj, name, old, new):
-        if new and 'value' in new:
-            value = new['value']
+        if new:
+            dbclient = self.dbclient
             device_name = obj.name
-            self.dbclient.add_measurement(value, 'default', device_name,
-                                          relative_time_seconds=new['time'])
+            if 'value' in new or 'value_string' in new:
+                dbclient.add_measurement(new.get('datastream', 'default'), device_name, **new)
+            elif 'datastream' in new:
+                dbclient.add_datastream(new['datastream'], device_name, unique=False)
 
     # private
     def _make_device(self, cfg):

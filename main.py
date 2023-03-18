@@ -44,7 +44,8 @@ def demo():
 def main():
     app = Application()
 
-    app.dbclient.build(drop=True)
+    # app.dbclient.build(drop=True)
+    # app.dbclient.build()
     # db = DBClient()
     # db.build()
     # db.add_device('bar')
