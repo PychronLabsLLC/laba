@@ -53,8 +53,15 @@ def main():
     app.run()
 
 
+def rollback():
+    pass
+
 
 if __name__ == '__main__':
     # demo()
-    main()
+    try:
+        main()
+    except BaseException:
+        # give user option to roll back to a previous version
+        rollback()
 # ============= EOF =============================================
