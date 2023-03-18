@@ -15,12 +15,9 @@
 # ===============================================================================
 import os
 
-import yaml
 from envisage.core_plugin import CorePlugin
 from envisage.ui.tasks.tasks_application import TasksApplication
 from envisage.ui.tasks.tasks_plugin import TasksPlugin
-from traits.api import List
-from traits.has_traits import on_trait_change
 
 from db.db import DBClient
 from hardware.device import Device
@@ -35,7 +32,6 @@ class Application(TasksApplication, Loggable):
     server = None
 
     dbclient = None
-    # devices = List
 
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)

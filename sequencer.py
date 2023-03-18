@@ -27,17 +27,31 @@ class AutomationError(BaseException):
     pass
 
 
-class Sequence(Loggable):
+class SequenceStep(Loggable):
     automations = List
 
     def run(self):
-        self.debug('run sequence')
+        ts = []
         for a in self.automations:
             try:
-                a.run(block=True)
+                t = a.run(block=False)
+                ts.append(t)
             except AutomationError as err:
                 self.warning(f'Automation {a} error: {err}')
                 break
+
+        for ti in ts:
+            ti.join()
+
+
+class Sequence(Loggable):
+    steps = List
+
+    def run(self):
+        self.debug('run sequence')
+        for i, si in enumerate(self.steps):
+            self.debug(f'do step {i}')
+            si.run()
 
 
 class Sequencer(Loggable):

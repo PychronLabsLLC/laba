@@ -72,6 +72,7 @@ class Automation(Loggable):
         else:
             self._runthread = Thread(target=self._run)
             self._runthread.start()
+            return self._runthread
 
     # commands
     def _get_context(self):
