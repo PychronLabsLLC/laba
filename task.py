@@ -43,5 +43,5 @@ class HardwareTask(BaseTask):
         return HardwareCentralPane(model=self)
 
     def _default_layout_default(self):
-        return TaskLayout(left=PaneItem("plv.devices"))
+        return TaskLayout(left=PaneItem("laba.devices"))
 # ============= EOF =============================================

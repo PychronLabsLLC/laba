@@ -38,7 +38,7 @@ class AutomationTabularAdapter(TabularAdapter):
 
 
 class DevicesPane(TraitsDockPane):
-    id = 'plv.devices'
+    id = 'laba.devices'
     name = 'Devices'
 
     def traits_view(self):
@@ -47,7 +47,7 @@ class DevicesPane(TraitsDockPane):
 
 
 class DashboardsPane(TraitsDockPane):
-    id = 'plv.dashboards'
+    id = 'laba.dashboards'
     name = 'Dashboards'
 
     def traits_view(self):
@@ -56,7 +56,7 @@ class DashboardsPane(TraitsDockPane):
 
 
 class AutomationsPane(TraitsDockPane):
-    id = 'plv.automations'
+    id = 'laba.automations'
     name = 'Automations'
 
     def traits_view(self):

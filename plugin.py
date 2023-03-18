@@ -56,7 +56,7 @@ class HardwarePlugin(BasePlugin):
 
     def _tasks_default(self):
         return [TaskFactory(
-                id="plv.hardware.task",
+                id="laba.hardware.task",
                 name="Hardware",
                 factory=self._task_factory,
                 # image="repo",

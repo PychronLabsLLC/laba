@@ -422,7 +422,7 @@ class HistoryDashboard(BaseDashboard):
     device_names = List
     figure = Instance(Figure)
 
-    datastream_name = Str('default')
+    datastream_name = Str
     datastream_names = List
 
     def __init__(self, application, *args, **kw):
@@ -437,12 +437,13 @@ class HistoryDashboard(BaseDashboard):
 
     def _device_name_changed(self, new):
         if new:
-            self.figure.clear_data('default')
             dbclient = DBClient()
             with dbclient.session() as sess:
                 ds = dbclient.get_datastream_names(new, sess=sess)
 
                 self.datastream_names = ds
+
+                self.datastream_name = ''
                 self.datastream_name = ds[0]
 
     def _datastream_name_changed(self, new):
@@ -455,6 +456,8 @@ class HistoryDashboard(BaseDashboard):
                     x = array(x)
                     x -= x.min()
                     self.figure.new_series('default', xdata=x, ydata=y)
+        else:
+            self.figure.clear_data('default')
 
     def traits_view(self):
         cgrp = VGroup(HGroup(Item('device_name', editor=EnumEditor(name='device_names')),

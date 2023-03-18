@@ -22,12 +22,11 @@ class Paths:
     def __init__(self):
         home = Path('~').expanduser()
 
-        self.root = Path(home, 'plv')
+        self.root = Path(home, 'laba')
         self.initialization_path = Path(self.root, 'init.yml')
         self.dashboards_path = Path(self.root, 'dashboard.yml')
         self.automations_path = Path(self.root, 'automations.yml')
         self.database_path = Path(self.root, 'recorder.db')
-        print(self.initialization_path)
 
     def get_automation_path(self, name):
         return Path(self.root, 'automations', name)
