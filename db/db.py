@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 import os
+import shutil
 
 from sqlalchemy import Column, Integer, String, create_engine, ForeignKey, Float, DateTime, func
 from sqlalchemy.engine.default import DefaultDialect
@@ -191,6 +192,12 @@ class DBClient(Loggable):
                                                            'value_string',
                                                            'relative_time_seconds')}
                 self._add(sess, MeasurementTbl(datastream_id=d.id, **kw))
+
+    def backup(self):
+        src = paths.database_path
+        # dest = paths.database_backup()
+        dest = paths.database_backup_path
+        shutil.copyfile(src, dest)
 
     def _add_unique(self, sess, table, idenfitier, attr='name', **kw):
         with self.session(sess) as sess:

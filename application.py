@@ -34,7 +34,7 @@ from util import import_klass
 class Application(TasksApplication, Loggable):
     server = None
 
-    # dbclient = None
+    dbclient = None
     # devices = List
 
     def __init__(self, *args, **kw):
@@ -52,6 +52,8 @@ class Application(TasksApplication, Loggable):
         self.dbclient = dbclient = DBClient()
         if bool(int(os.environ.get('BUILD_DB', '0'))):
             dbclient.build()
+
+        dbclient.backup()
 
         for device_cfg in init.get('devices'):
             if device_cfg.get('enabled', True):

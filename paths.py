@@ -15,6 +15,7 @@
 # ===============================================================================
 import itertools
 import os
+from datetime import datetime
 from pathlib import Path
 
 
@@ -27,6 +28,15 @@ class Paths:
         self.dashboards_path = Path(self.root, 'dashboard.yml')
         self.automations_path = Path(self.root, 'automations.yml')
         self.database_path = Path(self.root, 'recorder.db')
+        self.database_backup_path = Path(self.root, 'backups', 'backup.db')
+
+        # make defaults
+        self.make_dir('backups')
+
+    def make_dir(self, *basename):
+        rp = Path(self.root, *basename)
+        if not rp.is_dir():
+            rp.mkdir()
 
     def get_automation_path(self, name):
         return Path(self.root, 'automations', name)
@@ -41,6 +51,9 @@ class Paths:
             if not os.path.isfile(p):
                 return p
 
+    def database_backups(self):
+        now = int(datetime.now().timestamp())
+        return Path(self.root, 'backups', f'{now}.backup.db')
 
 paths = Paths()
 # ============= EOF =============================================
