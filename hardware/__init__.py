@@ -15,4 +15,17 @@
 # ===============================================================================
 from hardware.switch import SwitchController
 
+
+def get_float(default=None):
+    def dec(func):
+        def wrapper(*args, **kw):
+            t = func(*args, **kw)
+            try:
+                return float(t)
+            except (TypeError, ValueError):
+                return default
+
+        return wrapper
+
+    return dec
 # ============= EOF =============================================

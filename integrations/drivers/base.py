@@ -13,23 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.communicator import Communicator
-from loggable import Loggable
-from util import import_klass
-from traits.api import Instance
+from hardware.driver.driver import Driver
 
 
-class Driver(Loggable):
-    communicator = Instance(Communicator)
+class BaseADCDriver(Driver):
+    def read_channel(self, channel):
+        self.debug(f'read channel {channel}')
 
-    def ask(self, *args, **kw):
-        self.communicator.ask(*args, **kw)
+    def _read_channel(self, channel):
+        raise NotImplementedError
 
-    def bootstrap(self, cfg):
-        self.setup_communicator(cfg['communicator'])
 
-    def setup_communicator(self, cfg):
-        kind = cfg['kind']
-        klass = import_klass(f'hardware.communicator.{kind.capitalize()}Communicator')
-        self.communicator = klass(cfg)
+class BaseDACDriver(Driver):
+    def write_channel(self, channel, value):
+        self.debug(f'write channel {channel} value={value}')
+        self._write_channel(channel, value)
+
+    def _write_channel(self, channel, value):
+        raise NotImplementedError
+
+
+class BaseSwitchDriver(Driver):
+    def actuate_channel(self, channel, state):
+        self.debug(f'actuate channel {channel} {state}')
+        return self._actuate_channel(channel, state)
+
+    def _actuate_channel(self, channel, state):
+        raise NotImplementedError
+
 # ============= EOF =============================================

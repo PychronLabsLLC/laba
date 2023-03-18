@@ -13,20 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.driver.driver import Driver
-from loggable import Loggable
+from integrations.drivers.u2351a import U2351A
+from integrations.drivers.mks import MKS
 
-
-class U2351A(Driver):
-    def actuate_channel(self, channel, state):
-        v = 10 if state else 0
-        msg = f"SOUR:VOLT {v},(@{channel})"
-        self.ask(msg)
-
-    def set_voltage(self, channel, output):
-        msg = f"SOUR:VOLT {output:0.3f}, (@{channel})"
-        self.ask(msg)
-
-    def ask(self, *args, **kw):
-        self.communicator.ask(*args, **kw)
 # ============= EOF =============================================

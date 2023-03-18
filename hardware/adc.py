@@ -13,23 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.communicator import Communicator
-from loggable import Loggable
-from util import import_klass
-from traits.api import Instance
+from hardware import get_float
+from hardware.device import Device
 
 
-class Driver(Loggable):
-    communicator = Instance(Communicator)
+class ADC(Device):
+    @get_float()
+    def read_channel(self, channel):
+        self.debug(f'read channel {channel}')
+        self.driver.read_channel(channel)
 
-    def ask(self, *args, **kw):
-        self.communicator.ask(*args, **kw)
 
-    def bootstrap(self, cfg):
-        self.setup_communicator(cfg['communicator'])
-
-    def setup_communicator(self, cfg):
-        kind = cfg['kind']
-        klass = import_klass(f'hardware.communicator.{kind.capitalize()}Communicator')
-        self.communicator = klass(cfg)
 # ============= EOF =============================================

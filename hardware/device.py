@@ -27,6 +27,7 @@ from traitsui.api import View, Item
 class Device(Loggable):
     driver = Instance(Driver)
     update = Event
+
     def traits_view(self):
         return View(Item('name'))
 
@@ -38,7 +39,7 @@ class Device(Loggable):
 
     def setup_driver(self, cfg):
         kind = cfg['kind']
-        klass = import_klass(f'hardware.driver.{kind}')
+        klass = import_klass(f'integrations.drivers.{kind}')
         self.driver = klass(cfg)
         self.driver.bootstrap(cfg)
 

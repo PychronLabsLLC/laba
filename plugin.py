@@ -14,8 +14,13 @@
 # limitations under the License.
 # ===============================================================================
 import yaml
+from envisage.ids import TASK_EXTENSIONS
 from envisage.plugin import Plugin
+from envisage.ui.tasks.task_extension import TaskExtension
 from envisage.ui.tasks.task_factory import TaskFactory
+from pyface.action.schema.schema import SMenu, SMenuBar
+from pyface.action.schema.schema_addition import SchemaAddition
+from traitsui.menu import Action
 
 from automation import Automation
 from dashboard import Dashboard, HistoryDashboard
@@ -56,9 +61,9 @@ class HardwarePlugin(BasePlugin):
 
     def _tasks_default(self):
         return [TaskFactory(
-                id="laba.hardware.task",
-                name="Hardware",
-                factory=self._task_factory,
-                # image="repo",
-            )]
+            id="laba.hardware.task",
+            name="Hardware",
+            factory=self._task_factory,
+            # image="repo",
+        )]
 # ============= EOF =============================================

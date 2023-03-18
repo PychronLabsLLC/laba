@@ -88,6 +88,7 @@ class Application(TasksApplication, Loggable):
             klass = import_klass(f'hardware.{klass}')
         else:
             klass = Device
+
         dev = klass(cfg)
         dev.bootstrap(cfg)
         return dev

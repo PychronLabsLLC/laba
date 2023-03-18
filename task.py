@@ -13,22 +13,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from pyface.action.schema.schema import SMenuBar, SMenu
 from pyface.tasks.task import Task
 from pyface.tasks.task_layout import TaskLayout, PaneItem
 from traits.api import Instance, List, Any
+from traitsui.menu import Action
 
 from automation import Automation
 from dashboard import Dashboard, BaseDashboard
 from hardware.device import Device
 from loggable import Loggable
 from pane import HardwareCentralPane, DevicesPane, DashboardsPane, AutomationsPane
+from plugin_manager import PluginManager
+
+
+class PluginManagerAction(Action):
+    name = 'Manage...'
+
+    def perform(self, event):
+        plugin_manager = PluginManager()
+        plugin_manager.edit_traits()
 
 
 class BaseTask(Task):
-    pass
+    menu_bar = SMenuBar(
+        SMenu(
+            # OpenAction(),
+            # SaveAction(),
+            PluginManagerAction(),
+            id='plugin.menu',
+            name='Plugins',
+        ),
+    )
 
 
 class HardwareTask(BaseTask):
+    id = 'laba.hardware.task'
     selection = Instance(Loggable)
     devices = List(Device)
     dashboards = List(BaseDashboard)

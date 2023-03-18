@@ -61,7 +61,11 @@ class RampSwitch(Switch):
         curve = bezier.Curve(nodes, degree=self.degree)
         ma = nodes.max()
 
-        for i in linspace(0.0, 1.0, self.nsteps):
+        for j, i in enumerate(linspace(0.0, 1.0, self.nsteps+1)):
+            if not j:
+                # skip first because we already are at this value
+                continue
+
             curve2 = bezier.Curve([[i, i], [0, ma]], degree=1)
             intersections = curve.intersect(curve2)
             output = curve.evaluate_multi(intersections[0, :])[1][0]
