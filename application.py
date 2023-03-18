@@ -28,7 +28,7 @@ from loggable import Loggable
 from paths import paths
 from plugin import HardwarePlugin
 from server import Server
-from util import import_klass
+from util import import_klass, yload
 
 
 class Application(TasksApplication, Loggable):
@@ -94,8 +94,6 @@ class Application(TasksApplication, Loggable):
         return dev
 
     def _get_initization(self):
-        p = paths.initialization_path
-        with open(p, 'r') as r:
-            return yaml.load(r, yaml.SafeLoader)
+        return yload(paths.initialization_path)
 
 # ============= EOF =============================================

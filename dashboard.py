@@ -39,6 +39,7 @@ from traits.api import Instance, Button, Bool, Float, List, Str
 from traitsui.api import View, UItem, VGroup, HGroup, spring, Item, EnumEditor, HSplit
 
 from paths import paths
+from util import yload
 
 
 class Figure(Loggable):
@@ -382,12 +383,8 @@ class Procedures(Card):
 
     def __init__(self, application, cfg, *args, **kw):
         super().__init__(application, cfg=cfg, *args, **kw)
-        names = []
-        with open(paths.automations_path, 'r') as rfile:
-            yobj = yaml.load(rfile, yaml.SafeLoader)
-            for automation in yobj:
-                names.append(automation['name'])
-
+        yobj = yload(paths.automations_path)
+        names = [a['name'] for a in yobj]
         # self.application = application
         self.names = names
 
@@ -397,16 +394,18 @@ class Procedures(Card):
                       UItem('stop_button')),
 
     def _start_button_fired(self):
-        with open(paths.automations_path, 'r') as rfile:
-            yobj = yaml.load(rfile, yaml.SafeLoader)
-            for automation in yobj:
-                if automation['name'] == self.script_name:
-                    a = Automation({"name": self.script_name,
-                                    "path": paths.get_automation_path(automation['path'])},
-                                   application=self.application)
+        # with open(paths.automations_path, 'r') as rfile:
+        #     yobj = yaml.load(rfile, yaml.SafeLoader)
 
-                    self.automation = a
-                    self.automation.run()
+        yobj = yload(paths.automations_path)
+        for automation in yobj:
+            if automation['name'] == self.script_name:
+                a = Automation({"name": self.script_name,
+                                "path": paths.get_automation_path(automation['path'])},
+                               application=self.application)
+
+                self.automation = a
+                self.automation.run()
 
     def _stop_button_fired(self):
         if self.automation:

@@ -13,10 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import yaml
+
+
 def import_klass(k):
     args = k.split(".")
     pkg, klass = ".".join(args[:-1]), args[-1]
     mod = __import__(pkg, fromlist=[klass])
 
     return getattr(mod, klass)
+
+
+def yload(path):
+    with open(path, 'r') as rfile:
+        return yaml.load(rfile, yaml.SafeLoader)
+
 # ============= EOF =============================================

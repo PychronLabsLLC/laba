@@ -30,6 +30,7 @@ from traits.api import List
 
 from paths import paths
 from task import HardwareTask
+from util import yload
 
 
 class BasePlugin(Plugin, Loggable):
@@ -45,16 +46,20 @@ class HardwarePlugin(BasePlugin):
 
         ds = [HistoryDashboard(self.application)]
 
-        with open(paths.dashboards_path, 'r') as rfile:
-            yobj = yaml.load(rfile, yaml.SafeLoader)
-            for d in yobj:
-                ds.append(Dashboard(self.application, d))
+        yobj = yload(paths.dashboards_path)
+        # with open(paths.dashboards_path, 'r') as rfile:
+        #     yobj = yaml.load(rfile, yaml.SafeLoader)
+        for d in yobj:
+            ds.append(Dashboard(self.application, d))
 
-        automations = []
-        with open(paths.automations_path, 'r') as rfile:
-            yobj = yaml.load(rfile, yaml.SafeLoader)
-            for automation in yobj:
-                automations.append(Automation(automation))
+        # automations = []
+        # with open(paths.automations_path, 'r') as rfile:
+        #     yobj = yaml.load(rfile, yaml.SafeLoader)
+
+        # yobj = yload(paths.automations_path)
+        # for automation in yobj:
+        #     automations.append(Automation(automation))
+        automations = [Automation(a) for a in yload(paths.automations_path)]
 
         return HardwareTask(devices=devices, dashboards=ds, automations=automations,
                             selection=ds[0])
