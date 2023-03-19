@@ -14,6 +14,8 @@
 # limitations under the License.
 # ===============================================================================
 import os
+import time
+from threading import Thread
 
 import yaml
 from traitsui.editors import TabularEditor, ListEditor, InstanceEditor
@@ -22,7 +24,7 @@ from traitsui.tabular_adapter import TabularAdapter
 
 from automation import Automation
 from loggable import Loggable
-from traits.api import List, File, Enum, Instance, Button
+from traits.api import List, File, Enum, Instance, Button, Dict
 from traitsui.api import View, UItem, HGroup, VGroup
 
 from paths import paths
@@ -43,7 +45,8 @@ class SequenceStep(Loggable):
     def __init__(self, cfg=None, *args, **kw):
         super().__init__(cfg, *args, **kw)
         if cfg is not None:
-            self.automations = [Automation({'path': paths.get_automation_path(a)}) for a in cfg['automations']]
+            self.automations = [Automation({'path': paths.get_automation_path(a)},
+                                           application=self.application) for a in cfg['automations']]
 
     def run(self):
         ts = []
@@ -73,10 +76,10 @@ class Sequence(Loggable):
     state = Enum('not run', 'running', 'failed', 'success')
 
     def __init__(self, cfg=None, *args, **kw):
-        if cfg is not None:
-            self.steps = [SequenceStep(si) for si in cfg['steps']]
-
         super().__init__(cfg, *args, **kw)
+
+        if cfg is not None:
+            self.steps = [SequenceStep(si, application=self.application) for si in cfg['steps']]
 
     def run(self):
         self.debug('run sequence')
@@ -92,35 +95,46 @@ class Sequence(Loggable):
 class Sequencer(Loggable):
     sequences = List(Sequence)
     path = File
+    yobj = Dict
+
+    _runthread = None
 
     def load(self):
-        self.sequences = yload(self.path)
+        yobj = yload(self.path)
+        self.yobj = yobj
+        self.sequences = [Sequence(s, application=self.application) for s in yobj['sequences']]
 
     def save(self):
         pass
 
-    def run(self):
+    def start(self):
+        self._runthread = Thread(target=self._run)
+        self._runthread.start()
+
+    def _run(self):
         self.debug('run sequences')
         for s in self.sequences:
+            delay = self._get_delay(s, 'delay_before')
+            if delay:
+                time.sleep(delay)
             try:
+                s.state = 'running'
                 s.run()
+                s.state = 'success'
             except SequenceError as err:
                 self.warning(f'Sequence {s} error: {err}')
+                s.state = 'failed'
 
+            delay = self._get_delay(s, 'delay_after')
+            if delay:
+                time.sleep(delay)
 
-class SequenceAdapter(TabularAdapter):
-    columns = [('Name', 'name')]
+    def _get_delay(self, s, key):
+        delay = s.get(key)
+        if delay is None:
+            delay = self.yobj.get(key, 0)
 
-    def _get_bg_color(self):
-        if self.item.state == 'not run':
-            color = 'gray'
-        elif self.item.state == 'running':
-            color = 'yellow'
-        elif self.item.state == 'success':
-            color = 'green'
-        elif self.item.state == 'failed':
-            color = 'gray'
-        return color
+        return delay
 
 
 class SequenceStepAdapter(TabularAdapter):
@@ -134,11 +148,13 @@ class SequenceEditor(Loggable):
     selected_step = Instance(SequenceStep, ())
     add = Button
     add_step = Button
+    add_automation = Button
 
     save = Button
 
     def load(self):
-        self.sequences = [Sequence(si) for si in yload(self.path)]
+        yobj = yload(self.path)
+        self.sequences = [Sequence(si) for si in yobj['sequences']]
 
     def _add_fired(self):
         self.debug('add fired')
@@ -149,30 +165,34 @@ class SequenceEditor(Loggable):
         s = SequenceStep()
         self.selected.steps.append(s)
 
+    def _add_automation_fired(self):
+        a = Automation()
+        self.selected_step.automations.append(a)
+
     def _save_fired(self):
         ss = []
         for si in self.sequences:
             ss.append(si.toyaml())
 
         with open('./demo_save.yaml', 'w') as wfile:
-            yaml.dump(ss, wfile)
+            yaml.dump({'sequences': ss}, wfile)
 
-    def traits_view(self):
-        cgrp = HGroup(icon_button_editor('add', 'add'), spring,
-                      icon_button_editor('add_step', 'brick-add'),
-                      icon_button_editor('save', 'save'))
-
-        v = View(cgrp,
-                 HGroup(UItem('sequences',
-                              editor=TabularEditor(selected='selected',
-                                                   adapter=SequenceAdapter())),
-                        UItem('object.selected.steps',
-                              editor=TabularEditor(selected='selected_step',
-                                                   adapter=SequenceStepAdapter()))),
-                 UItem('selected_step', style='custom'),
-                 width=500,
-                 resizable=True)
-        return v
+    # def traits_view(self):
+    #     cgrp = HGroup(icon_button_editor('add', 'add'), spring,
+    #                   icon_button_editor('add_step', 'brick-add'),
+    #                   icon_button_editor('save', 'save'))
+    #
+    #     v = View(cgrp,
+    #              HGroup(UItem('sequences',
+    #                           editor=TabularEditor(selected='selected',
+    #                                                adapter=SequenceAdapter())),
+    #                     UItem('object.selected.steps',
+    #                           editor=TabularEditor(selected='selected_step',
+    #                                                adapter=SequenceStepAdapter()))),
+    #              UItem('selected_step', style='custom'),
+    #              width=500,
+    #              resizable=True)
+    #     return v
 
 
 if __name__ == '__main__':

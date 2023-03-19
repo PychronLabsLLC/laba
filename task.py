@@ -13,18 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from envisage.ui.tasks.action.exit_action import ExitAction
+from envisage.ui.tasks.action.preferences_action import PreferencesGroup
+from envisage.ui.tasks.action.task_window_launch_group import TaskWindowLaunchAction, TaskWindowLaunchGroup
 from pyface.action.schema.schema import SMenuBar, SMenu
+from pyface.constant import OK
+from pyface.file_dialog import FileDialog
 from pyface.tasks.task import Task
 from pyface.tasks.task_layout import TaskLayout, PaneItem
-from traits.api import Instance, List, Any
+from traits.api import Instance, List, Any, Button
 from traitsui.menu import Action
 
 from automation import Automation
 from dashboard import Dashboard, BaseDashboard
 from hardware.device import Device
 from loggable import Loggable
-from pane import HardwareCentralPane, DevicesPane, DashboardsPane, AutomationsPane
+from pane import HardwareCentralPane, DevicesPane, DashboardsPane, AutomationsPane, SequenceEditorPane, \
+    SequenceCentralPane, SequenceControlPane
+from paths import paths
 from plugin_manager import PluginManager
+from sequencer import Sequencer
 
 
 class PluginManagerAction(Action):
@@ -35,19 +43,71 @@ class PluginManagerAction(Action):
         plugin_manager.edit_traits()
 
 
+class OpenSequenceAction(Action):
+    name = 'Open Sequence...'
+
+    def perform(self, event):
+        dlg = FileDialog(action='open', default_directory=str(paths.sequences_dir))
+        if dlg.open() == OK:
+            task = event.task.window.application.get_task('laba.sequencer.task', False)
+            if task.open(dlg.path):
+                task.window.open()
+
+
 class BaseTask(Task):
     menu_bar = SMenuBar(
+        SMenu(
+            OpenSequenceAction(),
+            ExitAction(),
+            PreferencesGroup(),
+            id='file.menu',
+            name='&File'
+        ),
+        SMenu(TaskWindowLaunchGroup(),
+              id="view.menu",
+              name="&View"),
         SMenu(
             # OpenAction(),
             # SaveAction(),
             PluginManagerAction(),
             id='plugin.menu',
             name='Plugins',
-        ),
+        )
     )
 
 
+class SequencerTask(BaseTask):
+    id = 'laba.sequence.task'
+    name = 'Sequencer'
+
+    sequencer = Instance(Sequencer, ())
+    # sequences = DelegatesTo('sequencer')
+    start_button = Button
+
+    def _sequencer_default(self):
+        s = Sequencer(application=self.application)
+        return s
+
+    def _start_button_fired(self):
+        self.sequencer.start()
+
+    def create_dock_panes(self):
+        return [SequenceEditorPane(model=self),
+                SequenceControlPane(model=self)]
+
+    def create_central_pane(self):
+        return SequenceCentralPane(model=self)
+
+    def open(self, path):
+        self.sequencer.path = path
+        self.sequencer.load()
+
+    def _default_layout_default(self):
+        return TaskLayout(top=PaneItem("laba.sequencer.controls"))
+
+
 class HardwareTask(BaseTask):
+    name = 'Hardware'
     id = 'laba.hardware.task'
     selection = Instance(Loggable)
     devices = List(Device)

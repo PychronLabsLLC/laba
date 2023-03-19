@@ -74,6 +74,7 @@ class RampSwitch(Switch):
 
 class SwitchController(Device):
     switches = List
+    canvas = None
 
     def __init__(self, cfg, *args, **kw):
         super().__init__(cfg, *args, **kw)
@@ -128,7 +129,9 @@ class SwitchController(Device):
         self._cancel_ramp = Event()
 
         def ramp():
-            self.canvas.set_switch_state(s.name, 'moving')
+            if self.canvas:
+                self.canvas.set_switch_state(s.name, 'moving')
+
             st = time.time()
             max_time = s.nsteps * s.ramp_period * 1.1
             max_voltage = s.ramp_max()*1.1
@@ -144,7 +147,9 @@ class SwitchController(Device):
                 self.debug(f'set output {si}')
                 self.driver.set_voltage(s.channel, si)
 
-                self.canvas.set_switch_voltage(s.name, si)
+                if self.canvas:
+                    self.canvas.set_switch_voltage(s.name, si)
+
                 self.update = {'voltage': si,
                                'relative_time_seconds': time.time() - st,
                                'max_time': max_time,
@@ -156,7 +161,8 @@ class SwitchController(Device):
                 # time.sleep(s.ramp_period)
 
             s.state = state
-            self.canvas.set_switch_state(s.name, state)
+            if self.canvas:
+                self.canvas.set_switch_state(s.name, state)
 
         if block:
             ramp()
@@ -172,6 +178,7 @@ class SwitchController(Device):
         self.driver.actuate_channel(channel, state)
 
         switch.state = state
-        self.canvas.set_switch_state(switch.name, state)
+        if self.canvas:
+            self.canvas.set_switch_state(switch.name, state)
 
 # ============= EOF =============================================

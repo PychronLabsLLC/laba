@@ -19,6 +19,58 @@ from traitsui.api import View, Item, UItem
 from traitsui.editors import TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 
+from util import icon_button_editor
+
+
+class SequenceEditorPane(TraitsDockPane):
+    def traits_view(self):
+        return View()
+
+
+class SequenceAdapter(TabularAdapter):
+    columns = [('Name', 'name')]
+
+    def _get_bg_color(self):
+        if self.item.state == 'not run':
+            color = 'gray'
+        elif self.item.state == 'running':
+            color = 'lightyellow'
+        elif self.item.state == 'success':
+            color = 'green'
+        elif self.item.state == 'failed':
+            color = 'gray'
+        return color
+
+    def _get_text_color(self):
+        color = 'white'
+        # if self.item.state == 'not run':
+        #     color = 'gray'
+        if self.item.state == 'running':
+            color = 'black'
+        # elif self.item.state == 'success':
+        #     color = 'green'
+        # elif self.item.state == 'failed':
+        #     color = 'gray'
+        return color
+
+
+class SequenceControlPane(TraitsDockPane):
+    id = 'laba.sequencer.controls'
+
+    def traits_view(self):
+        v = View(icon_button_editor('start_button', 'start'))
+        return v
+
+
+class SequenceCentralPane(TraitsTaskPane):
+    def traits_view(self):
+        v = View(UItem('object.sequencer.sequences',
+                       editor=TabularEditor(selected='object.sequencer.selected',
+                                            auto_update=True,
+                                            editable=False,
+                                            adapter=SequenceAdapter())))
+        return v
+
 
 class HardwareCentralPane(TraitsTaskPane):
     def traits_view(self):

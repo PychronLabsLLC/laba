@@ -39,9 +39,11 @@ class Paths:
         self.automations_path = Path(self.root, 'automations.yml')
         self.database_path = Path(self.root, 'recorder.db')
         self.database_backup_path = Path(self.root, 'backups', 'backup.db')
+        self.sequences_dir = Path(self.root, 'sequences')
 
         # make defaults
         self.make_dir('backups')
+        self.make_dir('sequences')
 
     def make_dir(self, *basename):
         rp = Path(self.root, *basename)

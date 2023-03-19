@@ -18,6 +18,7 @@ import os
 from envisage.core_plugin import CorePlugin
 from envisage.ui.tasks.tasks_application import TasksApplication
 from envisage.ui.tasks.tasks_plugin import TasksPlugin
+from pyface.tasks.task_window_layout import TaskWindowLayout
 
 from db.db import DBClient
 from hardware.device import Device
@@ -67,6 +68,30 @@ class Application(TasksApplication, Loggable):
             self.server = Server(application=self,
                                  port=server.get('port', 5555))
             self.server.run()
+
+    def get_task(self, tid, activate=True):
+        for win in self.windows:
+            if win.active_task:
+                if win.active_task.id == tid:
+                    if activate and win.control:
+                        win.activate()
+                    break
+        else:
+            w = TaskWindowLayout(tid)
+            win = self.create_window(w)
+            print('asfasf', win)
+            if activate:
+                print('pppp')
+                win.open()
+
+        if win:
+            if win.active_task:
+                win.active_task.window = win
+
+            return win.active_task
+
+    def open_task(self, tid, **kw):
+        return self.get_task(tid, True, **kw)
 
     def _handle_device_update(self, obj, name, old, new):
         if new:

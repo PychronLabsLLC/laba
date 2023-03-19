@@ -29,7 +29,7 @@ from loggable import Loggable
 from traits.api import List
 
 from paths import paths
-from task import HardwareTask
+from task import HardwareTask, SequencerTask
 from util import yload
 
 
@@ -41,7 +41,7 @@ class BasePlugin(Plugin, Loggable):
 
 
 class HardwarePlugin(BasePlugin):
-    def _task_factory(self):
+    def _hardware_task_factory(self):
         devices = self.application.get_services(Device)
 
         ds = [HistoryDashboard(self.application)]
@@ -64,11 +64,20 @@ class HardwarePlugin(BasePlugin):
         return HardwareTask(devices=devices, dashboards=ds, automations=automations,
                             selection=ds[0])
 
+    def _sequence_task_factory(self):
+        return SequencerTask(application=self.application)
+
     def _tasks_default(self):
         return [TaskFactory(
             id="laba.hardware.task",
             name="Hardware",
-            factory=self._task_factory,
+            factory=self._hardware_task_factory,
             # image="repo",
-        )]
+        ),
+            TaskFactory(
+                id='laba.sequencer.task',
+                name='Sequencer',
+                factory=self._sequence_task_factory
+            )
+        ]
 # ============= EOF =============================================
