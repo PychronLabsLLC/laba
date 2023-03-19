@@ -20,11 +20,12 @@ from threading import Thread, Event
 from hardware import SwitchController
 from hardware.device import Device
 from loggable import Loggable
-from traits.api import Button, Str, File, Any, Bool
+from traits.api import Button, Str, File, Any, Bool, Instance
 from traitsui.api import View, UItem, HGroup, spring
 
 from paths import paths
 from persister import CSVPersister
+from timer import Timer
 
 
 def is_alive(func):
@@ -42,6 +43,7 @@ class Automation(Loggable):
     # start_button = Button
     # stop_button = Button
     alive = Bool
+    timer = Instance(Timer)
 
     _runthread = None
     _recording_thread = None
@@ -104,11 +106,16 @@ class Automation(Loggable):
     @is_alive
     def sleep(self, nseconds):
         self.debug(f'sleep {nseconds}')
-        st = time.time()
-        while time.time() - st <= nseconds:
-            if not self.alive:
-                break
-            time.sleep(0.5)
+        if nseconds > 3 and self.timer:
+            self.timer.max_value = nseconds
+            self.timer.start()
+        else:
+
+            st = time.time()
+            while time.time() - st <= nseconds:
+                if not self.alive:
+                    break
+                time.sleep(0.5)
 
     @is_alive
     def start_recording(self):

@@ -22,7 +22,7 @@ from pyface.file_dialog import FileDialog
 from pyface.tasks.action.dock_pane_toggle_group import DockPaneToggleGroup
 from pyface.tasks.task import Task
 from pyface.tasks.task_layout import TaskLayout, PaneItem
-from traits.api import Instance, List, Any, Button
+from traits.api import Instance, List, Any, Button, DelegatesTo
 from traitsui.menu import Action
 
 from automation import Automation
@@ -83,7 +83,8 @@ class SequencerTask(BaseTask):
     name = 'Sequencer'
 
     sequencer = Instance(Sequencer, ())
-    # sequences = DelegatesTo('sequencer')
+    # timer = DelegatesTo('sequencer')
+    # timer = DelegatesTo('sequencer')
 
     start_button = Button
     add_button = Button
@@ -105,6 +106,12 @@ class SequencerTask(BaseTask):
 
     def _save_as_button_fired(self):
         self.sequencer.save_as()
+
+    def _pause_button_fired(self):
+        pass
+
+    def _continue_button_fired(self):
+        pass
 
     def create_dock_panes(self):
         return [SequenceEditorPane(model=self),

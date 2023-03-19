@@ -25,10 +25,11 @@ from traitsui.tabular_adapter import TabularAdapter
 
 from automation import Automation
 from loggable import Loggable
-from traits.api import List, File, Enum, Instance, Button, Dict
+from traits.api import List, File, Enum, Instance, Button, Dict, Any
 from traitsui.api import View, UItem, HGroup, VGroup
 
 from paths import paths, add_extension
+from timer import Timer
 from util import yload, icon_button_editor
 
 
@@ -49,10 +50,11 @@ class SequenceStep(Loggable):
             self.automations = [Automation({'path': paths.get_automation_path(a)},
                                            application=self.application) for a in cfg['automations']]
 
-    def run(self):
+    def run(self, timer):
         ts = []
         for a in self.automations:
             try:
+                a.timer = timer
                 t = a.run(block=False)
                 ts.append(t)
             except AutomationError as err:
@@ -82,11 +84,11 @@ class Sequence(Loggable):
         if cfg is not None:
             self.steps = [SequenceStep(si, application=self.application) for si in cfg['steps']]
 
-    def run(self):
+    def run(self, timer):
         self.debug('run sequence')
         for i, si in enumerate(self.steps):
             self.debug(f'do step {i}')
-            si.run()
+            si.run(timer)
 
     def toyaml(self):
         return {'name': self.name,
@@ -97,7 +99,8 @@ class Sequencer(Loggable):
     sequences = List(Sequence)
     path = File
     yobj = Dict
-
+    selected = Instance(Sequence, ())
+    timer = Instance(Timer, ())
     _runthread = None
 
     def load(self):
@@ -142,7 +145,7 @@ class Sequencer(Loggable):
                 time.sleep(delay)
             try:
                 s.state = 'running'
-                s.run()
+                s.run(self.timer)
                 s.state = 'success'
             except SequenceError as err:
                 self.warning(f'Sequence {s} error: {err}')

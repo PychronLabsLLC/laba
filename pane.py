@@ -15,7 +15,7 @@
 # ===============================================================================
 from pyface.tasks.traits_dock_pane import TraitsDockPane
 from pyface.tasks.traits_task_pane import TraitsTaskPane
-from traitsui.api import View, Item, UItem
+from traitsui.api import View, Item, UItem, VGroup, HGroup, spring
 from traitsui.editors import TabularEditor
 from traitsui.tabular_adapter import TabularAdapter
 
@@ -58,6 +58,10 @@ class SequenceAdapter(TabularAdapter):
         return color
 
 
+class SequenceStepAdapter(TabularAdapter):
+    columns = [('Name', 'name')]
+
+
 class SequenceControlPane(TraitsDockPane):
     id = 'laba.sequencer.controls'
     name = 'Controls'
@@ -67,17 +71,30 @@ class SequenceControlPane(TraitsDockPane):
     floatable = False
 
     def traits_view(self):
-        v = View(icon_button_editor('start_button', 'start'))
+        v = View(HGroup(icon_button_editor('start_button', 'start'),
+                        spring,
+                        UItem('object.sequencer.timer', style='custom')
+                        # UItem('pause_button'),
+                        # UItem('continue_button'),
+                        ))
         return v
 
 
 class SequenceCentralPane(TraitsTaskPane):
     def traits_view(self):
-        v = View(UItem('object.sequencer.sequences',
-                       editor=TabularEditor(selected='object.sequencer.selected',
-                                            auto_update=True,
-                                            editable=False,
-                                            adapter=SequenceAdapter())))
+        v = View(VGroup(UItem('object.sequencer.sequences',
+                              editor=TabularEditor(selected='object.sequencer.selected',
+                                                   auto_update=True,
+                                                   editable=False,
+                                                   adapter=SequenceAdapter())),
+
+                        UItem('object.sequencer.selected.steps',
+                              editor=TabularEditor(selected='selected_step',
+                                                   adapter=SequenceStepAdapter()))
+                        # UItem('object.sequencer.selected', style='custom')
+
+                        )
+                 )
         return v
 
 
