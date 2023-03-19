@@ -18,6 +18,7 @@ import time
 from threading import Thread
 
 import yaml
+from pyface.file_dialog import FileDialog
 from traitsui.editors import TabularEditor, ListEditor, InstanceEditor
 from traitsui.item import spring
 from traitsui.tabular_adapter import TabularAdapter
@@ -27,7 +28,7 @@ from loggable import Loggable
 from traits.api import List, File, Enum, Instance, Button, Dict
 from traitsui.api import View, UItem, HGroup, VGroup
 
-from paths import paths
+from paths import paths, add_extension
 from util import yload, icon_button_editor
 
 
@@ -105,11 +106,33 @@ class Sequencer(Loggable):
         self.sequences = [Sequence(s, application=self.application) for s in yobj['sequences']]
 
     def save(self):
-        pass
+        if self.path:
+            self._save(self.path)
+        else:
+            self.save_as()
+
+    def save_as(self):
+        dlg = FileDialog(action='save as',
+                         wildcard='.yaml',
+                         default_directory=str(paths.sequences_dir))
+        if dlg.open():
+            self._save(dlg.path)
+
+    def _save(self, path):
+        ss = []
+        for si in self.sequences:
+            ss.append(si.toyaml())
+
+        path = add_extension(path, '.yaml')
+        with open(path, 'w') as wfile:
+            yaml.dump({'sequences': ss}, wfile)
 
     def start(self):
         self._runthread = Thread(target=self._run)
         self._runthread.start()
+
+    def add(self):
+        self.sequences.append(Sequence())
 
     def _run(self):
         self.debug('run sequences')
@@ -141,64 +164,64 @@ class SequenceStepAdapter(TabularAdapter):
     columns = [('Name', 'name')]
 
 
-class SequenceEditor(Loggable):
-    sequences = List(Sequence)
-    path = File
-    selected = Instance(Sequence, ())
-    selected_step = Instance(SequenceStep, ())
-    add = Button
-    add_step = Button
-    add_automation = Button
+# class SequenceEditor(Loggable):
+#     sequences = List(Sequence)
+#     path = File
+#     selected = Instance(Sequence, ())
+#     selected_step = Instance(SequenceStep, ())
+#     add = Button
+#     add_step = Button
+#     add_automation = Button
+#
+#     save = Button
+#
+#     def load(self):
+#         yobj = yload(self.path)
+#         self.sequences = [Sequence(si) for si in yobj['sequences']]
+#
+#     def _add_fired(self):
+#         self.debug('add fired')
+#         s = Sequence()
+#         self.sequences.append(s)
+#
+#     def _add_step_fired(self):
+#         s = SequenceStep()
+#         self.selected.steps.append(s)
+#
+#     def _add_automation_fired(self):
+#         a = Automation()
+#         self.selected_step.automations.append(a)
+#
+#     def _save_fired(self):
+#         ss = []
+#         for si in self.sequences:
+#             ss.append(si.toyaml())
+#
+#         with open('./demo_save.yaml', 'w') as wfile:
+#             yaml.dump({'sequences': ss}, wfile)
 
-    save = Button
-
-    def load(self):
-        yobj = yload(self.path)
-        self.sequences = [Sequence(si) for si in yobj['sequences']]
-
-    def _add_fired(self):
-        self.debug('add fired')
-        s = Sequence()
-        self.sequences.append(s)
-
-    def _add_step_fired(self):
-        s = SequenceStep()
-        self.selected.steps.append(s)
-
-    def _add_automation_fired(self):
-        a = Automation()
-        self.selected_step.automations.append(a)
-
-    def _save_fired(self):
-        ss = []
-        for si in self.sequences:
-            ss.append(si.toyaml())
-
-        with open('./demo_save.yaml', 'w') as wfile:
-            yaml.dump({'sequences': ss}, wfile)
-
-    # def traits_view(self):
-    #     cgrp = HGroup(icon_button_editor('add', 'add'), spring,
-    #                   icon_button_editor('add_step', 'brick-add'),
-    #                   icon_button_editor('save', 'save'))
-    #
-    #     v = View(cgrp,
-    #              HGroup(UItem('sequences',
-    #                           editor=TabularEditor(selected='selected',
-    #                                                adapter=SequenceAdapter())),
-    #                     UItem('object.selected.steps',
-    #                           editor=TabularEditor(selected='selected_step',
-    #                                                adapter=SequenceStepAdapter()))),
-    #              UItem('selected_step', style='custom'),
-    #              width=500,
-    #              resizable=True)
-    #     return v
+# def traits_view(self):
+#     cgrp = HGroup(icon_button_editor('add', 'add'), spring,
+#                   icon_button_editor('add_step', 'brick-add'),
+#                   icon_button_editor('save', 'save'))
+#
+#     v = View(cgrp,
+#              HGroup(UItem('sequences',
+#                           editor=TabularEditor(selected='selected',
+#                                                adapter=SequenceAdapter())),
+#                     UItem('object.selected.steps',
+#                           editor=TabularEditor(selected='selected_step',
+#                                                adapter=SequenceStepAdapter()))),
+#              UItem('selected_step', style='custom'),
+#              width=500,
+#              resizable=True)
+#     return v
 
 
-if __name__ == '__main__':
-    s = SequenceEditor()
-    s.path = './demo.yaml'
-    s.load()
-    s.configure_traits()
+# if __name__ == '__main__':
+#     s = SequenceEditor()
+#     s.path = './demo.yaml'
+#     s.load()
+#     s.configure_traits()
 
 # ============= EOF =============================================

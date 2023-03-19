@@ -68,16 +68,19 @@ class HardwarePlugin(BasePlugin):
         return SequencerTask(application=self.application)
 
     def _tasks_default(self):
-        return [TaskFactory(
-            id="laba.hardware.task",
-            name="Hardware",
-            factory=self._hardware_task_factory,
-            # image="repo",
-        ),
+        return [
+
             TaskFactory(
                 id='laba.sequencer.task',
                 name='Sequencer',
-                factory=self._sequence_task_factory
-            )
+                factory=self._sequence_task_factory,
+            ),
+            TaskFactory(
+                id="laba.hardware.task",
+                name="Hardware",
+                factory=self._hardware_task_factory,
+                # image="repo",
+            ),
+
         ]
 # ============= EOF =============================================

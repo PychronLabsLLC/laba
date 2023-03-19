@@ -19,6 +19,7 @@ from envisage.ui.tasks.action.task_window_launch_group import TaskWindowLaunchAc
 from pyface.action.schema.schema import SMenuBar, SMenu
 from pyface.constant import OK
 from pyface.file_dialog import FileDialog
+from pyface.tasks.action.dock_pane_toggle_group import DockPaneToggleGroup
 from pyface.tasks.task import Task
 from pyface.tasks.task_layout import TaskLayout, PaneItem
 from traits.api import Instance, List, Any, Button
@@ -64,6 +65,7 @@ class BaseTask(Task):
             name='&File'
         ),
         SMenu(TaskWindowLaunchGroup(),
+              DockPaneToggleGroup(),
               id="view.menu",
               name="&View"),
         SMenu(
@@ -82,7 +84,11 @@ class SequencerTask(BaseTask):
 
     sequencer = Instance(Sequencer, ())
     # sequences = DelegatesTo('sequencer')
+
     start_button = Button
+    add_button = Button
+    save_button = Button
+    save_as_button = Button
 
     def _sequencer_default(self):
         s = Sequencer(application=self.application)
@@ -90,6 +96,15 @@ class SequencerTask(BaseTask):
 
     def _start_button_fired(self):
         self.sequencer.start()
+
+    def _add_button_fired(self):
+        self.sequencer.add()
+
+    def _save_button_fired(self):
+        self.sequencer.save()
+
+    def _save_as_button_fired(self):
+        self.sequencer.save_as()
 
     def create_dock_panes(self):
         return [SequenceEditorPane(model=self),
@@ -103,7 +118,8 @@ class SequencerTask(BaseTask):
         self.sequencer.load()
 
     def _default_layout_default(self):
-        return TaskLayout(top=PaneItem("laba.sequencer.controls"))
+        return TaskLayout(top=PaneItem("laba.sequencer.controls"),
+                          left=PaneItem("laba.sequencer.editor"))
 
 
 class HardwareTask(BaseTask):

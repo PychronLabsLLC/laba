@@ -23,8 +23,12 @@ from util import icon_button_editor
 
 
 class SequenceEditorPane(TraitsDockPane):
+    name = 'Editor'
+    id = 'laba.sequencer.editor'
+
     def traits_view(self):
-        return View()
+        return View(icon_button_editor('add_button', 'add'),
+                    icon_button_editor('save_button', 'save'))
 
 
 class SequenceAdapter(TabularAdapter):
@@ -56,6 +60,11 @@ class SequenceAdapter(TabularAdapter):
 
 class SequenceControlPane(TraitsDockPane):
     id = 'laba.sequencer.controls'
+    name = 'Controls'
+
+    movable = False
+    closable = False
+    floatable = False
 
     def traits_view(self):
         v = View(icon_button_editor('start_button', 'start'))

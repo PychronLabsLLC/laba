@@ -22,11 +22,14 @@ from chaco.array_plot_data import ArrayPlotData
 from chaco.data_view import DataView
 from chaco.plot import Plot
 from chaco.plot_containers import VPlotContainer
+from enable.base_tool import BaseTool
 from enable.component_editor import ComponentEditor
 from enable.container import Container
 from numpy import hstack, array
 from traits.has_traits import on_trait_change
+from traitsui.editors import FontEditor
 from traitsui.group import VSplit
+from traitsui.handler import Handler
 from traitsui.qt4.extra.led_editor import LEDEditor
 
 from automation import Automation
@@ -36,10 +39,95 @@ from db.db import DBClient
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import Instance, Button, Bool, Float, List, Str
-from traitsui.api import View, UItem, VGroup, HGroup, spring, Item, EnumEditor, HSplit
+from traitsui.api import View, UItem, VGroup, HGroup, spring, Item, EnumEditor, HSplit, TextEditor
 
 from paths import paths
 from util import yload
+
+limit_grp = VGroup(
+    Item(
+        "object.mapper.range.high",
+        label="Upper",
+        springy=True,
+        editor=TextEditor(enter_set=True, auto_set=False),
+    ),
+    Item(
+        "object.mapper.range.low",
+        label="Lower",
+        springy=True,
+        editor=TextEditor(enter_set=True, auto_set=False),
+    ),
+    show_border=True,
+    label="Limits",
+)
+tick_grp = VGroup(
+    Item("tick_color", label="Color"),
+    # editor=EnableRGBAColorEditor()),
+    Item("tick_weight", label="Thickness"),
+    # Item('tick_label_font', label='Font'),
+    Item("tick_label_color", label="Label color"),
+    # editor=EnableRGBAColorEditor()),
+    HGroup(Item("tick_in", label="Tick in"), Item("tick_out", label="Tick out")),
+    Item("tick_visible", label="Visible"),
+    # Item("tick_interval", label="Interval", editor=TextEditor(evaluate=float_or_auto)),
+    # Item(
+    #     "wrapper.tick_label_format_str",
+    #     tooltip="Enter a formatting string to apply to the tick labels. Currently the only supported "
+    #     "option is to enter a number from 0-9 specifying the number of decimal places",
+    #     label="Format",
+    # ),
+    show_border=True,
+    label="Ticks",
+)
+line_grp = VGroup(
+    Item("axis_line_color", label="Color"),
+    # editor=EnableRGBAColorEditor()),
+    Item("axis_line_weight", label="Thickness"),
+    Item("axis_line_visible", label="Visible"),
+    show_border=True,
+    label="Line",
+)
+title_grp = VGroup(
+    Item("title", label="Title", editor=TextEditor()),
+    Item("title_font", label="Font"),
+    Item("title_color", label="Color"),
+    show_border=True,
+    label="Title",
+)
+
+AxisView = View(VGroup(limit_grp,
+                       title_grp,
+                       tick_grp,
+                       line_grp),
+                title="Edit Axis",
+                buttons=['OK', ])
+
+
+class AxisViewHandler(Handler):
+    def init(self, info):
+        from pyface.qt import QtCore
+        info.ui.control.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+
+
+class AxisTool(BaseTool):
+    def normal_right_down(self, event):
+        if self.hittest(event):
+            # wrap_axis = WrapAxis(self.component)
+            # wrap_axis.edit_traits(view=AxisView, handler=AxisViewHandler(), kind="live")
+            self.component.edit_traits(view=AxisView,
+                                       handler=AxisViewHandler()
+                                       )
+            self.component.request_redraw()
+            event.handled = True
+
+    @on_trait_change("component:+")
+    def handle_change(self, name, new):
+        if name.startswith("_"):
+            return
+        self.component.request_redraw()
+
+    def hittest(self, event):
+        return self.component.is_in(event.x, event.y)
 
 
 class Figure(Loggable):
@@ -52,6 +140,11 @@ class Figure(Loggable):
             p.x_axis.title = xtitle
         if ytitle:
             p.y_axis.title = ytitle
+
+        t = AxisTool(component=p.y_axis)
+        p.tools.append(t)
+        t = AxisTool(component=p.x_axis)
+        p.tools.append(t)
 
         self.plotcontainer.add(p)
 
