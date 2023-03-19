@@ -32,10 +32,15 @@ class CanvasOverlay(AbstractOverlay):
 
 
 class CanvasElement(CanvasOverlay):
+    precedence = Int(0)
+    visited = False
+    state = Str
+
     font = 'arial 14'
     line_width = Int(10)
     active_color = RGBColor((0.5, 0.5, 0.5))
     corner_radius = Int(10)
+    default_color = RGBColor((0.5, 0.5, 0.5))
 
     def hittest(self, x, y):
         (sx, sy), sw, sh = self.map_screen_xywh()
@@ -111,7 +116,7 @@ class CanvasSwitch(CanvasElement):
         (sx, sy), sw, sh = self.map_screen_xywh()
         return sx < x < sx + sw and sy < y < sy + sh
 
-    def overlay(self, other_component, gc, view_bounds=None, mode="normal"):
+    def _state_changed(self):
         color = (0.5, 0.5, 0.5)
         if self.state == 'open':
             color = (0, 1, 0)
@@ -119,10 +124,12 @@ class CanvasSwitch(CanvasElement):
             color = (1, 0, 0)
         elif self.state == 'moving':
             color = (1, 1, 0)
+        self.active_color = color
 
+    def overlay(self, other_component, gc, view_bounds=None, mode="normal"):
         (x, y), w, h = self.map_screen_xywh()
         with gc:
-            self._set_color(gc, color)
+            self._set_color(gc)
             rounded_rect(gc, x, y, w, h, self.corner_radius)
 
             self._render_name(gc, x, y, w, h)
@@ -134,7 +141,7 @@ class CanvasSwitch(CanvasElement):
                 # gc.set_fill_color(self._convert_color(self.name_color))
                 txt = f'{self.voltage:0.3f}'
                 # tw, th, _, _ = gc.get_full_text_extent(txt)
-                self._render_textbox(gc, x, y-h/2, w, h, txt)
+                self._render_textbox(gc, x, y - h / 2, w, h, txt)
 
 
 class CanvasTank(CanvasElement):
@@ -160,6 +167,9 @@ class CanvasConnection(CanvasElement):
         (ssx, ssy), ssw, ssh = self.start.map_screen_xywh()
         (esx, esy), esw, esh = self.end.map_screen_xywh()
 
+        if ssx > esx:
+            esx, ssx = ssx, esx
+
         rh = 10
         with gc:
             self._set_color(gc)
@@ -171,6 +181,7 @@ class CanvasConnection(CanvasElement):
             rx = ssx + ssw / 2
             ry = ssy + (ssw - rh) / 2
             rw = abs(ssx - esx)
+            # print(self.name, rx, ry, rw, rh)
             gc.rect(rx, ry, rw, rh)
             gc.draw_path()
 

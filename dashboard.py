@@ -26,6 +26,7 @@ from traitsui.qt4.extra.led_editor import LEDEditor
 
 from automation import Automation
 from canvas.elements import CanvasOverlay, CanvasSwitch, CanvasConnection, CanvasTank
+from canvas.network import CanvasNetwork
 from canvas.tools import CanvasInteractor
 from db.db import DBClient
 from figure import Figure
@@ -94,7 +95,23 @@ class Canvas(Card):
         if isinstance(state, bool):
             state = 'open' if state else 'closed'
         o.state = state
+
+        self.network.update(name)
+        # o.active_color = self.network.get_active_color(name)
+        # connections = self.get_connections(name)
+        # for ci in connections:
+        #     if o.state == 'closed':
+        #         ci.active_color = ci.default_color
+        #     else:
+        #         ci.active_color = o.active_color
+
         o.request_redraw()
+
+    # def get_connections(self, name):
+    #     for ci in self.container.underlays:
+    #         if isinstance(ci, CanvasConnection):
+    #             if ci.start.name == name or ci.end.name == name:
+    #                 yield ci
 
     def render(self):
         self.container = dv = DataView()
@@ -129,7 +146,12 @@ class Canvas(Card):
                 kw = {}
             elif kind == 'CanvasTank':
                 klass = CanvasTank
-                kw = {}
+                dc = ei.get('default_color', '0.75,0.25,0.5')
+                if ',' in dc:
+                    dc = [float(c) for c in dc.split(',')]
+
+                kw = {'precedence': ei.get('precedence', 1),
+                      'default_color': dc}
             elif kind == 'Connection':
                 # load all elements before loading any connections
                 connections.append(ei)
@@ -147,11 +169,13 @@ class Canvas(Card):
         for ci in connections:
             start = next((o for o in dv.overlays if o.name == ci['start']['name']))
             end = next((o for o in dv.overlays if o.name == ci['end']['name']))
-            print('sadf', start, ci['start']['name'])
+            print('sadf', start, ci['start']['name'], ci['end']['name'])
             c = CanvasConnection(component=dv,
                                  start=start,
                                  end=end)
             dv.underlays.append(c)
+
+        self.network = CanvasNetwork(dv)
 
         dv.padding = 0
         dv.bgcolor = 'orange'
