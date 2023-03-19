@@ -141,9 +141,11 @@ class Canvas(Card):
             t = ei.get('translate', {'x': 0, 'y': 0})
             d = ei.get('dimension', {'w': 5, 'h': 5})
             kind = ei.get('kind', 'CanvasSwitch')
+            kw = {}
             if kind == 'CanvasSwitch':
                 klass = CanvasSwitch
-                kw = {}
+            elif kind == 'CanvasRampSwitch':
+                klass = CanvasSwitch
             elif kind == 'CanvasTank':
                 klass = CanvasTank
                 dc = ei.get('default_color', '0.75,0.25,0.5')
@@ -163,19 +165,21 @@ class Canvas(Card):
                        name=ei['name'],
                        width=d['w'],
                        height=d['h'])
-            print('add', vv.name)
             dv.overlays.append(vv)
 
         for ci in connections:
             start = next((o for o in dv.overlays if o.name == ci['start']['name']))
             end = next((o for o in dv.overlays if o.name == ci['end']['name']))
-            print('sadf', start, ci['start']['name'], ci['end']['name'])
             c = CanvasConnection(component=dv,
                                  start=start,
                                  end=end)
             dv.underlays.append(c)
 
         self.network = CanvasNetwork(dv)
+
+        for s in controller.switches:
+            self.set_switch_state(s.name, s.state)
+            self.network.update(s.name)
 
         dv.padding = 0
         dv.bgcolor = 'orange'

@@ -109,12 +109,7 @@ def rounded_rect(gc, x, y, width, height, corner_radius):
 
 
 class CanvasSwitch(CanvasElement):
-    state = Enum('unknown', 'open', 'closed', 'moving')
-    voltage = Float
-
-    def hittest(self, x, y):
-        (sx, sy), sw, sh = self.map_screen_xywh()
-        return sx < x < sx + sw and sy < y < sy + sh
+    state = Enum('unknown', 'open', 'closed')
 
     def _state_changed(self):
         color = (0.5, 0.5, 0.5)
@@ -122,8 +117,6 @@ class CanvasSwitch(CanvasElement):
             color = (0, 1, 0)
         elif self.state == 'closed':
             color = (1, 0, 0)
-        elif self.state == 'moving':
-            color = (1, 1, 0)
         self.active_color = color
 
     def overlay(self, other_component, gc, view_bounds=None, mode="normal"):
@@ -133,15 +126,34 @@ class CanvasSwitch(CanvasElement):
             rounded_rect(gc, x, y, w, h, self.corner_radius)
 
             self._render_name(gc, x, y, w, h)
-            # voltage
-            with gc:
-                gc.translate_ctm(0, -10)
-                gc.set_font(str_to_font(self.font))
-                # c = self.text_color if self.text_color else self.default_color
-                # gc.set_fill_color(self._convert_color(self.name_color))
-                txt = f'{self.voltage:0.3f}'
-                # tw, th, _, _ = gc.get_full_text_extent(txt)
-                self._render_textbox(gc, x, y - h / 2, w, h, txt)
+
+            self._overlay_hook(gc, x, y, w, h)
+
+    def _overlay_hook(self, gc, x, y, w, h):
+        pass
+
+
+class CanvasRampSwitch(CanvasSwitch):
+    state = Enum('unknown', 'open', 'closed', 'moving')
+    voltage = Float
+
+    def _state_changed(self):
+        color = (0.5, 0.5, 0.5)
+        if self.state == 'moving':
+            color = (1, 1, 0)
+        self.active_color = color
+        super()._state_changed()
+
+    def _overlay_hook(self, gc, x, y, w, h):
+        # voltage
+        with gc:
+            gc.translate_ctm(0, -10)
+            gc.set_font(str_to_font(self.font))
+            # c = self.text_color if self.text_color else self.default_color
+            # gc.set_fill_color(self._convert_color(self.name_color))
+            txt = f'{self.voltage:0.3f}'
+            # tw, th, _, _ = gc.get_full_text_extent(txt)
+            self._render_textbox(gc, x, y - h / 2, w, h, txt)
 
 
 class CanvasTank(CanvasElement):

@@ -44,14 +44,15 @@ class HardwarePlugin(BasePlugin):
     def _hardware_task_factory(self):
         devices = self.application.get_services(Device)
 
-        ds = [HistoryDashboard(self.application)]
+        # ds = [HistoryDashboard(self.application)]
+        ds = []
 
         yobj = yload(paths.dashboards_path)
         # with open(paths.dashboards_path, 'r') as rfile:
         #     yobj = yaml.load(rfile, yaml.SafeLoader)
         for d in yobj:
             ds.append(Dashboard(self.application, d))
-
+        ds.append(HistoryDashboard(self.application))
         # automations = []
         # with open(paths.automations_path, 'r') as rfile:
         #     yobj = yaml.load(rfile, yaml.SafeLoader)

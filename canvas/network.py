@@ -43,6 +43,35 @@ class Node(HasTraits):
                 ei.active_color = c
 
 
+def max_precedence(tree):
+    mp, color = tree.element.precedence, tree.element.default_color
+    if tree.children:
+        for ci in tree.children:
+            if isinstance(ci.element, CanvasSwitch):
+                if ci.state != 'open':
+                    continue
+            mpi, ci = max_precedence(ci)
+            if mpi > mp:
+                mp = mpi
+                color = ci
+
+    return mp, color
+
+
+def split_tree(pivot):
+    try:
+        left = pivot.children[0]
+    except IndexError:
+        left = None
+
+    try:
+        right = pivot.children[1]
+    except IndexError:
+        right = None
+
+    return left, right
+
+
 class CanvasNetwork(Loggable):
     nodes = List
 
@@ -51,31 +80,32 @@ class CanvasNetwork(Loggable):
         self.dv = dv
 
     def _build_tree(self, name):
-        def make_node(node):
-            if not isinstance(node, CanvasElement):
-                node = next((o for o in self.dv.overlays
-                             if isinstance(o, CanvasElement) and o.name == node))
+        def make_node(elem):
+            if not isinstance(elem, CanvasElement):
+                elem = next((o for o in self.dv.overlays
+                             if isinstance(o, CanvasElement) and o.name == elem))
 
-            if node.visited:
+            if elem.visited:
                 return
 
-            node.visited = True
+            elem.visited = True
+
             cs = []
             es = []
             for o in self.dv.underlays:
                 if isinstance(o, CanvasConnection):
-                    if o.start == node:
+                    if o.start == elem:
                         if nn := make_node(o.end):
                             cs.append(nn)
                         es.append(o)
-                    elif o.end == node:
+                    elif o.end == elem:
                         if nn := make_node(o.start):
                             cs.append(nn)
                         es.append(o)
 
-            n = Node(name=node.name,
-                     state=node.state,
-                     element=node,
+            n = Node(name=elem.name,
+                     state=elem.state,
+                     element=elem,
                      children=cs,
                      edges=es)
             return n
@@ -94,117 +124,20 @@ class CanvasNetwork(Loggable):
             # split the network into two subnetworks
             # split until only 2 elements
             # get the max precedence of those two elements
-            left, right = self._split_tree(tree)
+            # tree.set_color(tree.element.default_color)
+            for e in tree.edges:
+                e.active_color = e.default_color
 
+            left, right = split_tree(tree)
             if left:
-                leftp = self._max_precedence(left)
+                leftp = max_precedence(left)
                 left.set_color(leftp[1])
             if right:
-                rightp = self._max_precedence(right)
+                rightp = max_precedence(right)
                 right.set_color(rightp[1])
         else:
-            # get max precedence of this network
-            maxp, color = self._max_precedence(tree)
+            # get max precedence of this tree
+            maxp, color = max_precedence(tree)
             tree.set_color(color)
-
-    def _split_tree(self, pivot):
-        try:
-            left = pivot.children[0]
-        except IndexError:
-            left = None
-
-        try:
-            right = pivot.children[1]
-        except IndexError:
-            right = None
-
-        return left, right
-
-    def _max_precedence(self, tree):
-        mp, color = tree.element.precedence, tree.element.default_color
-        if tree.children:
-            for ci in tree.children:
-                if isinstance(ci.element, CanvasSwitch):
-                    if ci.state != 'open':
-                        continue
-
-                mpi, ci = self._max_precedence(ci)
-                if mpi > mp:
-                    mp = mpi
-                    color = ci
-
-        return mp, color
-
-    # def update(self, node):
-    #     if isinstance(node, str):
-    #         for o in self.dv.overlays:
-    #             if isinstance(o, CanvasElement):
-    #                 o.visited = False
-    #
-    #         node = next((o for o in self.dv.overlays if o.name == node))
-    #
-    #     if node.visited:
-    #         return node.precedence, node
-    #
-    #     node.visited = True
-    #     name = node.name
-    #     connections = [o for o in self.dv.underlays
-    #                    if isinstance(o, CanvasConnection) and (o.start.name == name or o.end.name == name)]
-    #     if isinstance(node, CanvasSwitch):
-    #         ap, an = 0, None
-    #         bp, bn = 0, None
-    #
-    #         # traverse network
-    #         try:
-    #             a = self.traverse(node, connections[0])
-    #             if a:
-    #                 ap, an = a
-    #         except IndexError:
-    #             pass
-    #
-    #         try:
-    #             b = self.traverse(node, connections[1])
-    #             if b:
-    #                 bp, bn = b
-    #         except IndexError:
-    #             pass
-    #
-    #         print(node.name, node.state, ap, bp)
-    #         if node.state == 'open':
-    #             c = None
-    #             if ap > bp:
-    #                 c = an.default_color
-    #                 an.active_color = an.default_color
-    #             else:
-    #                 if bn:
-    #                     c = bn.default_color
-    #                     bn.active_color = bn.default_color
-    #             if c:
-    #                 node.active_color = c
-    #                 for ci in connections:
-    #                     ci.active_color = c
-    #         else:
-    #             # for ci in connections:
-    #             #     ci.active_color = ci.default_color
-    #
-    #             if an:
-    #                 if isinstance(an, CanvasSwitch):
-    #                     if an.state == 'closed':
-    #                         connections[0].active_color = connections[0].default_color
-    #                 else:
-    #                     connections[0].active_color = an.active_color
-    #
-    #         return 0, node
-    #     else:
-    #         for ci in connections:
-    #             ci.active_color = node.default_color
-    #
-    #         return node.precedence, node
-    #
-    # def traverse(self, node, edge):
-    #     if edge.start == node:
-    #         return self.update(edge.end)
-    #     elif edge.end == node:
-    #         return self.update(edge.start)
 
 # ============= EOF =============================================
