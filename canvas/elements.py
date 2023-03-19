@@ -15,11 +15,14 @@
 # ===============================================================================
 from enable.abstract_overlay import AbstractOverlay
 from kiva.fonttools import str_to_font
-from traits.api import Str, Bool, Enum, Float
+from traits.api import Str, Bool, Enum, Float, Instance, Int, Color
+from traits.traits import RGBColor
 
 
 # ============= EOF =============================================
 class CanvasOverlay(AbstractOverlay):
+    name = Str
+
     def hittest(self, x, y):
         return
     # def overlay(self, component, gc, view_bounds, mode):
@@ -28,19 +31,30 @@ class CanvasOverlay(AbstractOverlay):
     #         gc.stroke_path()
 
 
-class CanvasElement(AbstractOverlay):
-    name = Str
+class CanvasElement(CanvasOverlay):
     font = 'arial 14'
+    line_width = Int(10)
+    active_color = RGBColor((0.5, 0.5, 0.5))
+    corner_radius = Int(10)
 
     def hittest(self, x, y):
-        (sx, sy), sw, sh = self._map_screen()
+        (sx, sy), sw, sh = self.map_screen_xywh()
         return sx < x < sx + sw and sy < y < sy + sh
 
-    def _map_screen(self):
+    def map_screen_xywh(self):
         (x, y), (zx, zy), (wx, wy) = self.component.map_screen([(self.x, self.y),
                                                                 (0, 0),
                                                                 (self.width, self.height)])
-        return (x, y), wx - zx, zy - wy
+        return (x, y), abs(wx - zx), abs(zy - wy)
+
+    def _set_color(self, gc, color=None, scale=0.5):
+        if color is None:
+            color = self.active_color_
+
+        mcolor = [c * scale for c in color]
+        gc.set_line_width(self.line_width)
+        gc.set_stroke_color(mcolor)
+        gc.set_fill_color(color)
 
     def _render_name(self, gc, x, y, w, h):
         if self.name:
@@ -90,13 +104,12 @@ def rounded_rect(gc, x, y, width, height, corner_radius):
 
 
 class CanvasSwitch(CanvasElement):
-    corner_radius = 10
     state = Enum('unknown', 'open', 'closed', 'moving')
     voltage = Float
 
     def hittest(self, x, y):
-        (sx, sy), sw, sh = self._map_screen()
-        return sx < x < sx + sw and sy < y < sy + sw
+        (sx, sy), sw, sh = self.map_screen_xywh()
+        return sx < x < sx + sw and sy < y < sy + sh
 
     def overlay(self, other_component, gc, view_bounds=None, mode="normal"):
         color = (0.5, 0.5, 0.5)
@@ -107,16 +120,12 @@ class CanvasSwitch(CanvasElement):
         elif self.state == 'moving':
             color = (1, 1, 0)
 
-        (x, y), w, h = self._map_screen()
+        (x, y), w, h = self.map_screen_xywh()
         with gc:
-            scale = 0.5
-            mcolor = [c * scale for c in color]
-            gc.set_line_width(10)
-            gc.set_stroke_color(mcolor)
-            gc.set_fill_color(color)
-            rounded_rect(gc, x, y, w, w, self.corner_radius)
+            self._set_color(gc, color)
+            rounded_rect(gc, x, y, w, h, self.corner_radius)
 
-            self._render_name(gc, x, y, w, w)
+            self._render_name(gc, x, y, w, h)
             # voltage
             with gc:
                 gc.translate_ctm(0, -10)
@@ -124,7 +133,46 @@ class CanvasSwitch(CanvasElement):
                 # c = self.text_color if self.text_color else self.default_color
                 # gc.set_fill_color(self._convert_color(self.name_color))
                 txt = f'{self.voltage:0.3f}'
-                self._render_textbox(gc, x, y, w, h, txt)
+                # tw, th, _, _ = gc.get_full_text_extent(txt)
+                self._render_textbox(gc, x, y-h/2, w, h, txt)
+
+
+class CanvasTank(CanvasElement):
+    def overlay(self, other_component, gc, view_bounds=None, mode="normal"):
+        (x, y), w, h = self.map_screen_xywh()
+        with gc:
+            self._set_color(gc)
+            rounded_rect(gc, x, y, w, h, self.corner_radius)
+
+            self._render_name(gc, x, y, w, h)
+
+
+class CanvasConnection(CanvasElement):
+    start = Instance(CanvasElement)
+    end = Instance(CanvasElement)
+
+    def overlay(self, other_component, gc, view_bounds=None, mode="normal"):
+        # sx = self.start.x
+        # sy = self.start.y
+        # ex = self.end.x
+        # ey = self.end.y
+        # (sx, sy), (ex, ey) = other_component.map_screen([(sx, sy), (ex, ey)])
+        (ssx, ssy), ssw, ssh = self.start.map_screen_xywh()
+        (esx, esy), esw, esh = self.end.map_screen_xywh()
+
+        rh = 10
+        with gc:
+            self._set_color(gc)
+            # gc.set_line_width(self.line_width)
+            # gc.set_fill_color(c)
+            # gc.set_stroke_color(c)
+            # gc.move_to(ssx + ssw / 2, ssy + ssw / 2)
+            # gc.line_to(esx + esw / 2, esy + esw / 2)
+            rx = ssx + ssw / 2
+            ry = ssy + (ssw - rh) / 2
+            rw = abs(ssx - esx)
+            gc.rect(rx, ry, rw, rh)
+            gc.draw_path()
 
 # class SwitchOverlay(AbstractOverlay):
 #     def __init__(self, *args, **kw):
