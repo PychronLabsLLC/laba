@@ -14,6 +14,32 @@
 # limitations under the License.
 # ===============================================================================
 import yaml
+from pyface.image_resource import ImageResource
+from traitsui.editors import ButtonEditor
+from traitsui.item import Item, UItem
+
+
+def icon(name):
+    name = f'{name}.png'
+    icon_search_path = './resources/icons'
+    return ImageResource(name=name, search_path=icon_search_path)
+
+
+class MUItem(UItem):
+    def get_label(self, ui):
+        return ""
+
+
+def icon_button_editor(name, image, editor_kw=None, **kw):
+    if editor_kw is None:
+        editor_kw = {}
+
+    image = icon(image)
+
+    return MUItem(
+        name, style="custom", editor=ButtonEditor(image=image, **editor_kw),
+        **kw
+    )
 
 
 def import_klass(k):

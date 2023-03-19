@@ -19,6 +19,16 @@ from datetime import datetime
 from pathlib import Path
 
 
+def add_extension(name, ext='.yaml'):
+    if not isinstance(name, str):
+        if not name.suffix == ext:
+            name = name.with_suffix(name, ext)
+    else:
+        if not name.endswith(ext):
+            name = f'{name}{ext}'
+    return name
+
+
 class Paths:
     def __init__(self):
         home = Path('~').expanduser()
@@ -39,6 +49,7 @@ class Paths:
             rp.mkdir()
 
     def get_automation_path(self, name):
+        name = add_extension(name, '.py')
         return Path(self.root, 'automations', name)
 
     def new_path(self, base, name, extension='.csv'):
@@ -54,6 +65,7 @@ class Paths:
     def database_backups(self):
         now = int(datetime.now().timestamp())
         return Path(self.root, 'backups', f'{now}.backup.db')
+
 
 paths = Paths()
 # ============= EOF =============================================

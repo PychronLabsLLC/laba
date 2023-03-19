@@ -169,6 +169,8 @@ class Automation(Loggable):
         finally:
             self.finish()
 
+    def traits_view(self):
+        return View(UItem('path'))
     # def _start_button_fired(self):
     #     self.run()
     #
