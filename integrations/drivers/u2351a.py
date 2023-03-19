@@ -19,8 +19,9 @@ from loggable import Loggable
 
 
 class U2351A(BaseSwitchDriver):
-    def _actuate_channel(self, channel, state):
-        v = 10 if state else 0
+    def _actuate_channel(self, channel, v):
+        if isinstance(v, bool):
+            v = 10 if v else 0
         self.set_voltage(channel, v)
 
     def set_voltage(self, channel, output):

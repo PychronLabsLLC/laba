@@ -48,9 +48,12 @@ class RampSwitch(Switch):
         self.nsteps = cfg['ramp'].get('nsteps', 10)
         ocpts = cfg['ramp']['open'].get('control_points', [])
         ccpts = cfg['ramp']['close'].get('control_points', [])
-        self.degree = len(ocpts)-1
+        self.degree = len(ocpts) - 1
         self.open_nodes = array([p.split(",") for p in ocpts], dtype=float).T
         self.close_nodes = array([p.split(",") for p in ccpts], dtype=float).T
+
+        self.max_value = self.open_nodes[1].max()
+        self.min_value = self.close_nodes[1].min()
 
     def ramp_max(self):
         return self.open_nodes.max()
@@ -61,7 +64,7 @@ class RampSwitch(Switch):
         curve = bezier.Curve(nodes, degree=self.degree)
         ma = nodes.max()
 
-        for j, i in enumerate(linspace(0.0, 1.0, self.nsteps+1)):
+        for j, i in enumerate(linspace(0.0, 1.0, self.nsteps + 1)):
             if not j:
                 # skip first because we already are at this value
                 continue
@@ -134,9 +137,10 @@ class SwitchController(Device):
 
             st = time.time()
             max_time = s.nsteps * s.ramp_period * 1.1
-            max_voltage = s.ramp_max()*1.1
+            max_voltage = s.ramp_max() * 1.1
             self.update = {'clear': True,
-                           'datastream': 'ramp'}
+                           'datastream': 'ramp',
+                           'switch_name': s.name}
 
             for i, si in enumerate(s.ramp(state)):
                 if self._cancel_ramp.is_set():
@@ -155,7 +159,8 @@ class SwitchController(Device):
                                'max_time': max_time,
                                'max_voltage': max_voltage,
                                'value': si,
-                               'datastream': 'ramp'
+                               'datastream': 'ramp',
+                               'switch_name': s.name
                                }
 
                 # time.sleep(s.ramp_period)
@@ -173,12 +178,12 @@ class SwitchController(Device):
 
     def _actuate_channel(self, switch, state):
         channel = switch.channel
-
-        self.debug(f'actuate channel {channel} state={state}')
-        self.driver.actuate_channel(channel, state)
+        v = switch.max_value if state else switch.min_value
+        self.debug(f'actuate channel {channel} state={state}, voltage={v}')
+        self.driver.actuate_channel(channel, v)
 
         switch.state = state
         if self.canvas:
             self.canvas.set_switch_state(switch.name, state)
-
+            self.canvas.set_switch_voltage(switch.name, v)
 # ============= EOF =============================================

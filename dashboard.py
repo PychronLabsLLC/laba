@@ -25,7 +25,7 @@ from traitsui.group import VSplit
 from traitsui.qt4.extra.led_editor import LEDEditor
 
 from automation import Automation
-from canvas.elements import CanvasOverlay, CanvasSwitch, CanvasConnection, CanvasTank
+from canvas.elements import CanvasOverlay, CanvasSwitch, CanvasConnection, CanvasTank, CanvasRampSwitch
 from canvas.network import CanvasNetwork
 from canvas.tools import CanvasInteractor
 from db.db import DBClient
@@ -145,7 +145,7 @@ class Canvas(Card):
             if kind == 'CanvasSwitch':
                 klass = CanvasSwitch
             elif kind == 'CanvasRampSwitch':
-                klass = CanvasSwitch
+                klass = CanvasRampSwitch
             elif kind == 'CanvasTank':
                 klass = CanvasTank
                 dc = ei.get('default_color', '0.75,0.25,0.5')
@@ -185,7 +185,10 @@ class Canvas(Card):
         dv.bgcolor = 'orange'
 
     def make_view(self):
-        return UItem('container', editor=ComponentEditor()),
+        return UItem('container',
+                     editor=ComponentEditor(height=800),
+                     # height=0.75
+                     ),
 
 
 class BaseScan(DeviceCard):
@@ -269,10 +272,12 @@ class Switch(DeviceCard):
     open_button = Button('Open')
     close_button = Button('Close')
     state = Bool
+    device = Instance(Device)
 
     def __init__(self, application, cfg, *args, **kw):
         super().__init__(application, cfg, *args, **kw)
         self.switch_name = cfg['switch']['name']
+        self.device = self.devices[0]
 
     def _open_button_fired(self):
         dev = self.devices[0]
@@ -312,18 +317,21 @@ class EMSwitch(Switch):
         return fig
 
     def _slow_close_button_fired(self):
-        dev = self.devices[0]
+        dev = self.device
         dev.close_switch(self.switch_name, slow=True)
         self.state = False
 
     def _slow_open_button_fired(self):
-        dev = self.devices[0]
+        dev = self.device
         dev.open_switch(self.switch_name, slow=True)
         self.state = True
 
-    @on_trait_change('devices:update')
+    @on_trait_change('device:update')
     def _handle_device_update(self, new):
         if new:
+            if new['switch_name'] != self.switch_name:
+                return
+
             if new.get('clear'):
                 self.figure.clear_data('vt')
             else:
@@ -448,17 +456,26 @@ class Dashboard(BaseDashboard):
     def _build_dashboard_elements(self):
         ga = []
         gb = []
+        gahs = []
+        gbhs = []
         for i, c in enumerate(self.cards):
             kind = c['kind']
             factory = globals().get(kind)
             card = factory(self.application, c)
-
+            height = c.get('height', 0.5)
             self.add_trait(c['name'], card)
-            item = UItem(c['name'], style='custom')
+            item = UItem(c['name'], style='custom', height=height)
             if i % 2:
+                gbhs.append(height)
                 gb.append(item)
             else:
+                gahs.append(height)
                 ga.append(item)
+
+        for gs, hs in ((ga, gahs), (gb, gbhs)):
+            s = sum(hs)
+            for gi in gs:
+                gi.height /= s
 
         return HSplit(VSplit(*ga), VSplit(*gb))
 

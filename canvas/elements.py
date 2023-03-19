@@ -149,10 +149,7 @@ class CanvasRampSwitch(CanvasSwitch):
         with gc:
             gc.translate_ctm(0, -10)
             gc.set_font(str_to_font(self.font))
-            # c = self.text_color if self.text_color else self.default_color
-            # gc.set_fill_color(self._convert_color(self.name_color))
             txt = f'{self.voltage:0.3f}'
-            # tw, th, _, _ = gc.get_full_text_extent(txt)
             self._render_textbox(gc, x, y - h / 2, w, h, txt)
 
 
