@@ -98,6 +98,17 @@ class SequenceCentralPane(TraitsTaskPane):
         return v
 
 
+class ConsolePane(TraitsDockPane):
+    name = 'Console'
+    id = 'laba.console'
+
+    def traits_view(self):
+
+        return View(
+            UItem('console', style='custom')
+        )
+
+
 class HardwareCentralPane(TraitsTaskPane):
     def traits_view(self):
         return View(UItem('selection', style='custom'))

@@ -17,6 +17,7 @@ import time
 from datetime import datetime
 from threading import Thread, Event
 
+from console import Console
 from hardware import SwitchController
 from hardware.device import Device
 from loggable import Loggable
@@ -44,6 +45,7 @@ class Automation(Loggable):
     # stop_button = Button
     alive = Bool
     timer = Instance(Timer)
+    console = Instance(Console)
 
     _runthread = None
     _recording_thread = None
@@ -102,6 +104,12 @@ class Automation(Loggable):
                     func = sw.open_switch if state else sw.close_switch
                     func(name, *args, **kw)
                     break
+
+    def debug(self, msg):
+        if self.console:
+            dt = datetime.now().strftime('%H:%M:%S')
+            self.console.text += f'{dt} -- {msg}\n'
+        super().debug(msg)
 
     @is_alive
     def sleep(self, nseconds):

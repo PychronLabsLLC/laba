@@ -26,11 +26,12 @@ from traits.api import Instance, List, Any, Button, DelegatesTo
 from traitsui.menu import Action
 
 from automation import Automation
+from console import Console
 from dashboard import Dashboard, BaseDashboard
 from hardware.device import Device
 from loggable import Loggable
 from pane import HardwareCentralPane, DevicesPane, DashboardsPane, AutomationsPane, SequenceEditorPane, \
-    SequenceCentralPane, SequenceControlPane
+    SequenceCentralPane, SequenceControlPane, ConsolePane
 from paths import paths
 from plugin_manager import PluginManager
 from sequencer import Sequencer
@@ -82,7 +83,9 @@ class SequencerTask(BaseTask):
     id = 'laba.sequence.task'
     name = 'Sequencer'
 
-    sequencer = Instance(Sequencer, ())
+    sequencer = Instance(Sequencer)
+
+
     # timer = DelegatesTo('sequencer')
     # timer = DelegatesTo('sequencer')
 
@@ -115,7 +118,9 @@ class SequencerTask(BaseTask):
 
     def create_dock_panes(self):
         return [SequenceEditorPane(model=self),
-                SequenceControlPane(model=self)]
+                SequenceControlPane(model=self),
+                ConsolePane(model=self.sequencer)
+                ]
 
     def create_central_pane(self):
         return SequenceCentralPane(model=self)
@@ -126,7 +131,8 @@ class SequencerTask(BaseTask):
 
     def _default_layout_default(self):
         return TaskLayout(top=PaneItem("laba.sequencer.controls"),
-                          left=PaneItem("laba.sequencer.editor"))
+                          left=PaneItem("laba.sequencer.editor"),
+                          right=PaneItem("laba.console"))
 
 
 class HardwareTask(BaseTask):

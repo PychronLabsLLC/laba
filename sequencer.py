@@ -24,6 +24,7 @@ from traitsui.item import spring
 from traitsui.tabular_adapter import TabularAdapter
 
 from automation import Automation
+from console import Console
 from loggable import Loggable
 from traits.api import List, File, Enum, Instance, Button, Dict, Any
 from traitsui.api import View, UItem, HGroup, VGroup
@@ -50,11 +51,12 @@ class SequenceStep(Loggable):
             self.automations = [Automation({'path': paths.get_automation_path(a)},
                                            application=self.application) for a in cfg['automations']]
 
-    def run(self, timer):
+    def run(self, timer, console):
         ts = []
         for a in self.automations:
             try:
                 a.timer = timer
+                a.console = console
                 t = a.run(block=False)
                 ts.append(t)
             except AutomationError as err:
@@ -84,11 +86,11 @@ class Sequence(Loggable):
         if cfg is not None:
             self.steps = [SequenceStep(si, application=self.application) for si in cfg['steps']]
 
-    def run(self, timer):
+    def run(self, timer, console):
         self.debug('run sequence')
         for i, si in enumerate(self.steps):
             self.debug(f'do step {i}')
-            si.run(timer)
+            si.run(timer, console)
 
     def toyaml(self):
         return {'name': self.name,
@@ -101,6 +103,8 @@ class Sequencer(Loggable):
     yobj = Dict
     selected = Instance(Sequence, ())
     timer = Instance(Timer, ())
+    console = Instance(Console, ())
+
     _runthread = None
 
     def load(self):
@@ -145,7 +149,7 @@ class Sequencer(Loggable):
                 time.sleep(delay)
             try:
                 s.state = 'running'
-                s.run(self.timer)
+                s.run(self.timer, self.console)
                 s.state = 'success'
             except SequenceError as err:
                 self.warning(f'Sequence {s} error: {err}')
