@@ -28,6 +28,8 @@ from traits.api import HasTraits, Str, List
 #         self.driver.read_channel(channel)
 
 counter = itertools.count()
+
+
 class Channel(HasTraits):
     name = Str
     address = Str

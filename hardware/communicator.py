@@ -13,20 +13,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import serial
+
 from loggable import Loggable
 
 
 class Communicator(Loggable):
+    handle = None
+
+    def open(self):
+        pass
 
     def ask(self, msg, *args, **kw):
-        self.debug(f'asking msg={msg}')
+        resp = self._ask(msg, *args, **kw)
+        self.debug(f'{msg}=>{resp}')
+        return resp
+
+    def _ask(self, *args, **kw):
+        raise NotImplementedError
 
 
 class SerialCommunicator(Communicator):
-    pass
+    def open(self):
+        self.handle = serial.Serial(self.configobj.get('port', 'COM1'))
+
+    def _ask(self, msg, *args, **kw):
+        self.handle.write(msg)
+        return self.handle.read()
 
 
 class EthernetCommunicator(Communicator):
+    pass
+
+
+class TelnetCommunicator(Communicator):
     pass
 
 
@@ -35,6 +55,10 @@ class TCPCommunicator(EthernetCommunicator):
 
 
 class UDPCommunicator(EthernetCommunicator):
+    pass
+
+
+class ZmqCommunicator(Communicator):
     pass
 
 # ============= EOF =============================================

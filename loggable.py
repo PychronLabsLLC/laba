@@ -15,7 +15,7 @@
 # ===============================================================================
 import logging
 
-from traits.api import HasTraits, Str
+from traits.api import HasTraits, Str, Dict
 
 shandler = logging.StreamHandler()
 
@@ -24,6 +24,7 @@ class Loggable(HasTraits):
     logger_name = Str
     name = Str
     logger = None
+    configobj = Dict
 
     def __init__(self, cfg=None, *args, **kw):
         if cfg is None:
@@ -45,6 +46,8 @@ class Loggable(HasTraits):
             l.setLevel(logging.DEBUG)
             l.addHandler(shandler)
             self.logger = l
+
+        self.configobj = cfg
 
     def info(self, msg):
         self.logger.info(msg)
