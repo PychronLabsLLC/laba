@@ -65,9 +65,13 @@ class DeviceCard(Card):
         for dev in cfg.get('devices', []):
             dd = application.get_service(Device, f"name=='{dev['name']}'")
             dvs.append(dd)
-            func = dev.get('function')
+            func = dev.get('function', {'name': 'get_value'})
             if func:
-                dfs.append(getattr(dd, func))
+                aa = func.get('args', ())
+                kk = func.get('kwargs', {})
+                name = func.get('name', 'get_value')
+
+            dfs.append((getattr(dd, name), aa, kk))
 
         self.devices = dvs
         self.device_functions = dfs
@@ -97,21 +101,7 @@ class Canvas(Card):
         o.state = state
 
         self.network.update(name)
-        # o.active_color = self.network.get_active_color(name)
-        # connections = self.get_connections(name)
-        # for ci in connections:
-        #     if o.state == 'closed':
-        #         ci.active_color = ci.default_color
-        #     else:
-        #         ci.active_color = o.active_color
-
         o.request_redraw()
-
-    # def get_connections(self, name):
-    #     for ci in self.container.underlays:
-    #         if isinstance(ci, CanvasConnection):
-    #             if ci.start.name == name or ci.end.name == name:
-    #                 yield ci
 
     def render(self):
         self.container = dv = DataView()
@@ -151,7 +141,6 @@ class Canvas(Card):
                 dc = ei.get('default_color', '0.75,0.25,0.5')
                 if ',' in dc:
                     dc = [float(c) for c in dc.split(',')]
-
                 kw = {'precedence': ei.get('precedence', 1),
                       'default_color': dc}
             elif kind == 'Connection':
@@ -214,9 +203,10 @@ class BaseScan(DeviceCard):
         def _scan():
             st = time.time()
             while not self._scan_evt.is_set():
-                for i, df in enumerate(self.device_functions):
-                    self._scan_hook(i, df, st)
-                time.sleep(sp)
+                for i, (df, args, kw) in enumerate(self.device_functions):
+                    self._scan_hook(i, df, st, args, kw)
+                # time.sleep(sp)
+                self._scan_evt.wait(sp)
 
             self.active = False
 
@@ -224,20 +214,27 @@ class BaseScan(DeviceCard):
         self._scan_thread = t
         self._scan_thread.start()
 
-    def _scan_hook(self, i, df, st):
+    def _scan_hook(self, i, df, st, args, kw):
         pass
 
 
 class Scan(BaseScan):
     figure = Instance(Figure, ())
     start_button = Button('Start')
+    stop_button = Button("Stop")
+    start_enabled = Bool(True)
+
+    def _stop_button_fired(self):
+        self.start_enabled = True
+        self._scan_evt.set()
 
     def _start_button_fired(self):
+        self.start_enabled = False
         self.figure.clear_data('s0')
         self._scan()
 
-    def _scan_hook(self, i, df, st):
-        self.figure.add_datum(f's{i}', time.time() - st, df())
+    def _scan_hook(self, i, df, st, args, kw):
+        self.figure.add_datum(f's{i}', time.time() - st, df(*args, **kw))
 
     def _figure_default(self):
         f = Figure()
@@ -249,7 +246,10 @@ class Scan(BaseScan):
         return f
 
     def make_view(self):
-        return HGroup(spring, UItem('start_button')), UItem('figure', style='custom'),
+        return HGroup(spring, UItem('start_button',
+                                    enabled_when='start_enabled'),
+                      UItem('stop_button',
+                            enabled_when='not start_enabled')), UItem('figure', style='custom'),
 
 
 class LEDReadOut(BaseScan):
@@ -259,8 +259,8 @@ class LEDReadOut(BaseScan):
         super().__init__(*args, **kw)
         self._scan()
 
-    def _scan_hook(self, i, df, st):
-        self.value = df()
+    def _scan_hook(self, i, df, st, args, kw):
+        self.value = df(*args, **kw)
 
     def make_view(self):
         return Item('value',

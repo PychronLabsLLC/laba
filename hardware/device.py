@@ -16,8 +16,9 @@
 import math
 import random
 
-from traits.api import Instance, Event
-from hardware.communicator import Communicator
+from numpy import polyval
+from traits.api import Instance, Event, HasTraits, Str, List
+
 from hardware.driver.driver import Driver
 from loggable import Loggable
 from util import import_klass
@@ -32,10 +33,14 @@ class Device(Loggable):
         return View(Item('name'))
 
     def bootstrap(self, cfg):
+        self.load(cfg)
         self.setup_driver(cfg['driver'])
-        if self.initialize():
-            if self.open():
+        if self.open():
+            if self.initialize():
                 return True
+
+    def load(self, cfg):
+        pass
 
     def setup_driver(self, cfg):
         kind = cfg['kind']
@@ -44,11 +49,12 @@ class Device(Loggable):
         self.driver.bootstrap(cfg)
 
     def initialize(self):
-        return True
+        return self.driver.initialize()
 
     def open(self):
-        return True
+        return self.driver.open()
 
     def get_value(self):
         return random.random() + math.log(id(self))
+
 # ============= EOF =============================================

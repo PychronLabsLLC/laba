@@ -70,9 +70,8 @@ class Figure(Loggable):
 
         if x >= h:
             lx = len(xx)
-            if lx > 2:
+            if lx >= 2:
                 step = math.ceil((xx[0] - xx[-1]) / lx)
-            # step = 0
             # if x > (h * 0.95):
             #     lx = len(xx)
             #     if lx > 2 and not step:

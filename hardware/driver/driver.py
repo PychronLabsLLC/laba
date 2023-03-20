@@ -27,6 +27,16 @@ class Driver(Loggable):
 
     def bootstrap(self, cfg):
         self.setup_communicator(cfg['communicator'])
+        self.load(cfg)
+
+    def load(self, cfg):
+        pass
+
+    def initialize(self):
+        return True
+
+    def open(self):
+        return True
 
     def setup_communicator(self, cfg):
         kind = cfg['kind']

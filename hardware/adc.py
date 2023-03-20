@@ -13,15 +13,58 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware import get_float
+import itertools
+
+from numpy import polyval
+
 from hardware.device import Device
+from hardware.util import get_float
+from traits.api import HasTraits, Str, List
+
+# class ADC(Device):
+#     @get_float()
+#     def read_channel(self, channel):
+#         self.debug(f'read channel {channel}')
+#         self.driver.read_channel(channel)
+
+counter = itertools.count()
+class Channel(HasTraits):
+    name = Str
+    address = Str
+    mapping = List
+
+    def __init__(self, *args, **kw):
+        if kw['mapping']:
+            mapping = kw.pop('mapping')
+            self.mapping = [float(c) for c in mapping.split(',')]
+
+        super().__init__(*args, **kw)
+
+    def map_value(self, v):
+        """
+        return v(olts) converted to channel units
+
+        :param v:
+        :return:
+        """
+        if v is None:
+            v = next(counter)
+
+        if self.mapping:
+            v = polyval(self.mapping, v)
+        return v
 
 
 class ADC(Device):
-    @get_float()
-    def read_channel(self, channel):
-        self.debug(f'read channel {channel}')
-        self.driver.read_channel(channel)
+    channels = List(Channel)
 
+    def load(self, cfg):
+        self.channels = [Channel(**ci) for ci in cfg['channels']]
 
+    def get_value(self, idx=0):
+        ch = self.channels[idx]
+        v = self.driver.read_channel(ch.address)
+        vv = ch.map_value(v)
+        self.debug(f'get value volts={v}, value={vv}')
+        return vv
 # ============= EOF =============================================

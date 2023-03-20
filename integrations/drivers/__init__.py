@@ -15,5 +15,6 @@
 # ===============================================================================
 from integrations.drivers.u2351a import U2351A
 from integrations.drivers.mks import MKS
+from integrations.drivers.m1000 import M1000
 
 # ============= EOF =============================================

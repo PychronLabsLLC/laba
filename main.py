@@ -61,7 +61,9 @@ if __name__ == '__main__':
     # demo()
     try:
         main()
-    except BaseException:
+    except BaseException as e:
         # give user option to roll back to a previous version
         rollback()
+
+        raise e
 # ============= EOF =============================================

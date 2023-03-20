@@ -27,6 +27,8 @@ from traits.api import List, Str, Float, Int, Bool, Array
 class Switch(Loggable):
     channel = Str
     state = Bool
+    min_value = Float(0)
+    max_value = Float(1)
 
     def __init__(self, cfg, *args, **kw):
         super().__init__(cfg, *args, **kw)

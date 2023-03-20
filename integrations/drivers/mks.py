@@ -13,9 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.driver.driver import Driver
+from integrations.drivers.base import BasePressureDriver
 
 
-class MKS(Driver):
-    pass
+class MKS(BasePressureDriver):
+
+    def initialize(self):
+        msg = self._make_global_message("01", "00")
+        self.ask(msg)
+        return True
+
+    def _read_pressure(self, channel):
+        msg = self._make_global_message("00", f"{channel:02n}")
+        self.ask(msg)
+
+        msg = self._make_global_message("02", "0?")
+        resp = self.ask(msg)
+        if resp:
+            torr = resp.split(" ")[1].strip()
+            return torr
+
+    def _make_global_message(self, parameter, data):
+        return f"@{parameter}{data}\n"
 # ============= EOF =============================================

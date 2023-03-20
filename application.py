@@ -104,7 +104,7 @@ class Application(TasksApplication, Loggable):
 
     # private
     def _make_device(self, cfg):
-        klass = cfg.get('klass')
+        klass = cfg.get('kind')
         if klass:
             klass = import_klass(f'hardware.{klass}')
         else:

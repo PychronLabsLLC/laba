@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from hardware.util import get_float
 from hardware.driver.driver import Driver
 
 
 class BaseADCDriver(Driver):
+    @get_float()
     def read_channel(self, channel):
         self.debug(f'read channel {channel}')
+        return self._read_channel(channel)
 
     def _read_channel(self, channel):
         raise NotImplementedError
@@ -41,4 +44,13 @@ class BaseSwitchDriver(Driver):
     def _actuate_channel(self, channel, state):
         raise NotImplementedError
 
+
+class BasePressureDriver(Driver):
+    @get_float()
+    def read_pressure(self, channel):
+        self.debug(f'read pressure channel={channel}')
+        return self._read_pressure(channel)
+
+    def _read_pressure(self, channel):
+        raise NotImplementedError
 # ============= EOF =============================================
