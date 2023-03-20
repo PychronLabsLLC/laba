@@ -100,7 +100,7 @@ class DeviceTbl(Base, NameMixin):
 
 class DatastreamTbl(Base, NameMixin):
     device_id = foreignkey('DeviceTbl')
-
+    create_date = Column(DateTime, default=func.now())
     measurements = relationship('MeasurementTbl')
 
 

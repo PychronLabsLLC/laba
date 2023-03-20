@@ -202,8 +202,14 @@ class BaseScan(DeviceCard):
 
         def _scan():
             st = time.time()
+
+            for d in self.devices:
+                d.update = {'clear': True,
+                            'datastream': 'scan'}
+
             while not self._scan_evt.is_set():
                 for i, (df, args, kw) in enumerate(self.device_functions):
+                    kw['datastream'] = 'scan'
                     self._scan_hook(i, df, st, args, kw)
                 # time.sleep(sp)
                 self._scan_evt.wait(sp)

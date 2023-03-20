@@ -38,12 +38,14 @@ class SerialCommunicator(Communicator):
         self.handle = serial.Serial(self.configobj.get('port', 'COM1'))
 
     def _ask(self, msg, *args, **kw):
-        self.handle.write(msg)
-        return self.handle.read()
+        if self.handle:
+            self.handle.write(msg)
+            return self.handle.read()
 
 
 class EthernetCommunicator(Communicator):
-    pass
+    def _ask(self, *args, **kw):
+        pass
 
 
 class TelnetCommunicator(Communicator):

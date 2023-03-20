@@ -54,7 +54,7 @@ class Device(Loggable):
     def open(self):
         return self.driver.open()
 
-    def get_value(self):
+    def get_value(self, *args, **kw):
         return random.random() + math.log(id(self))
 
 # ============= EOF =============================================

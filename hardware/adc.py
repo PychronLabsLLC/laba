@@ -63,10 +63,13 @@ class ADC(Device):
     def load(self, cfg):
         self.channels = [Channel(**ci) for ci in cfg['channels']]
 
-    def get_value(self, idx=0):
+    def get_value(self, idx=0, datastream='default'):
         ch = self.channels[idx]
         v = self.driver.read_channel(ch.address)
         vv = ch.map_value(v)
         self.debug(f'get value volts={v}, value={vv}')
+
+        self.update = {'datastream': datastream,
+                       'value': vv}
         return vv
 # ============= EOF =============================================
