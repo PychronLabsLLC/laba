@@ -80,26 +80,26 @@ class CanvasNetwork(Loggable):
         self.dv = dv
 
     def _build_tree(self, name):
-        def make_node(elem):
+        def make_node(elem, visited=set()):
             if not isinstance(elem, CanvasElement):
                 elem = next((o for o in self.dv.overlays
                              if isinstance(o, CanvasElement) and o.name == elem))
 
-            if elem.visited:
+            if elem in visited:
                 return
 
-            elem.visited = True
+            visited.add(elem)
 
             cs = []
             es = []
             for o in self.dv.underlays:
                 if isinstance(o, CanvasConnection):
                     if o.start == elem:
-                        if nn := make_node(o.end):
+                        if nn := make_node(o.end, visited):
                             cs.append(nn)
                         es.append(o)
                     elif o.end == elem:
-                        if nn := make_node(o.start):
+                        if nn := make_node(o.start, visited):
                             cs.append(nn)
                         es.append(o)
 
@@ -109,10 +109,6 @@ class CanvasNetwork(Loggable):
                      children=cs,
                      edges=es)
             return n
-
-        for ov in self.dv.overlays:
-            if isinstance(ov, CanvasElement):
-                ov.visited = False
 
         tree = make_node(name)
         return tree

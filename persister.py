@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import json
+
+import yaml
 from traits.api import File, Str
 
 import csv
@@ -59,4 +62,30 @@ class CSVPersister(Persister):
 
     def _write_hook(self, data):
         self._writer.writerow(data)
+
+
+class JSONPersister(Persister):
+    def _enter_hook(self):
+        pass
+
+    def _write_hook(self, data):
+        json.dump(data, self._handle)
+
+
+class YAMLPersister(Persister):
+    def _enter_hook(self):
+        pass
+
+    def _write_hook(self, data):
+        yaml.dump(data, self._handle)
+
+
+# define a class for writing txt to a file
+class TextPersister(Persister):
+    def _enter_hook(self):
+        pass
+
+    def _write_hook(self, data):
+        self._handle.write(data)
+
 # ============= EOF =============================================

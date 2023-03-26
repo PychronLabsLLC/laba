@@ -33,7 +33,6 @@ class CanvasOverlay(AbstractOverlay):
 
 class CanvasElement(CanvasOverlay):
     precedence = Int(0)
-    visited = False
     state = Str
 
     font = 'arial 14'
