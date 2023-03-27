@@ -85,12 +85,11 @@ class SequencerTask(BaseTask):
 
     sequencer = Instance(Sequencer)
 
-
-    # timer = DelegatesTo('sequencer')
-    # timer = DelegatesTo('sequencer')
-
     start_button = Button
     add_button = Button
+    add_step_button = Button
+    add_automation_button = Button
+
     save_button = Button
     save_as_button = Button
 
@@ -104,17 +103,17 @@ class SequencerTask(BaseTask):
     def _add_button_fired(self):
         self.sequencer.add()
 
+    def _add_step_button_fired(self):
+        self.sequencer.add_step()
+
+    def _add_automation_button_fired(self):
+        self.sequencer.add_automation()
+
     def _save_button_fired(self):
         self.sequencer.save()
 
     def _save_as_button_fired(self):
         self.sequencer.save_as()
-
-    def _pause_button_fired(self):
-        pass
-
-    def _continue_button_fired(self):
-        pass
 
     def create_dock_panes(self):
         return [SequenceEditorPane(model=self),
@@ -128,6 +127,12 @@ class SequencerTask(BaseTask):
     def open(self, path):
         self.sequencer.path = path
         self.sequencer.load()
+
+    def do_automation(self, name):
+        return self.sequencer.do_automation(name)
+
+    def is_valid_automation(self, name):
+        return self.sequencer.is_valid_automation(name)
 
     def _default_layout_default(self):
         return TaskLayout(top=PaneItem("laba.sequencer.controls"),

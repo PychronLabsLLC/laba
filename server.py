@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-
+import time
+from queue import Queue
 from threading import Thread, Event
+
+from pyface.gui import GUI
 from traits.api import Any, Int
 
 import zmq
@@ -40,7 +43,13 @@ class Server(Loggable):
         {
             "device": <name of a device>,
             "function": <name of the function>
-            "kwargs": <keyward arguments to pass into the function when its is called>
+            "kwargs": <keyward arguments to pass into the function when it is called>
+        }
+
+        or
+        {
+            "automation": <name of a automation>,
+            "kwargs": <keyward arguments to pass into the automation when it is executed>
         }
 
         :returns
@@ -63,7 +72,6 @@ class Server(Loggable):
             self.debug(f"Received request: {message}")
 
             device_name = message.get('device')
-            reply = {"message": "no device"}
             if device_name:
                 func_name = message.get('function')
                 reply = {"message": "no function"}
@@ -77,6 +85,23 @@ class Server(Loggable):
                             reply = {"message": "OK", "response": func(**kwargs)}
                         except AttributeError:
                             reply = {"message": f"invalid function={func_name}"}
+            else:
+                automation_name = message.get('automation')
+                if automation_name:
+                    q = Queue()
+                    def do_automation():
+                        task = self.application.get_task('laba.sequencer.task')
+                        if task.is_valid_automation(automation_name):
+                            resp = task.do_automation(automation_name)
+                            q.put({"message": "OK", "response": resp})
+                        else:
+                            q.put({"message": f"invalid automation={automation_name}"})
+
+                    GUI.invoke_later(do_automation)
+
+                    while q.empty():
+                        time.sleep(0.1)
+                    reply = q.get()
 
             # Send reply back to client
             socket.send_json(reply)

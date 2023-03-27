@@ -16,10 +16,20 @@
 from pyface.tasks.traits_dock_pane import TraitsDockPane
 from pyface.tasks.traits_task_pane import TraitsTaskPane
 from traitsui.api import View, Item, UItem, VGroup, HGroup, spring
-from traitsui.editors import TabularEditor
+from traitsui.editors import TabularEditor, InstanceEditor, EnumEditor
 from traitsui.tabular_adapter import TabularAdapter
+from traits.api import HasTraits, List, Instance, Button, Str, Any, on_trait_change, Property, cached_property
 
 from util import icon_button_editor
+
+edit_view = View(
+    VGroup(Item('name'),
+           HGroup(VGroup(UItem('steps'),
+                         show_border=True,
+                         label='Steps')
+                  )
+           )
+)
 
 
 class SequenceEditorPane(TraitsDockPane):
@@ -27,12 +37,29 @@ class SequenceEditorPane(TraitsDockPane):
     id = 'laba.sequencer.editor'
 
     def traits_view(self):
-        return View(icon_button_editor('add_button', 'add'),
-                    icon_button_editor('save_button', 'save'))
+        return View(VGroup(
+
+                           icon_button_editor('save_button', 'save'),
+                           HGroup(UItem('object.sequencer.sequence_template',
+                                        editor=EnumEditor(name='object.sequencer.available_sequence_templates')),
+                                  icon_button_editor('add_button', 'add')),
+                           icon_button_editor('add_step_button', 'load'),
+                           UItem('add_automation_button'),
+                           Item('object.sequencer.edit_name'),
+                           )
+                    )
 
 
 class SequenceAdapter(TabularAdapter):
-    columns = [('Name', 'name')]
+    columns = [('Name', 'name'), ('Steps', 'steps'), ('State', 'state')]
+    state_text = Property
+    steps_text = Property
+
+    def _get_state_text(self):
+        return self.item.state
+
+    def _get_steps_text(self):
+        return f'{len(self.item.steps)}'
 
     def _get_bg_color(self):
         if self.item.state == 'not run':
@@ -59,7 +86,11 @@ class SequenceAdapter(TabularAdapter):
 
 
 class SequenceStepAdapter(TabularAdapter):
-    columns = [('Name', 'name')]
+    columns = [('Name', 'name'), ('Automations', 'automations')]
+    automations_text = Property
+
+    def _get_automations_text(self):
+        return f'{len(self.item.automations)}'
 
 
 class SequenceControlPane(TraitsDockPane):
@@ -83,14 +114,20 @@ class SequenceControlPane(TraitsDockPane):
 class SequenceCentralPane(TraitsTaskPane):
     def traits_view(self):
         v = View(VGroup(UItem('object.sequencer.sequences',
-                              editor=TabularEditor(selected='object.sequencer.selected',
+                              editor=TabularEditor(selected='object.sequencer.selected_rows',
+                                                   multi_select=True,
                                                    auto_update=True,
                                                    editable=False,
+                                                   stretch_last_section=False,
                                                    adapter=SequenceAdapter())),
 
                         UItem('object.sequencer.selected.steps',
-                              editor=TabularEditor(selected='selected_step',
-                                                   adapter=SequenceStepAdapter()))
+                              editor=TabularEditor(selected='object.sequencer.selected_step',
+                                                   auto_update=True,
+                                                   editable=False,
+                                                   stretch_last_section=False,
+                                                   adapter=SequenceStepAdapter())),
+                        UItem('object.sequencer.selected_step', style='custom'),
                         # UItem('object.sequencer.selected', style='custom')
 
                         )
@@ -103,7 +140,6 @@ class ConsolePane(TraitsDockPane):
     id = 'laba.console'
 
     def traits_view(self):
-
         return View(
             UItem('console', style='custom')
         )

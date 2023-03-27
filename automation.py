@@ -51,21 +51,30 @@ class Automation(Loggable):
     _recording_thread = None
     _recording_event = None
 
-    def __init__(self, cfg=None, *args, **kw):
+    def __init__(self, cfg=None, ctx=None, *args, **kw):
         super().__init__(cfg=cfg, *args, **kw)
         if cfg:
-            self.load(cfg['path'])
+            self.load(cfg['path'], ctx=ctx)
 
-    def load(self, path=None):
+    def load(self, path=None, ctx=None):
         if path is None:
             path = self.path
         else:
             path = paths.get_automation_path(path)
 
         self.path = path
+        if ctx is not None:
+            if str(path) in ctx:
+                self.debug('using context')
+                self.text = ctx[str(path)]
+                return
+
         self.debug(f'loading {path}')
         with open(self.path, 'r') as rfile:
             self.text = rfile.read()
+
+        if ctx is not None:
+            ctx[str(path)] = self.text
 
     def run(self, block=False):
 

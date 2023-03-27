@@ -19,6 +19,7 @@ from threading import Thread
 
 import yaml
 from pyface.file_dialog import FileDialog
+from traits.has_traits import on_trait_change
 from traitsui.editors import TabularEditor, ListEditor, InstanceEditor
 from traitsui.item import spring
 from traitsui.tabular_adapter import TabularAdapter
@@ -26,7 +27,7 @@ from traitsui.tabular_adapter import TabularAdapter
 from automation import Automation
 from console import Console
 from loggable import Loggable
-from traits.api import List, File, Enum, Instance, Button, Dict, Any
+from traits.api import List, File, Enum, Instance, Button, Dict, Any, Str, Bool, Int, Property, cached_property
 from traitsui.api import View, UItem, HGroup, VGroup
 
 from paths import paths, add_extension
@@ -45,10 +46,11 @@ class AutomationError(BaseException):
 class SequenceStep(Loggable):
     automations = List
 
-    def __init__(self, cfg=None, *args, **kw):
+    def __init__(self, cfg=None, ctx=None, *args, **kw):
         super().__init__(cfg, *args, **kw)
         if cfg is not None:
             self.automations = [Automation({'path': paths.get_automation_path(a)},
+                                           ctx=ctx,
                                            application=self.application) for a in cfg['automations']]
 
     def run(self, timer, console):
@@ -76,15 +78,32 @@ class SequenceStep(Loggable):
         return v
 
 
+class LoadAutomationCTX():
+    def __init__(self):
+        self._memo = {}
+
+    def __enter__(self):
+        return self._memo
+
+    # def __contains__(self, item):
+    #     return item in self._memo
+    #
+    # def __setitem__(self, key, value):
+    #     self._memo[key] = value
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+
 class Sequence(Loggable):
     steps = List
     state = Enum('not run', 'running', 'failed', 'success')
 
     def __init__(self, cfg=None, *args, **kw):
         super().__init__(cfg, *args, **kw)
-
         if cfg is not None:
-            self.steps = [SequenceStep(si, application=self.application) for si in cfg['steps']]
+            with LoadAutomationCTX() as ctx:
+                self.steps = [SequenceStep(si, application=self.application, ctx=ctx) for si in cfg['steps']]
 
     def run(self, timer, console):
         self.debug('run sequence')
@@ -97,15 +116,38 @@ class Sequence(Loggable):
                 'steps': [s.toyaml() for s in self.steps]}
 
 
+def get_available_sequence_templates():
+    return [os.path.splitext(p)[0] for p in os.listdir(paths.sequence_templates_dir)
+            if p.endswith('.yaml') or p.endswith('.yml')]
+
+
+def load_sequence_template(name):
+    path = paths.get_sequence_template_path(name)
+    return yload(path)
+
+
 class Sequencer(Loggable):
     sequences = List(Sequence)
     path = File
     yobj = Dict
     selected = Instance(Sequence, ())
+    selected_rows = List
+    selected_step = Instance(SequenceStep, ())
+
+    sequence_template = Str
+    available_sequence_templates = List
+
     timer = Instance(Timer, ())
     console = Instance(Console, ())
 
     _runthread = None
+
+    edit_name = Str
+
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+
+        self.available_sequence_templates = get_available_sequence_templates()
 
     def load(self):
         yobj = yload(self.path)
@@ -131,15 +173,66 @@ class Sequencer(Loggable):
             ss.append(si.toyaml())
 
         path = add_extension(path, '.yaml')
+        self.path = path
         with open(path, 'w') as wfile:
             yaml.dump({'sequences': ss}, wfile)
+
+    def is_valid_automation(self, name):
+        return os.path.isfile(paths.get_automation_path(name))
+
+    def do_automation(self, a):
+        self.debug('do automation {}'.format(a))
+        self.sequences = [Sequence(application=self.application,
+                                   cfg={'steps': [{'automations': [a]}]})]
+        self.start()
+        return True
 
     def start(self):
         self._runthread = Thread(target=self._run)
         self._runthread.start()
 
     def add(self):
-        self.sequences.append(Sequence())
+        # use the selected sequence template to create a new sequence
+        if self.sequence_template:
+            cfg = {'cfg': load_sequence_template(self.sequence_template)}
+
+        else:
+            idx = len(self.sequences)
+            cfg = {'name': f'seq{idx:}'}
+
+        seq = self.factory(Sequence, cfg)
+        self.sequences.append(seq)
+
+    def add_step(self):
+        step = self.factory(SequenceStep, {'name': 'step'})
+        self.selected.steps.append(step)
+
+    def add_automation(self):
+        automation = self.factory(Automation, {'path': paths.get_automation_path('foo')})
+        self.selected_step.automations.append(automation)
+
+    def factory(self, klass, kw):
+        return klass(application=self.application, **kw)
+
+    @on_trait_change('edit_+')
+    def edit_handler(self, obj, name, old, new):
+        if name == 'edit_name':
+            name = 'name'
+        for s in self.selected_rows:
+            setattr(s, name, new)
+
+    @on_trait_change('selected_rows[]')
+    def handle_selected_rows(self, new):
+        if new:
+            self.selected = new[0]
+            if self.selected.steps:
+                self.selected_step = self.selected.steps[0]
+            else:
+                self.selected_step = self.factory(SequenceStep, {})
+            self.edit_name = self.selected.name
+        else:
+            self.selected_step = None
+            self.selected = None
 
     def _run(self):
         self.debug('run sequences')
@@ -169,7 +262,6 @@ class Sequencer(Loggable):
 
 class SequenceStepAdapter(TabularAdapter):
     columns = [('Name', 'name')]
-
 
 # class SequenceEditor(Loggable):
 #     sequences = List(Sequence)

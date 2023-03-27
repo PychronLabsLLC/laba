@@ -18,6 +18,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+from loggable import Loggable
+
 
 def add_extension(name, ext='.yaml'):
     if not isinstance(name, str):
@@ -29,7 +31,7 @@ def add_extension(name, ext='.yaml'):
     return name
 
 
-class Paths:
+class Paths(Loggable):
     def __init__(self):
         home = Path('~').expanduser()
 
@@ -40,10 +42,13 @@ class Paths:
         self.database_path = Path(self.root, 'recorder.db')
         self.database_backup_path = Path(self.root, 'backups', 'backup.db')
         self.sequences_dir = Path(self.root, 'sequences')
+        self.sequence_templates_dir = Path(self.root, 'sequence_templates')
 
         # make defaults
         self.make_dir('backups')
         self.make_dir('sequences')
+        self.make_dir('automations')
+        self.make_dir('sequence_templates')
 
     def make_dir(self, *basename):
         rp = Path(self.root, *basename)
@@ -51,8 +56,25 @@ class Paths:
             rp.mkdir()
 
     def get_automation_path(self, name):
-        name = add_extension(name, '.py')
-        return Path(self.root, 'automations', name)
+        return self.get_py_path('automations', name)
+
+    def get_sequence_template_path(self, name):
+        return self.get_yaml_path('sequence_templates', name)
+
+    def get_py_path(self, base, name):
+        return self.get_extension_path(base, name, ('.py',))
+
+    def get_yaml_path(self, base, name):
+        return self.get_extension_path(base, name, ('.yml', '.yaml'))
+
+    def get_extension_path(self, base, name, extensions):
+        for e in extensions:
+            namee = add_extension(name, e)
+            p = Path(self.root, base, namee)
+            if os.path.isfile(p):
+                return p
+        else:
+            self.debug('failed to construct a path that exists')
 
     def new_path(self, base, name, extension='.csv'):
         rp = Path(self.root, base)

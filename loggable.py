@@ -30,7 +30,12 @@ class Loggable(HasTraits):
         if cfg is None:
             cfg = {}
 
-        name = cfg.get('name', self.__class__.__name__)
+        name=None
+        if 'name' in kw:
+            name = kw.pop('name')
+        if name is None:
+            name = cfg.get('name', self.__class__.__name__)
+
         super().__init__(name=name, *args, **kw)
 
         if self.logger_name:

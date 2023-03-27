@@ -30,11 +30,16 @@ def demo():
         print("Connecting to hello world server…")
         socket = context.socket(zmq.REQ)
         socket.connect("tcp://localhost:5555")
-        socket.send_json({"device": "switch_controller",
-                          "function": "open_switch",
-                          "kwargs": {"name": "A",
-                                     "block": True,
-                                     "slow": True}})
+        # socket.send_json({"device": "switch_controller",
+        #                   "function": "open_switch",
+        #                   "kwargs": {"name": "A",
+        #                              "block": True,
+        #                              "slow": True}})
+
+        # test automation
+        socket.send_json({"automation": "fast",
+                          "kwargs": {}})
+
         print(socket.recv_json())
 
     t = Thread(target=func)
