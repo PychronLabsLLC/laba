@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import time
+
 import yaml
 from envisage.extension_point import ExtensionPoint
 from envisage.ids import TASK_EXTENSIONS
@@ -28,9 +30,10 @@ from dashboard import Dashboard, HistoryDashboard
 from figure import Figure
 from hardware.device import Device
 from loggable import Loggable
-from traits.api import List
+from traits.api import List, Instance
 
 from paths import paths
+from persister import JSONPersister
 from task import HardwareTask, SequencerTask
 from util import yload
 
@@ -116,17 +119,63 @@ class SwitchPlugin(BasePlugin):
                     break
 
 
+class BaseSpectrometerController(Device):
+    def set_ionbeam_position(self, iso, detector):
+        raise NotImplementedError
+
+    def get_intensities(self, detectors):
+        raise NotImplementedError
+
+
 class SpectrometerPlugin(BasePlugin):
     automation_commands = List(contributes_to='laba.automation.commans')
+    controller = Instance(BaseSpectrometerController)
 
     def _automation_commands_default(self):
         return [('measure', self._measure), ]
 
-    def _measure(self):
+    def _measure(self, ncycles=1, hops=None):
+        """
+
+        :param ncycles: use ncycles=1 for multi-collection
+        :return:
+        """
         self.debug('measure')
         # open a window for displaying our measurement graph
         figure = self._setup_figure()
         figure.edit_traits()
+
+        # setup persistence
+        with JSONPersister() as persister:
+            # do measurement
+            for cycle in range(ncycles):
+                # do cycle
+                self.debug(f'going cycle = {cycle}')
+                for i, hop in enumerate(hops):
+                    # do hop
+                    self.debug(f'{i}, hop={hop}')
+
+                    self.set_ionbeam_position(hop)
+                    period = hop['period']
+                    for c in range(hop['counts']):
+                        st = time.time()
+                        self.record_counts(hop, persister)
+
+                        # delay between counts
+                        et = time.time() - st
+                        p = period - et
+                        if p > 0:
+                            time.sleep(p)
+
+    def record_counts(self, hop, persister):
+        self.debug(f"record counts for {hop['detectors']}")
+        intensities = self.controller.get_intensities(hop['detectors'])
+        payload = {'time': time.time(), 'intensities': intensities}
+        persister.add('intensities', payload)
+
+    def set_ionbeam_position(self, hop):
+        self.debug(f"position {hop['iso']} on det={hop['det']}")
+        self.controller.set_ionbeam_position(hop['iso'], hop['det'])
 
     def _setup_figure(self):
         figure = Figure()

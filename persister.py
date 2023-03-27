@@ -44,6 +44,7 @@ class Persister(Loggable):
         self._handle.flush()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._exit_hook()
         self._handle.close()
 
     def _new_path(self, *args, **kw):
@@ -53,6 +54,9 @@ class Persister(Loggable):
         pass
 
     def _write_hook(self, data):
+        pass
+
+    def _exit_hook(self):
         pass
 
 
@@ -65,11 +69,20 @@ class CSVPersister(Persister):
 
 
 class JSONPersister(Persister):
+    def add(self, key, payload):
+        items = self._obj.get(key, [])
+        items.append(payload)
+        self._obj[key] = items
+
     def _enter_hook(self):
-        pass
+        self._obj = {}
 
     def _write_hook(self, data):
-        json.dump(data, self._handle)
+        # json.dump(data, self._handle)
+        self._obj.update(**data)
+
+    def _exit_hook(self):
+        json.dump(self._obj, self._handle)
 
 
 class YAMLPersister(Persister):
