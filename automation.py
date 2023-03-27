@@ -31,8 +31,17 @@ from timer import Timer
 
 def is_alive(func):
     def wrapper(obj, *args, **kw):
+        print(obj, args, kw)
         if obj.alive:
             return func(obj, *args, **kw)
+
+    return wrapper
+
+
+def contributed_is_alive(func, obj):
+    def wrapper(*args, **kw):
+        if obj.alive:
+            return func(*args, **kw)
 
     return wrapper
 
@@ -41,10 +50,9 @@ class Automation(Loggable):
     application = Any
     text = Str
     path = File
-    # start_button = Button
-    # stop_button = Button
+
     alive = Bool
-    timer = Instance(Timer)
+    timer = Instance(Timer, ())
     console = Instance(Console)
 
     _runthread = None
@@ -87,38 +95,33 @@ class Automation(Loggable):
             self._runthread.start()
             return self._runthread
 
+    def cancel(self):
+        self.alive = False
+        self.timer.cancel()
+
     # commands
-    def _get_context(self):
-        ctx = dict(info=self.info,
-                   sleep=self.sleep,
-                   open_switch=self.open_switch,
-                   close_switch=self.close_switch,
-                   start_recording=self.start_recording)
-        return ctx
-
-    def open_switch(self, name, *args, **kw):
-        self._actuate_switch(name, True, *args, **kw)
-
-    def close_switch(self, name, *args, **kw):
-        self._actuate_switch(name, False, *args, **kw)
-
     @is_alive
-    def _actuate_switch(self, name, state, *args, **kw):
-        for sw in self.application.get_services(Device):
-            if not hasattr(sw, 'switches'):
-                continue
+    def dev_function(self, device, name, *args, **kw):
+        """
+        call a function on a device
 
-            for si in sw.switches:
-                if si.name == name:
-                    func = sw.open_switch if state else sw.close_switch
-                    func(name, *args, **kw)
-                    break
+        :param device:
+        :param name:
+        :param args:
+        :param kw:
+        :return:
+        """
+        dev = self.application.get_service(Device, query=f"name=='{device}'")
+        if dev is None:
+            self.warning(f'Invalid device {device}')
+            return
 
-    def debug(self, msg):
-        if self.console:
-            dt = datetime.now().strftime('%H:%M:%S')
-            self.console.text += f'{dt} -- {msg}\n'
-        super().debug(msg)
+        if not hasattr(dev, name):
+            self.warning(f'Invalid function {name}')
+            return
+
+        func = getattr(dev, name)
+        func(*args, **kw)
 
     @is_alive
     def sleep(self, nseconds):
@@ -163,6 +166,13 @@ class Automation(Loggable):
     def finish(self):
         self.stop_recording()
 
+    def debug(self, msg):
+        if self.console:
+            dt = datetime.now().strftime('%H:%M:%S')
+            self.console.text += f'{dt} -- {msg}\n'
+        super().debug(msg)
+
+    # private
     def _run(self):
         self.debug('starting run')
         try:
@@ -193,8 +203,26 @@ class Automation(Loggable):
         finally:
             self.finish()
 
+    # command helpers
+    def _get_context(self):
+        ctx = dict(info=self.info,
+                   sleep=self.sleep,
+
+                   start_recording=self.start_recording,
+                   stop_recording=self.stop_recording,
+                   dfunc=self.dev_function,
+                   message=self.debug
+                   )
+
+        messages = self.application.get_extensions('laba.automation.commands')
+
+        ctx.update({n: contributed_is_alive(f, self) for n, f in messages})
+        return ctx
+
     def traits_view(self):
-        return View(UItem('path'))
+        return View(HGroup(UItem('path'),
+                           spring,
+                           UItem('timer', style='custom')))
     # def _start_button_fired(self):
     #     self.run()
     #

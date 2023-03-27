@@ -24,7 +24,7 @@ from db.db import DBClient
 from hardware.device import Device
 from loggable import Loggable
 from paths import paths
-from plugin import HardwarePlugin
+from plugin import HardwarePlugin, SwitchPlugin
 from server import Server
 from util import import_klass, yload
 
@@ -39,6 +39,7 @@ class Application(TasksApplication, Loggable):
         self.add_plugin(CorePlugin())
         self.add_plugin(TasksPlugin())
         self.add_plugin(HardwarePlugin())
+        self.add_plugin(SwitchPlugin())
 
     def start(self):
         self.initialize()

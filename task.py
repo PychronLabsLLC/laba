@@ -86,6 +86,10 @@ class SequencerTask(BaseTask):
     sequencer = Instance(Sequencer)
 
     start_button = Button
+    stop_button = Button
+    pause_button = Button
+    continue_button = Button
+
     add_button = Button
     add_step_button = Button
     add_automation_button = Button
@@ -97,8 +101,21 @@ class SequencerTask(BaseTask):
         s = Sequencer(application=self.application)
         return s
 
+    def _pause_button_fired(self):
+        print('asdfasf', self.sequencer.selected_step)
+        # for a in self.sequencer.selected_step.automations:
+        #     a.timer.pause()
+        seq = self.sequencer.active_sequence
+        if seq:
+            for step in seq.steps:
+                for a in step.automations:
+                    a.timer.pause()
+
     def _start_button_fired(self):
         self.sequencer.start()
+
+    def _stop_button_fired(self):
+        self.sequencer.stop()
 
     def _add_button_fired(self):
         self.sequencer.add()

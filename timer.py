@@ -44,12 +44,16 @@ class Timer(Loggable):
         self.start(block=False)
 
     def _pause_button_fired(self):
-        if self._paused.is_set():
-            self.pause_label = 'Pause'
-            self._paused.clear()
-        else:
-            self.pause_label = 'Unpause'
-            self._paused.set()
+        self.pause()
+
+    def pause(self):
+        if self._paused:
+            if self._paused.is_set():
+                self.pause_label = 'Pause'
+                self._paused.clear()
+            else:
+                self.pause_label = 'Unpause'
+                self._paused.set()
 
     def _continue_button_fired(self):
         self._paused.clear()
@@ -71,6 +75,10 @@ class Timer(Loggable):
         self._thread.start()
         if block:
             self._thread.join()
+
+    def cancel(self):
+        if self._evt:
+            self._evt.set()
 
     def run(self):
         st = time.time()
@@ -103,7 +111,6 @@ class Timer(Loggable):
         return View(HGroup(UItem('display_value',
                                  format_str='%0.3f',
                                  editor=LEDEditor()),
-                           spring,
                            UItem('start_button',
                                  enabled_when='start_enabled'),
                            UItem('pause_button',

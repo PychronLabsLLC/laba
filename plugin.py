@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 import yaml
+from envisage.extension_point import ExtensionPoint
 from envisage.ids import TASK_EXTENSIONS
 from envisage.plugin import Plugin
 from envisage.ui.tasks.task_extension import TaskExtension
@@ -24,6 +25,7 @@ from traitsui.menu import Action
 
 from automation import Automation
 from dashboard import Dashboard, HistoryDashboard
+from figure import Figure
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import List
@@ -41,6 +43,9 @@ class BasePlugin(Plugin, Loggable):
 
 
 class HardwarePlugin(BasePlugin):
+    # an extension point for adding additional commands to automations
+    automation_commands = ExtensionPoint(List, id='laba.automation.commands')
+
     def _hardware_task_factory(self):
         devices = self.application.get_services(Device)
 
@@ -84,4 +89,46 @@ class HardwarePlugin(BasePlugin):
             ),
 
         ]
+
+
+class SwitchPlugin(BasePlugin):
+    automation_commands = List(contributes_to='laba.automation.commands')
+
+    def _automation_commands_default(self):
+        return [('open_switch', self.open_switch),
+                ('close_switch', self.close_switch)]
+
+    def open_switch(self, name, *args, **kw):
+        self._actuate_switch(name, True, *args, **kw)
+
+    def close_switch(self, name, *args, **kw):
+        self._actuate_switch(name, False, *args, **kw)
+
+    def _actuate_switch(self, name, state, *args, **kw):
+        for sw in self.application.get_services(Device):
+            if not hasattr(sw, 'switches'):
+                continue
+
+            for si in sw.switches:
+                if si.name == name:
+                    func = sw.open_switch if state else sw.close_switch
+                    func(name, *args, **kw)
+                    break
+
+
+class SpectrometerPlugin(BasePlugin):
+    automation_commands = List(contributes_to='laba.automation.commans')
+
+    def _automation_commands_default(self):
+        return [('measure', self._measure), ]
+
+    def _measure(self):
+        self.debug('measure')
+        # open a window for displaying our measurement graph
+        figure = self._setup_figure()
+        figure.edit_traits()
+
+    def _setup_figure(self):
+        figure = Figure()
+        return figure
 # ============= EOF =============================================

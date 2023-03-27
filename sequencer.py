@@ -15,7 +15,7 @@
 # ===============================================================================
 import os
 import time
-from threading import Thread
+from threading import Thread, Event
 
 import yaml
 from pyface.file_dialog import FileDialog
@@ -53,11 +53,12 @@ class SequenceStep(Loggable):
                                            ctx=ctx,
                                            application=self.application) for a in cfg['automations']]
 
-    def run(self, timer, console):
+    def run(self, console):
         ts = []
         for a in self.automations:
             try:
-                a.timer = timer
+                # a.timer = timer
+                a.timer = Timer()
                 a.console = console
                 t = a.run(block=False)
                 ts.append(t)
@@ -105,11 +106,16 @@ class Sequence(Loggable):
             with LoadAutomationCTX() as ctx:
                 self.steps = [SequenceStep(si, application=self.application, ctx=ctx) for si in cfg['steps']]
 
-    def run(self, timer, console):
+    def cancel(self):
+        for s in self.steps:
+            for a in s.automations:
+                a.cancel()
+
+    def run(self, console):
         self.debug('run sequence')
         for i, si in enumerate(self.steps):
             self.debug(f'do step {i}')
-            si.run(timer, console)
+            si.run(console)
 
     def toyaml(self):
         return {'name': self.name,
@@ -134,13 +140,15 @@ class Sequencer(Loggable):
     selected_rows = List
     selected_step = Instance(SequenceStep, ())
 
+    active_sequence = Instance(Sequence)
+
     sequence_template = Str
     available_sequence_templates = List
 
-    timer = Instance(Timer, ())
     console = Instance(Console, ())
 
     _runthread = None
+    _cancel_evt = None
 
     edit_name = Str
 
@@ -148,6 +156,8 @@ class Sequencer(Loggable):
         super().__init__(*args, **kw)
 
         self.available_sequence_templates = get_available_sequence_templates()
+        if self.available_sequence_templates:
+            self.sequence_template = self.available_sequence_templates[0]
 
     def load(self):
         yobj = yload(self.path)
@@ -188,8 +198,16 @@ class Sequencer(Loggable):
         return True
 
     def start(self):
+        self._cancel_evt = Event()
         self._runthread = Thread(target=self._run)
         self._runthread.start()
+
+    # define a function to stop the runthread
+    def stop(self):
+        for s in self.sequences:
+            s.cancel()
+
+        self._cancel_evt.set()
 
     def add(self):
         # use the selected sequence template to create a new sequence
@@ -237,12 +255,17 @@ class Sequencer(Loggable):
     def _run(self):
         self.debug('run sequences')
         for s in self.sequences:
+            self.active_sequence = s
+
+            if self._cancel_evt.is_set():
+                break
+
             delay = self._get_delay(s, 'delay_before')
             if delay:
-                time.sleep(delay)
+                self._cancel_evt.wait(delay)
             try:
                 s.state = 'running'
-                s.run(self.timer, self.console)
+                s.run(self.console)
                 s.state = 'success'
             except SequenceError as err:
                 self.warning(f'Sequence {s} error: {err}')
@@ -250,7 +273,7 @@ class Sequencer(Loggable):
 
             delay = self._get_delay(s, 'delay_after')
             if delay:
-                time.sleep(delay)
+                self._cancel_evt.wait(delay)
 
     def _get_delay(self, s, key):
         delay = s.get(key)

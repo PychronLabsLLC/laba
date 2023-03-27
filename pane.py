@@ -103,10 +103,11 @@ class SequenceControlPane(TraitsDockPane):
 
     def traits_view(self):
         v = View(HGroup(icon_button_editor('start_button', 'start'),
+                        icon_button_editor('stop_button', 'stop'),
                         spring,
-                        UItem('object.sequencer.timer', style='custom')
-                        # UItem('pause_button'),
-                        # UItem('continue_button'),
+                        # UItem('object.sequencer.timer', style='custom')
+                        UItem('pause_button'),
+                        UItem('continue_button'),
                         ))
         return v
 
