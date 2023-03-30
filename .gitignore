@@ -2,3 +2,5 @@
 __pycache__/
 
 demo/persistence/*
+demo/recorder.db
+demo/backups/*
