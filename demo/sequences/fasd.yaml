@@ -1,0 +1,17 @@
+sequences:
+- name: seq0
+  steps: []
+- name: seq1
+  steps:
+  - automations: []
+    name: step
+  - automations:
+    - foo.py
+    - foo.py
+    name: step
+  - automations: []
+    name: step
+- name: seq2
+  steps: []
+- name: seq3
+  steps: []

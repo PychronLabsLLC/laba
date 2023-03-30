@@ -1,0 +1,21 @@
+delay_after: 50
+sequences:
+  - name: seq1
+    steps:
+      - name: step1
+        automations:
+          # - foo
+          - fast.py
+          - fast3.py
+      - name: step2
+        automations:
+          - fast.py
+  - name: seq2
+    steps:
+      - name: step1
+        automations:
+          - fast.py
+          - fast2.py
+      - name: step2
+        automations:
+          - fast.py

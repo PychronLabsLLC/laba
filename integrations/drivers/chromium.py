@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.switch import SwitchController
-from hardware.adc import ADC
-from hardware.spectrometer_controller import SpectrometerController
-from hardware.laser_controller import LaserController
+from hardware.driver.driver import Driver
+
+
+class Chromium(Driver):
+    pass
 # ============= EOF =============================================

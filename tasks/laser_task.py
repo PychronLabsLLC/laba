@@ -13,8 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.switch import SwitchController
-from hardware.adc import ADC
-from hardware.spectrometer_controller import SpectrometerController
-from hardware.laser_controller import LaserController
+from pyface.tasks.task_layout import TaskLayout, PaneItem
+
+from panes.laser_panes import LaserControlPane, LaserCentralPane
+from task import BaseTask
+
+
+class LaserTask(BaseTask):
+    name = 'Laser'
+    id = 'laba.laser.task'
+
+    def create_dock_panes(self):
+        return [LaserControlPane(model=self)]
+
+    def create_central_pane(self):
+        return LaserCentralPane(model=self)
+
+    def _default_layout_default(self):
+        return TaskLayout(left=PaneItem('laba.laser.controls'))
 # ============= EOF =============================================

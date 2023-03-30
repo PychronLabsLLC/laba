@@ -33,9 +33,14 @@ def add_extension(name, ext='.yaml'):
 
 class Paths(Loggable):
     def __init__(self):
-        home = Path('~').expanduser()
+        # self.root = Path(home, 'laba')
+        # get root from environment if it exists otherwise use default '~/laba'
 
-        self.root = Path(home, 'laba')
+        home = Path('~').expanduser()
+        default = Path(home, 'laba')
+
+        self.root = Path(os.environ.get('LABA_ROOT', default))
+
         self.initialization_path = Path(self.root, 'init.yml')
         self.dashboards_path = Path(self.root, 'dashboard.yml')
         self.automations_path = Path(self.root, 'automations.yml')

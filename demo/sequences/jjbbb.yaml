@@ -1,0 +1,31 @@
+sequences:
+- name: seq0
+  steps: []
+- name: seq1
+  steps:
+  - automations: []
+    name: step
+  - automations: []
+    name: step
+  - automations: []
+    name: step
+  - automations: []
+    name: step
+- name: seqkkklklklll2
+  steps: []
+- name: seqkkklklklll2
+  steps: []
+- name: seqkkklklkljjll2
+  steps:
+  - automations: []
+    name: step
+  - automations: []
+    name: step
+  - automations: []
+    name: step
+  - automations: []
+    name: step
+- name: seqkkklklklll2
+  steps: []
+- name: seq6k
+  steps: []

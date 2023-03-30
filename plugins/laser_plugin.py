@@ -13,8 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.switch import SwitchController
-from hardware.adc import ADC
-from hardware.spectrometer_controller import SpectrometerController
-from hardware.laser_controller import LaserController
+from envisage.ui.tasks.task_factory import TaskFactory
+
+from plugin import BasePlugin
+from tasks.laser_task import LaserTask
+
+
+class LaserPlugin(BasePlugin):
+    def _laser_task_factory(self):
+        return LaserTask(application=self.application)
+
+    def _tasks_default(self):
+        return [
+            TaskFactory(
+                id='laba.laser.task',
+                name='Laser',
+                factory=self._laser_task_factory,
+            )
+        ]
+
+
+class ChromiumPlugin(LaserPlugin):
+    pass
 # ============= EOF =============================================

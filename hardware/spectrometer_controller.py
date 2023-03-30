@@ -13,8 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.switch import SwitchController
-from hardware.adc import ADC
-from hardware.spectrometer_controller import SpectrometerController
-from hardware.laser_controller import LaserController
+from hardware.device import Device
+
+
+class SpectrometerController(Device):
+    def set_ionbeam_position(self, iso, detector):
+        self.driver.set_ionbeam_position(iso, detector)
+
+    def get_intensities(self, detectors):
+        self.driver.get_intensities(detectors)
 # ============= EOF =============================================

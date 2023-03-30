@@ -1,0 +1,20 @@
+sequences:
+- name: seq0
+  steps: []
+- name: seq1
+  steps: []
+- name: seq2
+  steps:
+  - automations: []
+    name: step
+  - automations:
+    - ''
+    - ''
+    - ''
+    name: step
+  - automations: []
+    name: step
+- name: seq3
+  steps: []
+- name: seq4
+  steps: []

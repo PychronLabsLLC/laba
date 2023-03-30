@@ -1,0 +1,100 @@
+server:
+  port: 5555
+plugins:
+  - name: SwitchPlugin
+    controller: switch_controller
+  - name: SpectrometerPlugin
+    controller: spectrometer_controller
+  - name: LaserPlugin
+    controller: laser_controller
+devices:
+  - name: spectrometer_controller
+    kind: SpectrometerController
+    driver:
+      kind: Qtegra
+      communicator:
+        kind: ethernet
+        address: localhost:8000
+
+  - name: adc
+    kind: ADC
+    enabled: True
+    channels:
+      - name: '1'
+        address: '1'
+        mapping: 3,2,1
+      - name: '2'
+        address: '2'
+        mapping: 1,2,3
+    driver:
+      kind: M1000
+      communicator:
+        kind: serial
+        address: com4
+
+  - name:  mks
+    enabled: True
+    driver:
+      kind: MKS
+      communicator:
+        kind: serial
+        address: com3
+  
+  - name: ethernet_device
+    enabled: True
+    driver:
+      kind: MKS
+      communicator:
+        kind: ethernet
+        address: localhost:8000
+  - name: laser_controller
+    kind: LaserController
+    enabled: True
+    driver:
+      kind: Chromium
+      communicator:
+        kind: ethernet
+        address: localhost:8000
+  - name: switch_controller
+    kind: SwitchController
+    enabled: True
+    driver:
+      kind: U2351A
+      communicator:
+        kind: ethernet
+        address: localhost:8000
+    switches:
+      - name: A
+        channel: '01'
+        ramp:
+          period: 1
+          min: 0
+          max: 10
+          open:
+            control_points: 
+              - 0, 0
+              - 0.5, 10
+              - 1, 10
+          close:
+            control_points: 
+              - 0, 10
+              - 0.5, 10
+              - 1, 0
+      - name: B
+        channel: '02'
+        ramp:
+          period: 1
+          min: 0
+          max: 10
+          open:
+            control_points: 
+              - 0, 0
+              - 0.25, 10
+              - 1, 10
+          close:
+            control_points: 
+              - 0, 10
+              - 0.25, 10
+              - 1, 0
+      - name: C
+        channel: '03'

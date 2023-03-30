@@ -13,8 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.switch import SwitchController
-from hardware.adc import ADC
-from hardware.spectrometer_controller import SpectrometerController
-from hardware.laser_controller import LaserController
+from pyface.tasks.traits_dock_pane import TraitsDockPane
+from pyface.tasks.traits_task_pane import TraitsTaskPane
+
+from traitsui.api import View
+
+
+class LaserControlPane(TraitsDockPane):
+    id = 'laba.laser.controls'
+    def traits_view(self):
+        return View()
+
+
+class LaserCentralPane(TraitsTaskPane):
+    def traits_view(self):
+        return View()
 # ============= EOF =============================================

@@ -1,0 +1,15 @@
+name: seq0
+steps:
+  - automations:
+    - foo.py
+    - foo.py
+    name: extraction 
+  - automations:
+    - foo.py
+    name: measurement
+  - automations:
+    - foo.py
+    - foo.py
+    - foo.py
+    - foo.py
+    name: post_meaasurement

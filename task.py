@@ -15,26 +15,23 @@
 # ===============================================================================
 from envisage.ui.tasks.action.exit_action import ExitAction
 from envisage.ui.tasks.action.preferences_action import PreferencesGroup
-from envisage.ui.tasks.action.task_window_launch_group import TaskWindowLaunchAction, TaskWindowLaunchGroup
+from envisage.ui.tasks.action.task_window_launch_group import TaskWindowLaunchGroup
 from pyface.action.schema.schema import SMenuBar, SMenu
 from pyface.constant import OK
 from pyface.file_dialog import FileDialog
 from pyface.tasks.action.dock_pane_toggle_group import DockPaneToggleGroup
 from pyface.tasks.task import Task
 from pyface.tasks.task_layout import TaskLayout, PaneItem
-from traits.api import Instance, List, Any, Button, DelegatesTo
+from traits.api import Instance, List
 from traitsui.menu import Action
 
 from automation import Automation
-from console import Console
-from dashboard import Dashboard, BaseDashboard
+from dashboard import BaseDashboard
 from hardware.device import Device
 from loggable import Loggable
-from pane import HardwareCentralPane, DevicesPane, DashboardsPane, AutomationsPane, SequenceEditorPane, \
-    SequenceCentralPane, SequenceControlPane, ConsolePane
+from pane import HardwareCentralPane, DevicesPane, DashboardsPane, AutomationsPane
 from paths import paths
 from plugin_manager import PluginManager
-from sequencer import Sequencer
 
 
 class PluginManagerAction(Action):
@@ -77,84 +74,6 @@ class BaseTask(Task):
             name='Plugins',
         )
     )
-
-
-class SequencerTask(BaseTask):
-    id = 'laba.sequence.task'
-    name = 'Sequencer'
-
-    sequencer = Instance(Sequencer)
-
-    start_button = Button
-    stop_button = Button
-    pause_button = Button
-    continue_button = Button
-
-    add_button = Button
-    add_step_button = Button
-    add_automation_button = Button
-
-    save_button = Button
-    save_as_button = Button
-
-    def _sequencer_default(self):
-        s = Sequencer(application=self.application)
-        return s
-
-    def _pause_button_fired(self):
-        print('asdfasf', self.sequencer.selected_step)
-        # for a in self.sequencer.selected_step.automations:
-        #     a.timer.pause()
-        seq = self.sequencer.active_sequence
-        if seq:
-            for step in seq.steps:
-                for a in step.automations:
-                    a.timer.pause()
-
-    def _start_button_fired(self):
-        self.sequencer.start()
-
-    def _stop_button_fired(self):
-        self.sequencer.stop()
-
-    def _add_button_fired(self):
-        self.sequencer.add()
-
-    def _add_step_button_fired(self):
-        self.sequencer.add_step()
-
-    def _add_automation_button_fired(self):
-        self.sequencer.add_automation()
-
-    def _save_button_fired(self):
-        self.sequencer.save()
-
-    def _save_as_button_fired(self):
-        self.sequencer.save_as()
-
-    def create_dock_panes(self):
-        return [SequenceEditorPane(model=self),
-                SequenceControlPane(model=self),
-                ConsolePane(model=self.sequencer)
-                ]
-
-    def create_central_pane(self):
-        return SequenceCentralPane(model=self)
-
-    def open(self, path):
-        self.sequencer.path = path
-        self.sequencer.load()
-
-    def do_automation(self, name):
-        return self.sequencer.do_automation(name)
-
-    def is_valid_automation(self, name):
-        return self.sequencer.is_valid_automation(name)
-
-    def _default_layout_default(self):
-        return TaskLayout(top=PaneItem("laba.sequencer.controls"),
-                          left=PaneItem("laba.sequencer.editor"),
-                          right=PaneItem("laba.console"))
 
 
 class HardwareTask(BaseTask):

@@ -1,0 +1,15 @@
+sequences:
+- name: sdfasdfdsfdfssdf
+  steps:
+  - automations: []
+    name: step
+- name: seq1
+  steps: []
+- name: seq2
+  steps: []
+- name: seq3
+  steps: []
+- name: seq4
+  steps: []
+- name: seq5
+  steps: []

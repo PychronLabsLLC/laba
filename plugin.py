@@ -34,7 +34,8 @@ from traits.api import List, Instance
 
 from paths import paths
 from persister import JSONPersister
-from task import HardwareTask, SequencerTask
+from task import HardwareTask
+from tasks.sequencer_task import SequencerTask
 from util import yload
 
 
@@ -56,18 +57,11 @@ class HardwarePlugin(BasePlugin):
         ds = []
 
         yobj = yload(paths.dashboards_path)
-        # with open(paths.dashboards_path, 'r') as rfile:
-        #     yobj = yaml.load(rfile, yaml.SafeLoader)
+
         for d in yobj:
             ds.append(Dashboard(self.application, d))
         ds.append(HistoryDashboard(self.application))
-        # automations = []
-        # with open(paths.automations_path, 'r') as rfile:
-        #     yobj = yaml.load(rfile, yaml.SafeLoader)
 
-        # yobj = yload(paths.automations_path)
-        # for automation in yobj:
-        #     automations.append(Automation(automation))
         automations = [Automation(a) for a in yload(paths.automations_path)]
 
         return HardwareTask(devices=devices, dashboards=ds, automations=automations,
@@ -93,91 +87,4 @@ class HardwarePlugin(BasePlugin):
 
         ]
 
-
-class SwitchPlugin(BasePlugin):
-    automation_commands = List(contributes_to='laba.automation.commands')
-
-    def _automation_commands_default(self):
-        return [('open_switch', self.open_switch),
-                ('close_switch', self.close_switch)]
-
-    def open_switch(self, name, *args, **kw):
-        self._actuate_switch(name, True, *args, **kw)
-
-    def close_switch(self, name, *args, **kw):
-        self._actuate_switch(name, False, *args, **kw)
-
-    def _actuate_switch(self, name, state, *args, **kw):
-        for sw in self.application.get_services(Device):
-            if not hasattr(sw, 'switches'):
-                continue
-
-            for si in sw.switches:
-                if si.name == name:
-                    func = sw.open_switch if state else sw.close_switch
-                    func(name, *args, **kw)
-                    break
-
-
-class BaseSpectrometerController(Device):
-    def set_ionbeam_position(self, iso, detector):
-        raise NotImplementedError
-
-    def get_intensities(self, detectors):
-        raise NotImplementedError
-
-
-class SpectrometerPlugin(BasePlugin):
-    automation_commands = List(contributes_to='laba.automation.commans')
-    controller = Instance(BaseSpectrometerController)
-
-    def _automation_commands_default(self):
-        return [('measure', self._measure), ]
-
-    def _measure(self, ncycles=1, hops=None):
-        """
-
-        :param ncycles: use ncycles=1 for multi-collection
-        :return:
-        """
-        self.debug('measure')
-        # open a window for displaying our measurement graph
-        figure = self._setup_figure()
-        figure.edit_traits()
-
-        # setup persistence
-        with JSONPersister() as persister:
-            # do measurement
-            for cycle in range(ncycles):
-                # do cycle
-                self.debug(f'going cycle = {cycle}')
-                for i, hop in enumerate(hops):
-                    # do hop
-                    self.debug(f'{i}, hop={hop}')
-
-                    self.set_ionbeam_position(hop)
-                    period = hop['period']
-                    for c in range(hop['counts']):
-                        st = time.time()
-                        self.record_counts(hop, persister)
-
-                        # delay between counts
-                        et = time.time() - st
-                        p = period - et
-                        if p > 0:
-                            time.sleep(p)
-
-    def record_counts(self, hop, persister):
-        self.debug(f"record counts for {hop['detectors']}")
-        intensities = self.controller.get_intensities(hop['detectors'])
-        payload = {'time': time.time(), 'intensities': intensities}
-        persister.add('intensities', payload)
-
-    def set_ionbeam_position(self, hop):
-        self.debug(f"position {hop['iso']} on det={hop['det']}")
-        self.controller.set_ionbeam_position(hop['iso'], hop['det'])
-
-    def _setup_figure(self):
-        figure = Figure()
-        return figure
 # ============= EOF =============================================

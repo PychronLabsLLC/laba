@@ -1,0 +1,96 @@
+- name: Home
+  cards:
+    - name: Canvas
+      kind: Canvas
+      elements:
+        - name: A
+          kind: CanvasRampSwitch
+          translate:
+            x: -5
+            y: 0
+        - name: B
+          kind: CanvasRampSwitch
+          translate:
+            x: 5
+            y: 0
+        - name: C
+          kind: CanvasSwitch
+          translate: 
+            x: 15
+            y: 0
+        - name: TankA
+          kind: CanvasTank
+          translate:
+            x: -15
+            y: 0
+        - name: MainEL
+          default_color: 0.1,0.75,1
+          kind: CanvasTank
+          precedence: 2
+          translate:
+            x: 30
+            y: 0
+        - kind: Connection
+          start:
+            name: A
+          end:
+            name: B
+        - kind: Connection
+          start:
+            name: A
+          end:
+            name: TankA
+        - kind: Connection
+          start:
+            name: B
+          end:
+            name: C
+        - kind: Connection
+          start:
+            name: C
+          end:
+            name: MainEL
+
+
+    # - name: Procedures
+    #  kind: Procedures
+    # - name: SC1
+    #   kind: Scan
+    #   period: 0.15
+    #   devices:
+    #     - name: mks
+    #       function: get_value
+
+    # - name: SC2
+    #   kind: LEDReadOut
+    #   period: 1
+    #   devices:
+    #     - name: mks
+    #       function: get_value
+
+    - name: SA
+      kind: EMSwitch
+      devices:
+        - name: switch_controller
+      switch:
+        name: A
+    - name: Pressure1
+      kind: LEDReadOut
+      period: 1
+      height: 0.075
+      devices:
+        - name: mks
+          #function: get_value
+    - name: SB
+      kind: EMSwitch
+      devices:
+        - name: switch_controller
+      switch:
+        name: B
+    - name: ADC1
+      kind: Scan
+      period: 5
+      devices:
+        - name: adc
+          function:
+            name: get_value
