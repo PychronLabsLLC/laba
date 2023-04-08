@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import os
 import time
 from datetime import datetime
 from threading import Thread, Event
@@ -68,7 +69,8 @@ class Automation(Loggable):
         if path is None:
             path = self.path
         else:
-            path = paths.get_automation_path(path)
+            if isinstance(path, str):
+                path = paths.get_automation_path(path)
 
         self.path = path
         if ctx is not None:

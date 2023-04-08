@@ -32,10 +32,10 @@ def add_extension(name, ext='.yaml'):
 
 
 class Paths(Loggable):
-    def __init__(self):
+    def __init__(self, *args, **kw):
         # self.root = Path(home, 'laba')
         # get root from environment if it exists otherwise use default '~/laba'
-
+        super().__init__(*args, **kw)
         home = Path('~').expanduser()
         default = Path(home, 'laba')
 
@@ -76,10 +76,11 @@ class Paths(Loggable):
         for e in extensions:
             namee = add_extension(name, e)
             p = Path(self.root, base, namee)
+            print(p)
             if os.path.isfile(p):
                 return p
         else:
-            self.debug('failed to construct a path that exists')
+            self.debug(f'failed to construct a path that exists, {base}, {name}, {extensions}')
 
     def new_path(self, base, name, extension='.csv'):
         rp = Path(self.root, base)
