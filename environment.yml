@@ -12,3 +12,4 @@ dependencies:
   - importlib_resources
   - sqlalchemy
   - pyserial
+  - sqlite
