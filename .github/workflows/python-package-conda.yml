@@ -34,4 +34,5 @@ jobs:
       - name: Test with pytest
         run: |
           conda install pytest
+          pip install -r requirements.txt
           $CONDA/bin/pytest --rootdir=test
