@@ -46,6 +46,22 @@ class LinearMapper(HasTraits):
 class LinearDrive(Device):
     mapper = Instance(LinearMapper, ())
 
+    def map_data(self, raw):
+        """
+        map the raw value to a data value
+        :param data:
+        :return:
+        """
+        return self.mapper.map_data(raw)
+
+    def map_raw(self, data):
+        """
+        map the data value to a raw value
+        :param raw:
+        :return:
+        """
+        return self.mapper.map_raw(data)
+
     def move_to(self, position, **kw):
         """
         move to position
@@ -57,6 +73,5 @@ class LinearDrive(Device):
 
     def _move_to(self, raw, **kw):
         self.driver.move_absolute(raw, **kw)
-
 
 # ============= EOF =============================================
