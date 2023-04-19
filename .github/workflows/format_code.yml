@@ -29,8 +29,7 @@ jobs:
           ref: ${{ github.head_ref }}
       - uses: psf/black@stable
         with:
-          options: "--verbose"
-          black_args: "--exclude=demo"
+          options: "--verbose --exclude=demo"
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
