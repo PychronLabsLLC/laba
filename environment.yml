@@ -1,4 +1,4 @@
-name: plv
+name: base
 channels:
   - omnia
   - defaults
@@ -12,4 +12,3 @@ dependencies:
   - importlib_resources
   - sqlalchemy
   - pyserial
-prefix: /Users/jakeross/miniconda3/envs/plv
