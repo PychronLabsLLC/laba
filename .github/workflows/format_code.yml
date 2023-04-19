@@ -30,6 +30,7 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--verbose"
+          exclude: "demo"
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
