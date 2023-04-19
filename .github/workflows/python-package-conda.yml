@@ -43,7 +43,7 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install pytest wheel click coverage pyparsing celiagg
       - name: Install dependencies
-        run: python -m pip install -r test_requirements.txt
+        run: python -m pip install --upgrade bezier --no-binary=bezier envisage chaco importlib_resources
       - name: Tests
         run: pytest --rootdir=test
 

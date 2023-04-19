@@ -1,4 +1,0 @@
-envisage
-importlib_resources
-chaco
-bezier
