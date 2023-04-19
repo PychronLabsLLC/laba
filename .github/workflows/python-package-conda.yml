@@ -16,7 +16,7 @@ jobs:
         python-version: ["3.8", "3.9", "3.10"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA//bin//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
+          $CONDA/bin/conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
 #      - name: Lint with flake8
 #        run: |
 #          $CONDA/bin/conda install flake8
@@ -35,5 +35,5 @@ jobs:
       - name: Test with pytest
         run: |
           conda install pytest
-          $CONDA//bin//pip install envisage bezier
-          $CONDA//bin//pytest --rootdir=test
+          $CONDA/bin/pip install envisage bezier
+          $CONDA/bin/pytest --rootdir=test
