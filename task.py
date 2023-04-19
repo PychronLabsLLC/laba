@@ -35,7 +35,7 @@ from plugin_manager import PluginManager
 
 
 class PluginManagerAction(Action):
-    name = 'Manage...'
+    name = "Manage..."
 
     def perform(self, event):
         plugin_manager = PluginManager()
@@ -43,12 +43,12 @@ class PluginManagerAction(Action):
 
 
 class OpenSequenceAction(Action):
-    name = 'Open Sequence...'
+    name = "Open Sequence..."
 
     def perform(self, event):
-        dlg = FileDialog(action='open', default_directory=str(paths.sequences_dir))
+        dlg = FileDialog(action="open", default_directory=str(paths.sequences_dir))
         if dlg.open() == OK:
-            task = event.task.window.application.get_task('laba.sequencer.task', False)
+            task = event.task.window.application.get_task("laba.sequencer.task", False)
             if task.open(dlg.path):
                 task.window.open()
 
@@ -59,39 +59,42 @@ class BaseTask(Task):
             OpenSequenceAction(),
             ExitAction(),
             PreferencesGroup(),
-            id='file.menu',
-            name='&File'
+            id="file.menu",
+            name="&File",
         ),
-        SMenu(TaskWindowLaunchGroup(),
-              DockPaneToggleGroup(),
-              id="view.menu",
-              name="&View"),
+        SMenu(
+            TaskWindowLaunchGroup(), DockPaneToggleGroup(), id="view.menu", name="&View"
+        ),
         SMenu(
             # OpenAction(),
             # SaveAction(),
             PluginManagerAction(),
-            id='plugin.menu',
-            name='Plugins',
-        )
+            id="plugin.menu",
+            name="Plugins",
+        ),
     )
 
 
 class HardwareTask(BaseTask):
-    name = 'Hardware'
-    id = 'laba.hardware.task'
+    name = "Hardware"
+    id = "laba.hardware.task"
     selection = Instance(Loggable)
     devices = List(Device)
     dashboards = List(BaseDashboard)
     automations = List(Automation)
 
     def create_dock_panes(self):
-        return [DevicesPane(model=self),
-                DashboardsPane(model=self),
-                AutomationsPane(model=self)]
+        return [
+            DevicesPane(model=self),
+            DashboardsPane(model=self),
+            AutomationsPane(model=self),
+        ]
 
     def create_central_pane(self):
         return HardwareCentralPane(model=self)
 
     def _default_layout_default(self):
         return TaskLayout(left=PaneItem("laba.devices"))
+
+
 # ============= EOF =============================================

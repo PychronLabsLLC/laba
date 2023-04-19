@@ -19,12 +19,11 @@ from traits.api import List
 
 
 class SwitchPlugin(BasePlugin):
-    id = 'laba.plugin.switch'
-    automation_commands = List(contributes_to='laba.automation.commands')
+    id = "laba.plugin.switch"
+    automation_commands = List(contributes_to="laba.automation.commands")
 
     def _automation_commands_default(self):
-        return [('open_switch', self.open_switch),
-                ('close_switch', self.close_switch)]
+        return [("open_switch", self.open_switch), ("close_switch", self.close_switch)]
 
     def open_switch(self, name, *args, **kw):
         self._actuate_switch(name, True, *args, **kw)
@@ -34,7 +33,7 @@ class SwitchPlugin(BasePlugin):
 
     def _actuate_switch(self, name, state, *args, **kw):
         for sw in self.application.get_services(Device):
-            if not hasattr(sw, 'switches'):
+            if not hasattr(sw, "switches"):
                 continue
 
             for si in sw.switches:
@@ -42,5 +41,6 @@ class SwitchPlugin(BasePlugin):
                     func = sw.open_switch if state else sw.close_switch
                     func(name, *args, **kw)
                     break
+
 
 # ============= EOF =============================================

@@ -26,8 +26,8 @@ class LaserPlugin(BasePlugin):
     def _tasks_default(self):
         return [
             TaskFactory(
-                id='laba.laser.task',
-                name='Laser',
+                id="laba.laser.task",
+                name="Laser",
                 factory=self._laser_task_factory,
             )
         ]
@@ -35,4 +35,6 @@ class LaserPlugin(BasePlugin):
 
 class ChromiumPlugin(LaserPlugin):
     pass
+
+
 # ============= EOF =============================================

@@ -19,10 +19,12 @@ from traitsui.api import View, UItem, Item
 
 
 def okcancel_view(*args, **kw):
-    return View(buttons=['OK', 'Cancel'], kind='livemodal', *args, **kw)
+    return View(buttons=["OK", "Cancel"], kind="livemodal", *args, **kw)
 
 
 class PluginManager(Loggable):
     def traits_view(self):
-        return okcancel_view(title='Plugin Manager', resizable=True)
+        return okcancel_view(title="Plugin Manager", resizable=True)
+
+
 # ============= EOF =============================================

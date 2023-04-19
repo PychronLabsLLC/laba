@@ -14,6 +14,7 @@
 # limitations under the License.
 # ===============================================================================
 
+
 def get_float(default=None):
     def dec(func):
         def wrapper(*args, **kw):
@@ -26,4 +27,6 @@ def get_float(default=None):
         return wrapper
 
     return dec
+
+
 # ============= EOF =============================================

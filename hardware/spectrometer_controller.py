@@ -22,4 +22,6 @@ class SpectrometerController(Device):
 
     def get_intensities(self, detectors):
         self.driver.get_intensities(detectors)
+
+
 # ============= EOF =============================================

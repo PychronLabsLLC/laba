@@ -37,8 +37,7 @@ def demo():
         #                              "slow": True}})
 
         # test automation
-        socket.send_json({"automation": "fast",
-                          "kwargs": {}})
+        socket.send_json({"automation": "fast", "kwargs": {}})
 
         print(socket.recv_json())
 
@@ -55,7 +54,7 @@ def rollback():
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # demo()
     try:
         main()

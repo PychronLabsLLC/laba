@@ -25,6 +25,7 @@ class CanvasOverlay(AbstractOverlay):
 
     def hittest(self, x, y):
         return
+
     # def overlay(self, component, gc, view_bounds, mode):
     #     with gc:
     #         gc.rect(0, 0, 50, 50)
@@ -35,7 +36,7 @@ class CanvasElement(CanvasOverlay):
     precedence = Int(0)
     state = Str
 
-    font = 'arial 14'
+    font = "arial 14"
     line_width = Int(10)
     active_color = RGBColor((0.5, 0.5, 0.5))
     corner_radius = Int(10)
@@ -46,9 +47,9 @@ class CanvasElement(CanvasOverlay):
         return sx < x < sx + sw and sy < y < sy + sh
 
     def map_screen_xywh(self):
-        (x, y), (zx, zy), (wx, wy) = self.component.map_screen([(self.x, self.y),
-                                                                (0, 0),
-                                                                (self.width, self.height)])
+        (x, y), (zx, zy), (wx, wy) = self.component.map_screen(
+            [(self.x, self.y), (0, 0), (self.width, self.height)]
+        )
         return (x, y), abs(wx - zx), abs(zy - wy)
 
     def _set_color(self, gc, color=None, scale=0.5):
@@ -108,13 +109,13 @@ def rounded_rect(gc, x, y, width, height, corner_radius):
 
 
 class CanvasSwitch(CanvasElement):
-    state = Enum('unknown', 'open', 'closed')
+    state = Enum("unknown", "open", "closed")
 
     def _state_changed(self):
         color = (0.5, 0.5, 0.5)
-        if self.state == 'open':
+        if self.state == "open":
             color = (0, 1, 0)
-        elif self.state == 'closed':
+        elif self.state == "closed":
             color = (1, 0, 0)
         self.active_color = color
 
@@ -133,12 +134,12 @@ class CanvasSwitch(CanvasElement):
 
 
 class CanvasRampSwitch(CanvasSwitch):
-    state = Enum('unknown', 'open', 'closed', 'moving')
+    state = Enum("unknown", "open", "closed", "moving")
     voltage = Float
 
     def _state_changed(self):
         color = (0.5, 0.5, 0.5)
-        if self.state == 'moving':
+        if self.state == "moving":
             color = (1, 1, 0)
         self.active_color = color
         super()._state_changed()
@@ -148,7 +149,7 @@ class CanvasRampSwitch(CanvasSwitch):
         with gc:
             gc.translate_ctm(0, -10)
             gc.set_font(str_to_font(self.font))
-            txt = f'{self.voltage:0.3f}'
+            txt = f"{self.voltage:0.3f}"
             self._render_textbox(gc, x, y - h / 2, w, h, txt)
 
 
@@ -192,6 +193,7 @@ class CanvasConnection(CanvasElement):
             # print(self.name, rx, ry, rw, rh)
             gc.rect(rx, ry, rw, rh)
             gc.draw_path()
+
 
 # class SwitchOverlay(AbstractOverlay):
 #     def __init__(self, *args, **kw):

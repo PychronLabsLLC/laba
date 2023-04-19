@@ -23,6 +23,7 @@ LONG_FORM_PROMPT = "#"
 
 class M1000(BaseADCDriver):
     """ """
+
     address = Str
 
     # short_form_prompt = "$"
@@ -55,7 +56,7 @@ class M1000(BaseADCDriver):
     #
     #     return res
     def load(self, cfg):
-        self.address = cfg.get('address', '')
+        self.address = cfg.get("address", "")
 
     def _read_channel(self, channel):
         cmd = "RD"
@@ -76,9 +77,12 @@ class M1000(BaseADCDriver):
         # )
 
         if form == LONG_FORM_PROMPT:
+
             def func(rr):
                 return float(rr[5:-2])
+
         else:
+
             def func(rr):
                 return float(rr[2:])
 
@@ -88,4 +92,6 @@ class M1000(BaseADCDriver):
                 return [func(ri) for ri in r if ri is not ""]
             else:
                 return func(r)
+
+
 # ============= EOF =============================================

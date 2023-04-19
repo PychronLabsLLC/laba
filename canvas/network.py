@@ -27,7 +27,7 @@ class Node(HasTraits):
 
     def set_color(self, c):
         if isinstance(self.element, CanvasSwitch):
-            if self.element.state == 'open':
+            if self.element.state == "open":
                 self.element.active_color = c
                 for ci in self.children:
                     ci.set_color(c)
@@ -48,7 +48,7 @@ def max_precedence(tree):
     if tree.children:
         for ci in tree.children:
             if isinstance(ci.element, CanvasSwitch):
-                if ci.state != 'open':
+                if ci.state != "open":
                     continue
             mpi, ci = max_precedence(ci)
             if mpi > mp:
@@ -82,8 +82,13 @@ class CanvasNetwork(Loggable):
     def _build_tree(self, name):
         def make_node(elem, visited=set()):
             if not isinstance(elem, CanvasElement):
-                elem = next((o for o in self.dv.overlays
-                             if isinstance(o, CanvasElement) and o.name == elem))
+                elem = next(
+                    (
+                        o
+                        for o in self.dv.overlays
+                        if isinstance(o, CanvasElement) and o.name == elem
+                    )
+                )
 
             if elem in visited:
                 return
@@ -103,11 +108,9 @@ class CanvasNetwork(Loggable):
                             cs.append(nn)
                         es.append(o)
 
-            n = Node(name=elem.name,
-                     state=elem.state,
-                     element=elem,
-                     children=cs,
-                     edges=es)
+            n = Node(
+                name=elem.name, state=elem.state, element=elem, children=cs, edges=es
+            )
             return n
 
         tree = make_node(name)
@@ -116,7 +119,7 @@ class CanvasNetwork(Loggable):
     def update(self, name):
         tree = self._build_tree(name)
 
-        if tree.state == 'closed':
+        if tree.state == "closed":
             # split the network into two subnetworks
             # split until only 2 elements
             # get the max precedence of those two elements
@@ -135,5 +138,6 @@ class CanvasNetwork(Loggable):
             # get max precedence of this tree
             maxp, color = max_precedence(tree)
             tree.set_color(color)
+
 
 # ============= EOF =============================================

@@ -60,7 +60,7 @@ class Server(Loggable):
 
         """
 
-        self.debug(f'Starting server. {self.port}')
+        self.debug(f"Starting server. {self.port}")
 
         context = zmq.Context()
         socket = context.socket(zmq.REP)
@@ -71,9 +71,9 @@ class Server(Loggable):
             message = socket.recv_json()
             self.debug(f"Received request: {message}")
 
-            device_name = message.get('device')
+            device_name = message.get("device")
             if device_name:
-                func_name = message.get('function')
+                func_name = message.get("function")
                 reply = {"message": "no function"}
                 if func_name:
                     reply = {"message": f"invalid device={device_name}"}
@@ -81,16 +81,17 @@ class Server(Loggable):
                     if dev:
                         try:
                             func = getattr(dev, func_name)
-                            kwargs = message.get('kwargs', {})
+                            kwargs = message.get("kwargs", {})
                             reply = {"message": "OK", "response": func(**kwargs)}
                         except AttributeError:
                             reply = {"message": f"invalid function={func_name}"}
             else:
-                automation_name = message.get('automation')
+                automation_name = message.get("automation")
                 if automation_name:
                     q = Queue()
+
                     def do_automation():
-                        task = self.application.get_task('laba.sequencer.task')
+                        task = self.application.get_task("laba.sequencer.task")
                         if task.is_valid_automation(automation_name):
                             resp = task.do_automation(automation_name)
                             q.put({"message": "OK", "response": resp})
@@ -105,5 +106,6 @@ class Server(Loggable):
 
             # Send reply back to client
             socket.send_json(reply)
+
 
 # ============= EOF =============================================

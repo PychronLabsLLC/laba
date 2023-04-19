@@ -20,7 +20,8 @@ from traitsui.api import View
 
 
 class LaserControlPane(TraitsDockPane):
-    id = 'laba.laser.controls'
+    id = "laba.laser.controls"
+
     def traits_view(self):
         return View()
 
@@ -28,4 +29,6 @@ class LaserControlPane(TraitsDockPane):
 class LaserCentralPane(TraitsTaskPane):
     def traits_view(self):
         return View()
+
+
 # ============= EOF =============================================

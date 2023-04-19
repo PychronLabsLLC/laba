@@ -48,7 +48,7 @@ class BasePlugin(Plugin, Loggable):
 
 class HardwarePlugin(BasePlugin):
     # an extension point for adding additional commands to automations
-    automation_commands = ExtensionPoint(List, id='laba.automation.commands')
+    automation_commands = ExtensionPoint(List, id="laba.automation.commands")
 
     def _hardware_task_factory(self):
         devices = self.application.get_services(Device)
@@ -64,18 +64,18 @@ class HardwarePlugin(BasePlugin):
 
         automations = [Automation(a) for a in yload(paths.automations_path)]
 
-        return HardwareTask(devices=devices, dashboards=ds, automations=automations,
-                            selection=ds[0])
+        return HardwareTask(
+            devices=devices, dashboards=ds, automations=automations, selection=ds[0]
+        )
 
     def _sequence_task_factory(self):
         return SequencerTask(application=self.application)
 
     def _tasks_default(self):
         return [
-
             TaskFactory(
-                id='laba.sequencer.task',
-                name='Sequencer',
+                id="laba.sequencer.task",
+                name="Sequencer",
                 factory=self._sequence_task_factory,
             ),
             TaskFactory(
@@ -84,7 +84,7 @@ class HardwarePlugin(BasePlugin):
                 factory=self._hardware_task_factory,
                 # image="repo",
             ),
-
         ]
+
 
 # ============= EOF =============================================

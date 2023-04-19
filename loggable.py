@@ -30,11 +30,11 @@ class Loggable(HasTraits):
         if cfg is None:
             cfg = {}
 
-        name=None
-        if 'name' in kw:
-            name = kw.pop('name')
+        name = None
+        if "name" in kw:
+            name = kw.pop("name")
         if name is None:
-            name = cfg.get('name', self.__class__.__name__)
+            name = cfg.get("name", self.__class__.__name__)
 
         super().__init__(name=name, *args, **kw)
 
@@ -69,4 +69,6 @@ class Loggable(HasTraits):
         exc = traceback.format_exc()
         self.debug(exc)
         return exc
+
+
 # ============= EOF =============================================

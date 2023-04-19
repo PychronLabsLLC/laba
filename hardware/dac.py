@@ -18,6 +18,8 @@ from hardware.device import Device
 
 class DAC(Device):
     def write_channel(self, channel, value):
-        self.debug(f'write channel {channel}, value={value}')
+        self.debug(f"write channel {channel}, value={value}")
         self.driver.write_channel(channel, value)
+
+
 # ============= EOF =============================================

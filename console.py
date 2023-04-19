@@ -22,6 +22,8 @@ class Console(Loggable):
     text = Str
 
     def traits_view(self):
-        v = View(UItem('text', style='custom', editor=TextEditor(read_only=True)))
+        v = View(UItem("text", style="custom", editor=TextEditor(read_only=True)))
         return v
+
+
 # ============= EOF =============================================

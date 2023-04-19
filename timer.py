@@ -32,13 +32,13 @@ class Timer(Loggable):
     _evt = None
     _paused = None
 
-    pause_button = Button('Pause')
-    continue_button = Button('Continue')
-    start_button = Button('Start')
+    pause_button = Button("Pause")
+    continue_button = Button("Continue")
+    start_button = Button("Start")
     start_enabled = Bool(True)
     pause_enabled = Bool(False)
     continue_enabled = Bool(False)
-    pause_label = Str('Pause')
+    pause_label = Str("Pause")
 
     def _start_button_fired(self):
         self.start(block=False)
@@ -49,17 +49,17 @@ class Timer(Loggable):
     def pause(self):
         if self._paused:
             if self._paused.is_set():
-                self.pause_label = 'Pause'
+                self.pause_label = "Pause"
                 self._paused.clear()
             else:
-                self.pause_label = 'Unpause'
+                self.pause_label = "Unpause"
                 self._paused.set()
 
     def _continue_button_fired(self):
         self._paused.clear()
         self.display_value = 0
         self.current_value = 0
-        self.pause_label = 'Pause'
+        self.pause_label = "Pause"
         self._evt.set()
 
     def start(self, block=True):
@@ -94,34 +94,34 @@ class Timer(Loggable):
 
             cv = self.current_value - period
             if cv <= 0:
-                GUI.invoke_later(self.trait_set,
-                                 current_value=0,
-                                 display_value=0)
+                GUI.invoke_later(self.trait_set, current_value=0, display_value=0)
                 break
 
-            GUI.invoke_later(self.trait_set,
-                             current_value=cv,
-                             display_value=round(cv, 0))
+            GUI.invoke_later(
+                self.trait_set, current_value=cv, display_value=round(cv, 0)
+            )
 
         self.start_enabled = True
         self.pause_enabled = False
         self.continue_enabled = False
 
     def traits_view(self):
-        return View(HGroup(UItem('display_value',
-                                 format_str='%0.3f',
-                                 editor=LEDEditor()),
-                           UItem('start_button',
-                                 enabled_when='start_enabled'),
-                           UItem('pause_button',
-                                 editor=ButtonEditor(label_value="pause_label"),
-                                 enabled_when='pause_enabled'),
-                           UItem('continue_button',
-                                 enabled_when='continue_enabled')),
-                    width=600)
+        return View(
+            HGroup(
+                UItem("display_value", format_str="%0.3f", editor=LEDEditor()),
+                UItem("start_button", enabled_when="start_enabled"),
+                UItem(
+                    "pause_button",
+                    editor=ButtonEditor(label_value="pause_label"),
+                    enabled_when="pause_enabled",
+                ),
+                UItem("continue_button", enabled_when="continue_enabled"),
+            ),
+            width=600,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     d = Timer()
     d.max_value = 10
     d.configure_traits()

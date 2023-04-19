@@ -26,7 +26,7 @@ class Driver(Loggable):
         self.communicator.ask(*args, **kw)
 
     def bootstrap(self, cfg):
-        self.setup_communicator(cfg['communicator'])
+        self.setup_communicator(cfg["communicator"])
         self.load(cfg)
 
     def load(self, cfg):
@@ -39,7 +39,9 @@ class Driver(Loggable):
         return True
 
     def setup_communicator(self, cfg):
-        kind = cfg['kind']
-        klass = import_klass(f'hardware.communicator.{kind.capitalize()}Communicator')
+        kind = cfg["kind"]
+        klass = import_klass(f"hardware.communicator.{kind.capitalize()}Communicator")
         self.communicator = klass(cfg)
+
+
 # ============= EOF =============================================

@@ -36,9 +36,9 @@ class Channel(HasTraits):
     mapping = List
 
     def __init__(self, *args, **kw):
-        if kw['mapping']:
-            mapping = kw.pop('mapping')
-            self.mapping = [float(c) for c in mapping.split(',')]
+        if kw["mapping"]:
+            mapping = kw.pop("mapping")
+            self.mapping = [float(c) for c in mapping.split(",")]
 
         super().__init__(*args, **kw)
 
@@ -61,15 +61,16 @@ class ADC(Device):
     channels = List(Channel)
 
     def load(self, cfg):
-        self.channels = [Channel(**ci) for ci in cfg['channels']]
+        self.channels = [Channel(**ci) for ci in cfg["channels"]]
 
-    def get_value(self, idx=0, datastream='default'):
+    def get_value(self, idx=0, datastream="default"):
         ch = self.channels[idx]
         v = self.driver.read_channel(ch.address)
         vv = ch.map_value(v)
-        self.debug(f'get value volts={v}, value={vv}')
+        self.debug(f"get value volts={v}, value={vv}")
 
-        self.update = {'datastream': datastream,
-                       'value': vv}
+        self.update = {"datastream": datastream, "value": vv}
         return vv
+
+
 # ============= EOF =============================================

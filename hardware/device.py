@@ -30,11 +30,11 @@ class Device(Loggable):
     update = Event
 
     def traits_view(self):
-        return View(Item('name'))
+        return View(Item("name"))
 
     def bootstrap(self, cfg):
         self.load(cfg)
-        self.setup_driver(cfg['driver'])
+        self.setup_driver(cfg["driver"])
         if self.open():
             if self.initialize():
                 return True
@@ -43,8 +43,8 @@ class Device(Loggable):
         pass
 
     def setup_driver(self, cfg):
-        kind = cfg['kind']
-        klass = import_klass(f'integrations.drivers.{kind}')
+        kind = cfg["kind"]
+        klass = import_klass(f"integrations.drivers.{kind}")
         self.driver = klass(cfg)
         self.driver.bootstrap(cfg)
 
@@ -56,5 +56,6 @@ class Device(Loggable):
 
     def get_value(self, *args, **kw):
         return random.random() + math.log(id(self))
+
 
 # ============= EOF =============================================

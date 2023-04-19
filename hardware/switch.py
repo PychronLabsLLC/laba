@@ -32,7 +32,7 @@ class Switch(Loggable):
 
     def __init__(self, cfg, *args, **kw):
         super().__init__(cfg, *args, **kw)
-        self.channel = str(cfg['channel'])
+        self.channel = str(cfg["channel"])
 
 
 class RampSwitch(Switch):
@@ -46,10 +46,10 @@ class RampSwitch(Switch):
 
     def __init__(self, cfg, *args, **kw):
         super().__init__(cfg, *args, **kw)
-        self.ramp_period = cfg['ramp'].get('period', 1)
-        self.nsteps = cfg['ramp'].get('nsteps', 10)
-        ocpts = cfg['ramp']['open'].get('control_points', [])
-        ccpts = cfg['ramp']['close'].get('control_points', [])
+        self.ramp_period = cfg["ramp"].get("period", 1)
+        self.nsteps = cfg["ramp"].get("nsteps", 10)
+        ocpts = cfg["ramp"]["open"].get("control_points", [])
+        ccpts = cfg["ramp"]["close"].get("control_points", [])
         self.degree = len(ocpts) - 1
         self.open_nodes = array([p.split(",") for p in ocpts], dtype=float).T
         self.close_nodes = array([p.split(",") for p in ccpts], dtype=float).T
@@ -83,19 +83,19 @@ class SwitchController(Device):
 
     def __init__(self, cfg, *args, **kw):
         super().__init__(cfg, *args, **kw)
-        self._load_switches(cfg['switches'])
+        self._load_switches(cfg["switches"])
 
     def _load_switches(self, sws):
         for sw in sws:
-            self.debug(f'loading switch {sw}')
-            if sw.get('ramp'):
+            self.debug(f"loading switch {sw}")
+            if sw.get("ramp"):
                 klass = RampSwitch
             else:
                 klass = Switch
             self.switches.append(klass(sw))
 
     def get_switch(self, name):
-        self.debug(f'get {name}')
+        self.debug(f"get {name}")
         return next((s for s in self.switches if s.name == name), None)
 
     def toggle_switch(self, name):
@@ -103,10 +103,10 @@ class SwitchController(Device):
         if s:
             if s.state:
                 self.close_switch(name)
-                return 'closed'
+                return "closed"
             else:
                 self.open_switch(name)
-                return 'open'
+                return "open"
 
     def open_switch(self, name, slow=False, block=False):
         return self._actuate_switch(name, True, slow, block)
@@ -115,11 +115,11 @@ class SwitchController(Device):
         return self._actuate_switch(name, False, slow, block)
 
     def cancel_ramp(self):
-        self.debug('canceling ramp')
+        self.debug("canceling ramp")
         self._cancel_ramp.set()
 
     def _actuate_switch(self, name, state, slow, block):
-        self.debug(f'actuate switch {name} state={state} block={block}')
+        self.debug(f"actuate switch {name} state={state} block={block}")
         s = self.get_switch(name)
         if s:
             if slow:
@@ -127,22 +127,20 @@ class SwitchController(Device):
             else:
                 self._actuate_channel(s, state)
         else:
-            return f'invalid switch={name}'
+            return f"invalid switch={name}"
 
     def _ramp_channel(self, s, state, block):
-        self.debug(f'ramp switch {s} state={state} block={block}')
+        self.debug(f"ramp switch {s} state={state} block={block}")
         self._cancel_ramp = Event()
 
         def ramp():
             if self.canvas:
-                self.canvas.set_switch_state(s.name, 'moving')
+                self.canvas.set_switch_state(s.name, "moving")
 
             st = time.time()
             max_time = s.nsteps * s.ramp_period * 1.1
             max_voltage = s.ramp_max() * 1.1
-            self.update = {'clear': True,
-                           'datastream': 'ramp',
-                           'switch_name': s.name}
+            self.update = {"clear": True, "datastream": "ramp", "switch_name": s.name}
 
             for i, si in enumerate(s.ramp(state)):
                 if self._cancel_ramp.is_set():
@@ -150,20 +148,21 @@ class SwitchController(Device):
                 if i:
                     time.sleep(s.ramp_period)
 
-                self.debug(f'set output {si}')
+                self.debug(f"set output {si}")
                 self.driver.set_voltage(s.channel, si)
 
                 if self.canvas:
                     self.canvas.set_switch_voltage(s.name, si)
 
-                self.update = {'voltage': si,
-                               'relative_time_seconds': time.time() - st,
-                               'max_time': max_time,
-                               'max_voltage': max_voltage,
-                               'value': si,
-                               'datastream': 'ramp',
-                               'switch_name': s.name
-                               }
+                self.update = {
+                    "voltage": si,
+                    "relative_time_seconds": time.time() - st,
+                    "max_time": max_time,
+                    "max_voltage": max_voltage,
+                    "value": si,
+                    "datastream": "ramp",
+                    "switch_name": s.name,
+                }
 
                 # time.sleep(s.ramp_period)
 
@@ -174,18 +173,19 @@ class SwitchController(Device):
         if block:
             ramp()
         else:
-
             self._ramp_thread = Thread(target=ramp)
             self._ramp_thread.start()
 
     def _actuate_channel(self, switch, state):
         channel = switch.channel
         v = switch.max_value if state else switch.min_value
-        self.debug(f'actuate channel {channel} state={state}, voltage={v}')
+        self.debug(f"actuate channel {channel} state={state}, voltage={v}")
         self.driver.actuate_channel(channel, v)
 
         switch.state = state
         if self.canvas:
             self.canvas.set_switch_state(switch.name, state)
             self.canvas.set_switch_voltage(switch.name, v)
+
+
 # ============= EOF =============================================

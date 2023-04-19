@@ -27,7 +27,20 @@ from traitsui.tabular_adapter import TabularAdapter
 from automation import Automation
 from console import Console
 from loggable import Loggable
-from traits.api import List, File, Enum, Instance, Button, Dict, Any, Str, Bool, Int, Property, cached_property
+from traits.api import (
+    List,
+    File,
+    Enum,
+    Instance,
+    Button,
+    Dict,
+    Any,
+    Str,
+    Bool,
+    Int,
+    Property,
+    cached_property,
+)
 from traitsui.api import View, UItem, HGroup, VGroup
 
 from paths import paths, add_extension
@@ -49,9 +62,14 @@ class SequenceStep(Loggable):
     def __init__(self, cfg=None, ctx=None, *args, **kw):
         super().__init__(cfg, *args, **kw)
         if cfg is not None:
-            self.automations = [Automation({'path': paths.get_automation_path(a)},
-                                           ctx=ctx,
-                                           application=self.application) for a in cfg['automations']]
+            self.automations = [
+                Automation(
+                    {"path": paths.get_automation_path(a)},
+                    ctx=ctx,
+                    application=self.application,
+                )
+                for a in cfg["automations"]
+            ]
 
     def run(self, console):
         ts = []
@@ -63,23 +81,29 @@ class SequenceStep(Loggable):
                 t = a.run(block=False)
                 ts.append(t)
             except AutomationError as err:
-                self.warning(f'Automation {a} error: {err}')
+                self.warning(f"Automation {a} error: {err}")
                 break
 
         for ti in ts:
             ti.join()
 
     def toyaml(self):
-        return {'name': self.name,
-                'automations': [os.path.basename(a.path) for a in self.automations]}
+        return {
+            "name": self.name,
+            "automations": [os.path.basename(a.path) for a in self.automations],
+        }
 
     def traits_view(self):
-        v = View(UItem('automations', editor=ListEditor(style='custom',
-                                                        editor=InstanceEditor())))
+        v = View(
+            UItem(
+                "automations",
+                editor=ListEditor(style="custom", editor=InstanceEditor()),
+            )
+        )
         return v
 
 
-class LoadAutomationCTX():
+class LoadAutomationCTX:
     def __init__(self):
         self._memo = {}
 
@@ -98,13 +122,16 @@ class LoadAutomationCTX():
 
 class Sequence(Loggable):
     steps = List
-    state = Enum('not run', 'running', 'failed', 'success')
+    state = Enum("not run", "running", "failed", "success")
 
     def __init__(self, cfg=None, *args, **kw):
         super().__init__(cfg, *args, **kw)
         if cfg is not None:
             with LoadAutomationCTX() as ctx:
-                self.steps = [SequenceStep(si, application=self.application, ctx=ctx) for si in cfg['steps']]
+                self.steps = [
+                    SequenceStep(si, application=self.application, ctx=ctx)
+                    for si in cfg["steps"]
+                ]
 
     def cancel(self):
         for s in self.steps:
@@ -112,19 +139,21 @@ class Sequence(Loggable):
                 a.cancel()
 
     def run(self, console):
-        self.debug('run sequence')
+        self.debug("run sequence")
         for i, si in enumerate(self.steps):
-            self.debug(f'do step {i}')
+            self.debug(f"do step {i}")
             si.run(console)
 
     def toyaml(self):
-        return {'name': self.name,
-                'steps': [s.toyaml() for s in self.steps]}
+        return {"name": self.name, "steps": [s.toyaml() for s in self.steps]}
 
 
 def get_available_sequence_templates():
-    return [os.path.splitext(p)[0] for p in os.listdir(paths.sequence_templates_dir)
-            if p.endswith('.yaml') or p.endswith('.yml')]
+    return [
+        os.path.splitext(p)[0]
+        for p in os.listdir(paths.sequence_templates_dir)
+        if p.endswith(".yaml") or p.endswith(".yml")
+    ]
 
 
 def load_sequence_template(name):
@@ -162,7 +191,9 @@ class Sequencer(Loggable):
     def load(self):
         yobj = yload(self.path)
         self.yobj = yobj
-        self.sequences = [Sequence(s, application=self.application) for s in yobj['sequences']]
+        self.sequences = [
+            Sequence(s, application=self.application) for s in yobj["sequences"]
+        ]
 
     def save(self):
         if self.path:
@@ -171,9 +202,11 @@ class Sequencer(Loggable):
             self.save_as()
 
     def save_as(self):
-        dlg = FileDialog(action='save as',
-                         wildcard='.yaml',
-                         default_directory=str(paths.sequences_dir))
+        dlg = FileDialog(
+            action="save as",
+            wildcard=".yaml",
+            default_directory=str(paths.sequences_dir),
+        )
         if dlg.open():
             self._save(dlg.path)
 
@@ -182,18 +215,21 @@ class Sequencer(Loggable):
         for si in self.sequences:
             ss.append(si.toyaml())
 
-        path = add_extension(path, '.yaml')
+        path = add_extension(path, ".yaml")
         self.path = path
-        with open(path, 'w') as wfile:
-            yaml.dump({'sequences': ss}, wfile)
+        with open(path, "w") as wfile:
+            yaml.dump({"sequences": ss}, wfile)
 
     def is_valid_automation(self, name):
         return os.path.isfile(paths.get_automation_path(name))
 
     def do_automation(self, a):
-        self.debug('do automation {}'.format(a))
-        self.sequences = [Sequence(application=self.application,
-                                   cfg={'steps': [{'automations': [a]}]})]
+        self.debug("do automation {}".format(a))
+        self.sequences = [
+            Sequence(
+                application=self.application, cfg={"steps": [{"automations": [a]}]}
+            )
+        ]
         self.start()
         return True
 
@@ -212,34 +248,36 @@ class Sequencer(Loggable):
     def add(self):
         # use the selected sequence template to create a new sequence
         if self.sequence_template:
-            cfg = {'cfg': load_sequence_template(self.sequence_template)}
+            cfg = {"cfg": load_sequence_template(self.sequence_template)}
 
         else:
             idx = len(self.sequences)
-            cfg = {'name': f'seq{idx:}'}
+            cfg = {"name": f"seq{idx:}"}
 
         seq = self.factory(Sequence, cfg)
         self.sequences.append(seq)
 
     def add_step(self):
-        step = self.factory(SequenceStep, {'name': 'step'})
+        step = self.factory(SequenceStep, {"name": "step"})
         self.selected.steps.append(step)
 
     def add_automation(self):
-        automation = self.factory(Automation, {'path': paths.get_automation_path('foo')})
+        automation = self.factory(
+            Automation, {"path": paths.get_automation_path("foo")}
+        )
         self.selected_step.automations.append(automation)
 
     def factory(self, klass, kw):
         return klass(application=self.application, **kw)
 
-    @on_trait_change('edit_+')
+    @on_trait_change("edit_+")
     def edit_handler(self, obj, name, old, new):
-        if name == 'edit_name':
-            name = 'name'
+        if name == "edit_name":
+            name = "name"
         for s in self.selected_rows:
             setattr(s, name, new)
 
-    @on_trait_change('selected_rows[]')
+    @on_trait_change("selected_rows[]")
     def handle_selected_rows(self, new):
         if new:
             self.selected = new[0]
@@ -253,25 +291,25 @@ class Sequencer(Loggable):
             self.selected = None
 
     def _run(self):
-        self.debug('run sequences')
+        self.debug("run sequences")
         for s in self.sequences:
             self.active_sequence = s
 
             if self._cancel_evt.is_set():
                 break
 
-            delay = self._get_delay(s, 'delay_before')
+            delay = self._get_delay(s, "delay_before")
             if delay:
                 self._cancel_evt.wait(delay)
             try:
-                s.state = 'running'
+                s.state = "running"
                 s.run(self.console)
-                s.state = 'success'
+                s.state = "success"
             except SequenceError as err:
-                self.warning(f'Sequence {s} error: {err}')
-                s.state = 'failed'
+                self.warning(f"Sequence {s} error: {err}")
+                s.state = "failed"
 
-            delay = self._get_delay(s, 'delay_after')
+            delay = self._get_delay(s, "delay_after")
             if delay:
                 self._cancel_evt.wait(delay)
 
@@ -284,7 +322,8 @@ class Sequencer(Loggable):
 
 
 class SequenceStepAdapter(TabularAdapter):
-    columns = [('Name', 'name')]
+    columns = [("Name", "name")]
+
 
 # class SequenceEditor(Loggable):
 #     sequences = List(Sequence)

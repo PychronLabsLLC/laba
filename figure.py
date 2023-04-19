@@ -47,15 +47,15 @@ class Figure(Loggable):
 
         return p
 
-    def new_series(self, name, plotid=0, type='line', xdata=None, ydata=None, **kw):
+    def new_series(self, name, plotid=0, type="line", xdata=None, ydata=None, **kw):
         if xdata is None:
             xdata = []
         if ydata is None:
             ydata = []
         plot = self.get_plot(plotid)
-        plot.data.set_data('x0', xdata)
-        plot.data.set_data('y0', ydata)
-        plot.plot(('x0', 'y0'), name=name, type=type, **kw)
+        plot.data.set_data("x0", xdata)
+        plot.data.set_data("y0", ydata)
+        plot.plot(("x0", "y0"), name=name, type=type, **kw)
 
     def add_datum(self, name, x, y, plotid=0):
         series = self.get_series(name, plotid)
@@ -80,7 +80,6 @@ class Figure(Loggable):
             self.set_x_limits(l + step, h + step, plotid)
 
     def clear_data(self, name=None, plotid=0):
-
         series = self.get_series(name, plotid)
         series.index.set_data([])
         series.value.set_data([])
@@ -103,8 +102,7 @@ class Figure(Loggable):
         plot.value_range.high = h
 
     def traits_view(self):
-        v = View(
-            UItem('plotcontainer', editor=ComponentEditor()))
+        v = View(UItem("plotcontainer", editor=ComponentEditor()))
         return v
 
 
@@ -113,9 +111,7 @@ class AxisTool(BaseTool):
         if self.hittest(event):
             # wrap_axis = WrapAxis(self.component)
             # wrap_axis.edit_traits(view=AxisView, handler=AxisViewHandler(), kind="live")
-            self.component.edit_traits(view=AxisView,
-                                       handler=AxisViewHandler()
-                                       )
+            self.component.edit_traits(view=AxisView, handler=AxisViewHandler())
             self.component.request_redraw()
             event.handled = True
 
@@ -179,17 +175,20 @@ title_grp = VGroup(
     show_border=True,
     label="Title",
 )
-AxisView = View(VGroup(limit_grp,
-                       title_grp,
-                       tick_grp,
-                       line_grp),
-                title="Edit Axis",
-                buttons=['OK', ])
+AxisView = View(
+    VGroup(limit_grp, title_grp, tick_grp, line_grp),
+    title="Edit Axis",
+    buttons=[
+        "OK",
+    ],
+)
 
 
 class AxisViewHandler(Handler):
     def init(self, info):
         from pyface.qt import QtCore
+
         info.ui.control.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+
 
 # ============= EOF =============================================

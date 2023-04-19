@@ -20,8 +20,8 @@ from task import BaseTask
 
 
 class LaserTask(BaseTask):
-    name = 'Laser'
-    id = 'laba.laser.task'
+    name = "Laser"
+    id = "laba.laser.task"
 
     def create_dock_panes(self):
         return [LaserControlPane(model=self)]
@@ -30,5 +30,7 @@ class LaserTask(BaseTask):
         return LaserCentralPane(model=self)
 
     def _default_layout_default(self):
-        return TaskLayout(left=PaneItem('laba.laser.controls'))
+        return TaskLayout(left=PaneItem("laba.laser.controls"))
+
+
 # ============= EOF =============================================

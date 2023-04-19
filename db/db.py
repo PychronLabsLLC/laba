@@ -16,7 +16,16 @@
 import os
 import shutil
 
-from sqlalchemy import Column, Integer, String, create_engine, ForeignKey, Float, DateTime, func
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    create_engine,
+    ForeignKey,
+    Float,
+    DateTime,
+    func,
+)
 from sqlalchemy.engine.default import DefaultDialect
 from sqlalchemy.orm import declarative_base, declared_attr, sessionmaker, relationship
 from sqlalchemy.sql.sqltypes import NullType, String as SQLString
@@ -99,13 +108,13 @@ class DeviceTbl(Base, NameMixin):
 
 
 class DatastreamTbl(Base, NameMixin):
-    device_id = foreignkey('DeviceTbl')
+    device_id = foreignkey("DeviceTbl")
     create_date = Column(DateTime, default=func.now())
-    measurements = relationship('MeasurementTbl')
+    measurements = relationship("MeasurementTbl")
 
 
 class MeasurementTbl(Base, IDMixin):
-    datastream_id = foreignkey('DatastreamTbl')
+    datastream_id = foreignkey("DatastreamTbl")
     value = Column(Float)
     timestamp = Column(DateTime, default=func.now())
     relative_time_seconds = Column(Float)
@@ -188,9 +197,11 @@ class DBClient(Loggable):
         with self.session() as sess:
             d = self.get_datastream(name, device_name, sess=sess)
             if d:
-                kw = {k: v for k, v in kw.items() if k in ('name', 'value',
-                                                           'value_string',
-                                                           'relative_time_seconds')}
+                kw = {
+                    k: v
+                    for k, v in kw.items()
+                    if k in ("name", "value", "value_string", "relative_time_seconds")
+                }
                 self._add(sess, MeasurementTbl(datastream_id=d.id, **kw))
 
     def backup(self):
@@ -199,7 +210,7 @@ class DBClient(Loggable):
         dest = paths.database_backup_path
         shutil.copyfile(src, dest)
 
-    def _add_unique(self, sess, table, idenfitier, attr='name', **kw):
+    def _add_unique(self, sess, table, idenfitier, attr="name", **kw):
         with self.session(sess) as sess:
             q = sess.query(table)
             q = q.filter(getattr(table, attr) == idenfitier)
@@ -233,7 +244,7 @@ class DBClient(Loggable):
 
     def _get_engine(self):
         url = paths.database_path
-        engine = create_engine(f'sqlite:///{url}')
+        engine = create_engine(f"sqlite:///{url}")
         return engine
 
     def session(self, sess=None):
@@ -256,4 +267,6 @@ class DBClient(Loggable):
             self._session_factory = factory
 
         return factory
+
+
 # ============= EOF =============================================

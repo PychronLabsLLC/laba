@@ -22,4 +22,6 @@ class Qtegra(Driver):
 
     def get_intensities(self, detectors):
         pass
+
+
 # ============= EOF =============================================

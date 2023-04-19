@@ -58,4 +58,5 @@ class LinearDrive(Device):
     def _move_to(self, raw, **kw):
         self.driver.move_absolute(raw, **kw)
 
+
 # ============= EOF =============================================

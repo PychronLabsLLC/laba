@@ -17,4 +17,5 @@ from hardware.switch import SwitchController
 from hardware.adc import ADC
 from hardware.spectrometer_controller import SpectrometerController
 from hardware.laser_controller import LaserController
+
 # ============= EOF =============================================

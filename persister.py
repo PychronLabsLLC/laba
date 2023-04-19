@@ -35,7 +35,7 @@ class Persister(Loggable):
 
     def __enter__(self):
         self.path = self._new_path(self.path_name)
-        self._handle = open(self.path, 'w')
+        self._handle = open(self.path, "w")
         self._enter_hook()
 
         return self
@@ -48,7 +48,7 @@ class Persister(Loggable):
         self._handle.close()
 
     def _new_path(self, *args, **kw):
-        return paths.new_path('persistence', *args, **kw)
+        return paths.new_path("persistence", *args, **kw)
 
     def _enter_hook(self):
         pass
@@ -100,5 +100,6 @@ class TextPersister(Persister):
 
     def _write_hook(self, data):
         self._handle.write(data)
+
 
 # ============= EOF =============================================

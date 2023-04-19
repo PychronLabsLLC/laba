@@ -25,4 +25,6 @@ class UpdateManager(Loggable):
 
     def backup(self):
         pass
+
+
 # ============= EOF =============================================

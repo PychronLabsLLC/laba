@@ -63,7 +63,7 @@ class Automation(Loggable):
     def __init__(self, cfg=None, ctx=None, *args, **kw):
         super().__init__(cfg=cfg, *args, **kw)
         if cfg:
-            self.load(cfg['path'], ctx=ctx)
+            self.load(cfg["path"], ctx=ctx)
 
     def load(self, path=None, ctx=None):
         if path is None:
@@ -75,19 +75,18 @@ class Automation(Loggable):
         self.path = path
         if ctx is not None:
             if str(path) in ctx:
-                self.debug('using context')
+                self.debug("using context")
                 self.text = ctx[str(path)]
                 return
 
-        self.debug(f'loading {path}')
-        with open(self.path, 'r') as rfile:
+        self.debug(f"loading {path}")
+        with open(self.path, "r") as rfile:
             self.text = rfile.read()
 
         if ctx is not None:
             ctx[str(path)] = self.text
 
     def run(self, block=False):
-
         self.load()
 
         if block:
@@ -115,11 +114,11 @@ class Automation(Loggable):
         """
         dev = self.application.get_service(Device, query=f"name=='{device}'")
         if dev is None:
-            self.warning(f'Invalid device {device}')
+            self.warning(f"Invalid device {device}")
             return
 
         if not hasattr(dev, name):
-            self.warning(f'Invalid function {name}')
+            self.warning(f"Invalid function {name}")
             return
 
         func = getattr(dev, name)
@@ -127,12 +126,11 @@ class Automation(Loggable):
 
     @is_alive
     def sleep(self, nseconds):
-        self.debug(f'sleep {nseconds}')
+        self.debug(f"sleep {nseconds}")
         if nseconds > 3 and self.timer:
             self.timer.max_value = nseconds
             self.timer.start()
         else:
-
             st = time.time()
             while time.time() - st <= nseconds:
                 if not self.alive:
@@ -146,7 +144,7 @@ class Automation(Loggable):
         def func():
             st = time.time()
             period = 1
-            with CSVPersister(path_name='datalog') as writer:
+            with CSVPersister(path_name="datalog") as writer:
                 while not self._recording_event.is_set():
                     sti = time.time()
 
@@ -170,13 +168,13 @@ class Automation(Loggable):
 
     def debug(self, msg):
         if self.console:
-            dt = datetime.now().strftime('%H:%M:%S')
-            self.console.text += f'{dt} -- {msg}\n'
+            dt = datetime.now().strftime("%H:%M:%S")
+            self.console.text += f"{dt} -- {msg}\n"
         super().debug(msg)
 
     # private
     def _run(self):
-        self.debug('starting run')
+        self.debug("starting run")
         try:
             code = compile(self.text, "<string>", "exec")
         except BaseException as e:
@@ -196,7 +194,7 @@ class Automation(Loggable):
         self.alive = True
         try:
             func()
-            self.debug('run complete')
+            self.debug("run complete")
 
         except Exception as e:
             exc = self.debug_exception()
@@ -207,24 +205,23 @@ class Automation(Loggable):
 
     # command helpers
     def _get_context(self):
-        ctx = dict(info=self.info,
-                   sleep=self.sleep,
+        ctx = dict(
+            info=self.info,
+            sleep=self.sleep,
+            start_recording=self.start_recording,
+            stop_recording=self.stop_recording,
+            dfunc=self.dev_function,
+            message=self.debug,
+        )
 
-                   start_recording=self.start_recording,
-                   stop_recording=self.stop_recording,
-                   dfunc=self.dev_function,
-                   message=self.debug
-                   )
-
-        messages = self.application.get_extensions('laba.automation.commands')
+        messages = self.application.get_extensions("laba.automation.commands")
 
         ctx.update({n: contributed_is_alive(f, self) for n, f in messages})
         return ctx
 
     def traits_view(self):
-        return View(HGroup(UItem('path'),
-                           spring,
-                           UItem('timer', style='custom')))
+        return View(HGroup(UItem("path"), spring, UItem("timer", style="custom")))
+
     # def _start_button_fired(self):
     #     self.run()
     #
@@ -233,4 +230,6 @@ class Automation(Loggable):
     #     return View(HGroup(spring,
     #                        UItem('start_button'),
     #                        UItem('stop_button')))
+
+
 # ============= EOF =============================================

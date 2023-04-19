@@ -20,8 +20,8 @@ from traitsui.item import Item, UItem
 
 
 def icon(name):
-    name = f'{name}.png'
-    icon_search_path = './resources/icons'
+    name = f"{name}.png"
+    icon_search_path = "./resources/icons"
     return ImageResource(name=name, search_path=icon_search_path)
 
 
@@ -37,8 +37,7 @@ def icon_button_editor(name, image, editor_kw=None, **kw):
     image = icon(image)
 
     return MUItem(
-        name, style="custom", editor=ButtonEditor(image=image, **editor_kw),
-        **kw
+        name, style="custom", editor=ButtonEditor(image=image, **editor_kw), **kw
     )
 
 
@@ -51,7 +50,8 @@ def import_klass(k):
 
 
 def yload(path):
-    with open(path, 'r') as rfile:
+    with open(path, "r") as rfile:
         return yaml.load(rfile, yaml.SafeLoader)
+
 
 # ============= EOF =============================================

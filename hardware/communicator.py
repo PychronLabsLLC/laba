@@ -26,7 +26,7 @@ class Communicator(Loggable):
 
     def ask(self, msg, *args, **kw):
         resp = self._ask(msg, *args, **kw)
-        self.debug(f'{msg}=>{resp}')
+        self.debug(f"{msg}=>{resp}")
         return resp
 
     def _ask(self, *args, **kw):
@@ -35,7 +35,7 @@ class Communicator(Loggable):
 
 class SerialCommunicator(Communicator):
     def open(self):
-        self.handle = serial.Serial(self.configobj.get('port', 'COM1'))
+        self.handle = serial.Serial(self.configobj.get("port", "COM1"))
 
     def _ask(self, msg, *args, **kw):
         if self.handle:
@@ -62,5 +62,6 @@ class UDPCommunicator(EthernetCommunicator):
 
 class ZmqCommunicator(Communicator):
     pass
+
 
 # ============= EOF =============================================

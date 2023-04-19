@@ -17,7 +17,6 @@ from integrations.drivers.base import BasePressureDriver
 
 
 class MKS(BasePressureDriver):
-
     def initialize(self):
         msg = self._make_global_message("01", "00")
         self.ask(msg)
@@ -35,4 +34,6 @@ class MKS(BasePressureDriver):
 
     def _make_global_message(self, parameter, data):
         return f"@{parameter}{data}\n"
+
+
 # ============= EOF =============================================

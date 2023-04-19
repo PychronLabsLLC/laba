@@ -23,12 +23,14 @@ from traits.api import List, Instance
 
 
 class SpectrometerPlugin(BasePlugin):
-    id = 'laba.plugin.spectrometer'
-    automation_commands = List(contributes_to='laba.automation.commands')
+    id = "laba.plugin.spectrometer"
+    automation_commands = List(contributes_to="laba.automation.commands")
     controller = Instance(SpectrometerController)
 
     def _automation_commands_default(self):
-        return [('measure', self._measure), ]
+        return [
+            ("measure", self._measure),
+        ]
 
     def _measure(self, ncycles=1, hops=None):
         """
@@ -36,7 +38,7 @@ class SpectrometerPlugin(BasePlugin):
         :param ncycles: use ncycles=1 for multi-collection
         :return:
         """
-        self.debug('measure')
+        self.debug("measure")
         # open a window for displaying our measurement graph
         figure = self._setup_figure()
         figure.edit_traits()
@@ -46,14 +48,14 @@ class SpectrometerPlugin(BasePlugin):
             # do measurement
             for cycle in range(ncycles):
                 # do cycle
-                self.debug(f'going cycle = {cycle}')
+                self.debug(f"going cycle = {cycle}")
                 for i, hop in enumerate(hops):
                     # do hop
-                    self.debug(f'{i}, hop={hop}')
+                    self.debug(f"{i}, hop={hop}")
 
                     self.set_ionbeam_position(hop)
-                    period = hop['period']
-                    for c in range(hop['counts']):
+                    period = hop["period"]
+                    for c in range(hop["counts"]):
                         st = time.time()
                         self.record_counts(hop, persister)
 
@@ -65,15 +67,17 @@ class SpectrometerPlugin(BasePlugin):
 
     def record_counts(self, hop, persister):
         self.debug(f"record counts for {hop['detectors']}")
-        intensities = self.controller.get_intensities(hop['detectors'])
-        payload = {'time': time.time(), 'intensities': intensities}
-        persister.add('intensities', payload)
+        intensities = self.controller.get_intensities(hop["detectors"])
+        payload = {"time": time.time(), "intensities": intensities}
+        persister.add("intensities", payload)
 
     def set_ionbeam_position(self, hop):
         self.debug(f"position {hop['iso']} on det={hop['det']}")
-        self.controller.set_ionbeam_position(hop['iso'], hop['det'])
+        self.controller.set_ionbeam_position(hop["iso"], hop["det"])
 
     def _setup_figure(self):
         figure = Figure()
         return figure
+
+
 # ============= EOF =============================================

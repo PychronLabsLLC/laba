@@ -34,4 +34,5 @@ class CanvasInteractor(BaseTool):
             o.state = state
             self.component.request_redraw()
 
+
 # ============= EOF =============================================

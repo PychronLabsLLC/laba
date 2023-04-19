@@ -16,14 +16,19 @@
 from pyface.tasks.task_layout import TaskLayout, PaneItem
 from traits.trait_types import Instance, Button
 
-from pane import SequenceEditorPane, SequenceControlPane, ConsolePane, SequenceCentralPane
+from pane import (
+    SequenceEditorPane,
+    SequenceControlPane,
+    ConsolePane,
+    SequenceCentralPane,
+)
 from sequencer import Sequencer
 from task import BaseTask
 
 
 class SequencerTask(BaseTask):
-    id = 'laba.sequence.task'
-    name = 'Sequencer'
+    id = "laba.sequence.task"
+    name = "Sequencer"
 
     sequencer = Instance(Sequencer)
 
@@ -44,7 +49,7 @@ class SequencerTask(BaseTask):
         return s
 
     def _pause_button_fired(self):
-        print('asdfasf', self.sequencer.selected_step)
+        print("asdfasf", self.sequencer.selected_step)
         # for a in self.sequencer.selected_step.automations:
         #     a.timer.pause()
         seq = self.sequencer.active_sequence
@@ -75,10 +80,11 @@ class SequencerTask(BaseTask):
         self.sequencer.save_as()
 
     def create_dock_panes(self):
-        return [SequenceEditorPane(model=self),
-                SequenceControlPane(model=self),
-                ConsolePane(model=self.sequencer)
-                ]
+        return [
+            SequenceEditorPane(model=self),
+            SequenceControlPane(model=self),
+            ConsolePane(model=self.sequencer),
+        ]
 
     def create_central_pane(self):
         return SequenceCentralPane(model=self)
@@ -94,8 +100,11 @@ class SequencerTask(BaseTask):
         return self.sequencer.is_valid_automation(name)
 
     def _default_layout_default(self):
-        return TaskLayout(top=PaneItem("laba.sequencer.controls"),
-                          left=PaneItem("laba.sequencer.editor"),
-                          right=PaneItem("laba.console"))
+        return TaskLayout(
+            top=PaneItem("laba.sequencer.controls"),
+            left=PaneItem("laba.sequencer.editor"),
+            right=PaneItem("laba.console"),
+        )
+
 
 # ============= EOF =============================================

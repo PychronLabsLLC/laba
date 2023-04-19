@@ -20,7 +20,7 @@ from hardware.driver.driver import Driver
 class BaseADCDriver(Driver):
     @get_float()
     def read_channel(self, channel):
-        self.debug(f'read channel {channel}')
+        self.debug(f"read channel {channel}")
         return self._read_channel(channel)
 
     def _read_channel(self, channel):
@@ -29,7 +29,7 @@ class BaseADCDriver(Driver):
 
 class BaseDACDriver(Driver):
     def write_channel(self, channel, value):
-        self.debug(f'write channel {channel} value={value}')
+        self.debug(f"write channel {channel} value={value}")
         self._write_channel(channel, value)
 
     def _write_channel(self, channel, value):
@@ -38,7 +38,7 @@ class BaseDACDriver(Driver):
 
 class BaseSwitchDriver(Driver):
     def actuate_channel(self, channel, state):
-        self.debug(f'actuate channel {channel} {state}')
+        self.debug(f"actuate channel {channel} {state}")
         return self._actuate_channel(channel, state)
 
     def _actuate_channel(self, channel, state):
@@ -48,9 +48,11 @@ class BaseSwitchDriver(Driver):
 class BasePressureDriver(Driver):
     @get_float()
     def read_pressure(self, channel):
-        self.debug(f'read pressure channel={channel}')
+        self.debug(f"read pressure channel={channel}")
         return self._read_pressure(channel)
 
     def _read_pressure(self, channel):
         raise NotImplementedError
+
+
 # ============= EOF =============================================

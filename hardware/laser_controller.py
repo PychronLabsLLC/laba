@@ -18,4 +18,6 @@ from hardware.device import Device
 
 class LaserController(Device):
     pass
+
+
 # ============= EOF =============================================

@@ -22,26 +22,29 @@ class Camera(Loggable):
     _handle = None
 
     def open(self):
-        self._handle = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice())
+        self._handle = pylon.InstantCamera(
+            pylon.TlFactory.GetInstance().CreateFirstDevice()
+        )
         self._handle.Open()
 
     def close(self):
         self._handle.Close()
 
     def get_images(self, n=1, timeout_ms=5000):
-
         if n == 1:
             img = self._handle.GrabOne(timeout_ms)
             return img.Array
         else:
-
             self._handle.StartGrabbingMax(n)
             while self._handle.IsGrabbing():
-                result = self._handle.RetrieveResult(timeout_ms, pylon.TimeoutHandling_ThrowException)
+                result = self._handle.RetrieveResult(
+                    timeout_ms, pylon.TimeoutHandling_ThrowException
+                )
                 if result.GrabSucceeded():
                     img = result.Array
                     return img
                 result.Release()
+
 
 #
 #
