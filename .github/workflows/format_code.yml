@@ -1,9 +1,9 @@
 name: Format code
 on:
   pull_request:
-    branches: [master, dev]
+    branches: [dev]
   push:
-    branches: [master, dev]
+    branches: [dev]
 jobs:
   flake8_py3:
     runs-on: ubuntu-latest
@@ -30,7 +30,7 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--verbose"
-          black-args: "--exclude=demo"
+          black_args: "--exclude=demo"
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4.1.2
         with:
