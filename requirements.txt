@@ -1,9 +1,0 @@
-envisage
-pyyaml
-pyqt
-zmq
-importlib_resources
-chaco
-bezier
-sqlite
-sqlachemy

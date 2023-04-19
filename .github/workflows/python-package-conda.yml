@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA/bin/conda env update --file environment.yml --name base python=${{ matrix.python-version }}
+          $CONDA/bin/conda env update --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
 #      - name: Lint with flake8
 #        run: |
 #          $CONDA/bin/conda install flake8
