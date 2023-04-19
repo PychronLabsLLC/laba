@@ -1,0 +1,15 @@
+name: plv
+channels:
+  - omnia
+  - defaults
+dependencies:
+  - python=3.10
+  - envisage
+  - yaml
+  - pyyaml
+  - pyqt
+  - pyzmq
+  - importlib_resources
+  - sqlalchemy
+  - pyserial
+prefix: /Users/jakeross/miniconda3/envs/plv
