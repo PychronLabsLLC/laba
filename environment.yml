@@ -3,11 +3,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.10
-  - envisage
+  - python=3.9
   - yaml
   - pyyaml
-  - pyqt
   - pyzmq
   - importlib_resources
   - sqlalchemy
