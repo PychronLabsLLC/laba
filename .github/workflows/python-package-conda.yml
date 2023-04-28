@@ -12,8 +12,8 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ["3.8", "3.9"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.8", "3.9", "3.10"]
 
     steps:
       - uses: actions/checkout@v3
@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA/bin/conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
+          $CONDA/bin/conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml pyqt
 #      - name: Lint with flake8
 #        run: |
 #          $CONDA/bin/conda install flake8
@@ -35,5 +35,6 @@ jobs:
       - name: Test with pytest
         run: |
           conda install pytest
-          $CONDA/bin/pip install envisage bezier
+          $CONDA/bin/pip install envisage chaco
+          BEZIER_NO_EXTENSION=true $CONDA/bin/python -m pip install --upgrade bezier --no-binary=bezier
           $CONDA/bin/pytest --rootdir=test
