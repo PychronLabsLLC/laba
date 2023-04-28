@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
@@ -27,7 +27,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA//Scripts//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
+          $CONDA\\Scripts\\conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
 
       - name: Install dependencies
         if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
