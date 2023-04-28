@@ -35,6 +35,5 @@ jobs:
       - name: Test with pytest
         run: |
           conda install pytest
-          $CONDA//bin//pip install envisage chaco
-          BEZIER_NO_EXTENSION=true $CONDA/bin/python -m pip install --upgrade bezier --no-binary=bezier
+          $CONDA//bin//pip install envisage bezier
           $CONDA//bin//pytest --rootdir=test
