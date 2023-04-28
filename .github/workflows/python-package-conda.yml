@@ -26,6 +26,7 @@ jobs:
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           $CONDA//bin//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
+        shell: cmd
 #      - name: Lint with flake8
 #        run: |
 #          $CONDA/bin/conda install flake8
@@ -36,5 +37,7 @@ jobs:
       - name: Test with pytest
         run: |
           conda install pytest
-          $CONDA//bin//pip install envisage bezier
+          $CONDA//bin//pip install envisage 
+          BEZIER_NO_EXTENSION=true $CONDA/bin/python -m pip install --upgrade bezier --no-binary=bezier
           $CONDA//bin//pytest --rootdir=test
+        shell: cmd
