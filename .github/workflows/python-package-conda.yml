@@ -24,7 +24,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies (Windows)
-        if: $ {{ matrix.os == 'windows-latest' }}
+        if: ${{ matrix.os == 'windows-latest' }}
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           $CONDA//Scripts//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
