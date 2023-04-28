@@ -24,8 +24,7 @@ jobs:
       - name: Install dependencies
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA//bin//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml 
-          pyqt
+          $CONDA//bin//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
 #      - name: Lint with flake8
 #        run: |
 #          $CONDA/bin/conda install flake8
