@@ -30,7 +30,7 @@ jobs:
           $CONDA//Scripts//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
 
       - name: Install dependencies
-        if: ${{ matrix.os == 'ubuntu-latest' or matrix.os == 'macos-latest' }}
+        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
           $CONDA//bin//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
@@ -42,7 +42,7 @@ jobs:
 #          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 #          $CONDA/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
-        if : ${{matrix.os == 'ubuntu-latest' or matrix.os == 'macos-latest'}}
+        if : ${{matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'}}
         run: |
           $CONDA//bin//conda install pytest
           $CONDA//bin//pip install envisage 
