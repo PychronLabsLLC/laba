@@ -11,3 +11,25 @@ This is a re imagining of some of Pychron's hardware control functionality. Laba
 development.
 The design is slightly inspired by Home Assistant
 
+
+## Installation
+### Setup a conda environment
+```shell
+conda create -n laba python=3.9 sqlalchemy pyserial pyzmq pyyaml pyqt
+conda activate laba
+```
+
+### Install additional dependencies only 
+```shell
+pip install chaco envisage
+BEZIER_NO_EXTENSION=true python -m pip install --upgrade bezier --no-binary=bezier
+```
+
+### Set Environment Variables
+```shell
+export LABA_ROOT=/path/to/laba
+export ETS_TOOLKIT=qt4
+```
+
+### Copy the demo files to your `LABA_ROOT`
+
