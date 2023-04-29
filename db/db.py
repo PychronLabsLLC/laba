@@ -206,9 +206,10 @@ class DBClient(Loggable):
 
     def backup(self):
         src = paths.database_path
-        # dest = paths.database_backup()
-        dest = paths.database_backup_path
-        shutil.copyfile(src, dest)
+        if src.is_file():
+            # dest = paths.database_backup()
+            dest = paths.database_backup_path
+            shutil.copyfile(src, dest)
 
     def _add_unique(self, sess, table, idenfitier, attr="name", **kw):
         with self.session(sess) as sess:

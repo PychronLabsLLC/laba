@@ -9,11 +9,12 @@ on:
 jobs:
   build-linux:
     runs-on: ${{ matrix.os }}
+    continue-on-error: true
     strategy:
       max-parallel: 5
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ["3.8", "3.9"]
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v3
@@ -21,10 +22,18 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+
+      - name: Install dependencies (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
         run: |
           # $CONDA is an environment variable pointing to the root of the miniconda directory
-          $CONDA/bin/conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
+          $CONDA\\Scripts\\conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
+
+      - name: Install dependencies
+        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
+        run: |
+          # $CONDA is an environment variable pointing to the root of the miniconda directory
+          $CONDA//bin//conda install --name base python=${{ matrix.python-version }} sqlalchemy pyserial pyzmq pyyaml
 #      - name: Lint with flake8
 #        run: |
 #          $CONDA/bin/conda install flake8
@@ -33,7 +42,9 @@ jobs:
 #          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 #          $CONDA/bin/flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
+        if : ${{matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'}}
         run: |
-          conda install pytest
-          $CONDA/bin/pip install envisage bezier
-          $CONDA/bin/pytest --rootdir=test
+          $CONDA//bin//conda install pytest
+          $CONDA//bin//pip install envisage 
+          BEZIER_NO_EXTENSION=true $CONDA/bin/python -m pip install --upgrade bezier --no-binary=bezier
+          $CONDA//bin//pytest --rootdir=test

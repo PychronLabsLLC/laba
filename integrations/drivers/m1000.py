@@ -89,7 +89,7 @@ class M1000(BaseADCDriver):
         if r:
             if kind == "block":
                 r = r.split(",")
-                return [func(ri) for ri in r if ri is not ""]
+                return [func(ri) for ri in r if ri != ""]
             else:
                 return func(r)
 
