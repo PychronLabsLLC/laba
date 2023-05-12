@@ -77,7 +77,6 @@ class Application(TasksApplication, Loggable):
 
         dbclient.build(drop=bool(int(os.environ.get("BUILD_DB", "0"))))
 
-
         dbclient.backup()
 
         for device_cfg in init.get("devices"):

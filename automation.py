@@ -73,7 +73,7 @@ class Automation(Loggable):
                 path = paths.get_automation_path(path)
 
         if path is None:
-            self.warning(f'No path for {self}')
+            self.warning(f"No path for {self}")
             return
 
         if ctx is not None:

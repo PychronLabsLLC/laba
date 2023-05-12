@@ -63,7 +63,7 @@ class RampSwitch(Switch):
     def ramp(self, state):
         nodes = self.open_nodes if state else self.close_nodes
 
-        xs,ys = bezier_curve(nodes, self.nsteps+1)
+        xs, ys = bezier_curve(nodes, self.nsteps + 1)
         for yi in ys:
             yield yi
 
