@@ -72,7 +72,7 @@ class Automation(Loggable):
             if isinstance(path, str):
                 path = paths.get_automation_path(path)
 
-        if path is None:
+        if not path:
             self.warning(f"No path for {self}")
             return
 
