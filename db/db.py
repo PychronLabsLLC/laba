@@ -150,9 +150,10 @@ class SessionCTX(object):
 class DBClient(Loggable):
     _session_factory = None
 
-    def build(self):
+    def build(self, drop=False):
         engine = self._get_engine()
-        Base.metadata.drop_all(bind=engine)
+        if drop:
+            Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
 
     def get_device(self, name, sess=None):

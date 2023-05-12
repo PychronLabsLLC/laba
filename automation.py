@@ -72,7 +72,10 @@ class Automation(Loggable):
             if isinstance(path, str):
                 path = paths.get_automation_path(path)
 
-        self.path = path
+        if path is None:
+            self.warning(f'No path for {self}')
+            return
+
         if ctx is not None:
             if str(path) in ctx:
                 self.debug("using context")

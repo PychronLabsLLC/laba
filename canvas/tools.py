@@ -31,8 +31,9 @@ class CanvasInteractor(BaseTool):
     def normal_left_down(self, event):
         if o := self.hittest(event):
             state = self.controller.toggle_switch(o.name)
-            o.state = state
-            self.component.request_redraw()
+            if state:
+                o.state = state
+                self.component.request_redraw()
 
 
 # ============= EOF =============================================

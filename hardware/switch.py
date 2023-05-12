@@ -16,9 +16,9 @@
 import time
 from threading import Thread, Event
 
-import bezier
-from numpy import array, linspace
+from numpy import array
 
+from bezier_curve import bezier_curve
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import List, Str, Float, Int, Bool, Array
@@ -51,8 +51,8 @@ class RampSwitch(Switch):
         ocpts = cfg["ramp"]["open"].get("control_points", [])
         ccpts = cfg["ramp"]["close"].get("control_points", [])
         self.degree = len(ocpts) - 1
-        self.open_nodes = array([p.split(",") for p in ocpts], dtype=float).T
-        self.close_nodes = array([p.split(",") for p in ccpts], dtype=float).T
+        self.open_nodes = array([p.split(",") for p in ocpts], dtype=float)
+        self.close_nodes = array([p.split(",") for p in ccpts], dtype=float)
 
         self.max_value = self.open_nodes[1].max()
         self.min_value = self.close_nodes[1].min()
@@ -61,20 +61,23 @@ class RampSwitch(Switch):
         return self.open_nodes.max()
 
     def ramp(self, state):
-        # nodes = array([p.split(",") for p in self.control_points], dtype=float).T
         nodes = self.open_nodes if state else self.close_nodes
-        curve = bezier.Curve(nodes, degree=self.degree)
-        ma = nodes.max()
 
-        for j, i in enumerate(linspace(0.0, 1.0, self.nsteps + 1)):
-            if not j:
-                # skip first because we already are at this value
-                continue
+        xs,ys = bezier_curve(nodes, self.nsteps+1)
+        for yi in ys:
+            yield yi
 
-            curve2 = bezier.Curve([[i, i], [0, ma]], degree=1)
-            intersections = curve.intersect(curve2)
-            output = curve.evaluate_multi(intersections[0, :])[1][0]
-            yield output
+        # curve = bezier.Curve(nodes, degree=self.degree)
+        # ma = nodes.max()
+        # for j, i in enumerate(linspace(0.0, 1.0, self.nsteps + 1)):
+        #     if not j:
+        #         # skip first because we already are at this value
+        #         continue
+        #
+        #     curve2 = bezier.Curve([[i, i], [0, ma]], degree=1)
+        #     intersections = curve.intersect(curve2)
+        #     output = curve.evaluate_multi(intersections[0, :])[1][0]
+        #     yield output
 
 
 class SwitchController(Device):

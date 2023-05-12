@@ -74,8 +74,9 @@ class Application(TasksApplication, Loggable):
     def initialize(self):
         init = self._get_initization()
         self.dbclient = dbclient = DBClient()
-        if bool(int(os.environ.get("BUILD_DB", "0"))):
-            dbclient.build()
+
+        dbclient.build(drop=bool(int(os.environ.get("BUILD_DB", "0"))))
+
 
         dbclient.backup()
 
