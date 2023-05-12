@@ -76,12 +76,12 @@ class Automation(Loggable):
             self.warning(f"No path for {self}")
             return
 
+        self.path = path
         if ctx is not None:
             if str(path) in ctx:
                 self.debug("using context")
                 self.text = ctx[str(path)]
                 return
-
         self.debug(f"loading {path}")
         with open(self.path, "r") as rfile:
             self.text = rfile.read()
