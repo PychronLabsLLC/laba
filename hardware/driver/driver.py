@@ -40,8 +40,16 @@ class Driver(Loggable):
 
     def setup_communicator(self, cfg):
         kind = cfg["kind"]
-        klass = import_klass(f"hardware.communicator.{kind.capitalize()}Communicator")
+        try:
+            klass = import_klass(f"hardware.communicator.{kind.capitalize()}Communicator")
+        except AttributeError:
+            try:
+                klass = import_klass(f"hardware.communicators.{kind.lower()}_communicator.{kind.capitalize()}Communicator")
+            except AttributeError:
+                raise NotImplementedError(f"Failed loading communicator {kind}")
+
         self.communicator = klass(cfg)
+        self.communicator.bootstrap()
 
 
 # ============= EOF =============================================

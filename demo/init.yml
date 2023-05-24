@@ -61,8 +61,14 @@ devices:
     driver:
       kind: U2351A
       communicator:
-        kind: ethernet
-        address: localhost:8000
+        kind: visa
+        address: USB0::0x0957::0x0A07::MY51141240::INSTR
+        #or you can define each parameter separately
+        board: 0
+        manufacture_id: 0
+        model_code: 0
+        serial_number: 0
+
     switches:
       - name: A
         channel: '01'

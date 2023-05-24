@@ -20,6 +20,7 @@ from loggable import Loggable
 
 class Communicator(Loggable):
     handle = None
+    simulation = True
 
     def open(self):
         pass
@@ -32,10 +33,23 @@ class Communicator(Loggable):
     def _ask(self, *args, **kw):
         raise NotImplementedError
 
+    def bootstrap(self):
+        try:
+            if self.open():
+                self.simulation = False
+        except BaseException:
+            self.debug(f'failed bootstrap {self}')
+            self.debug_exception()
+
 
 class SerialCommunicator(Communicator):
     def open(self):
-        self.handle = serial.Serial(self.configobj.get("port", "COM1"))
+        try:
+            self.handle = serial.Serial(self.configobj.get("port", "COM1"))
+            return True
+        except serial.SerialException as e:
+            self.warning(f"Failed opening serial port {e}")
+            return
 
     def _ask(self, msg, *args, **kw):
         if self.handle:

@@ -70,5 +70,7 @@ class Loggable(HasTraits):
         self.debug(exc)
         return exc
 
+    def config(self, item, default=None):
+        return self.configobj.get(item, default)
 
 # ============= EOF =============================================
