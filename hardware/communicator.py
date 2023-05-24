@@ -38,7 +38,7 @@ class Communicator(Loggable):
             if self.open():
                 self.simulation = False
         except BaseException:
-            self.debug(f'failed bootstrap {self}')
+            self.debug(f"failed bootstrap {self}")
             self.debug_exception()
 
 

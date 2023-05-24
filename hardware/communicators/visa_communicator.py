@@ -22,13 +22,12 @@ from hardware.communicator import Communicator
 
 
 class VisaCommunicator(Communicator):
-
     def open(self):
-        self.debug('opening visa usb communicator')
-        self.debug('======= Visa Resources =======')
+        self.debug("opening visa usb communicator")
+        self.debug("======= Visa Resources =======")
         for r in resource_manager.list_resources():
-            self.debug(f'    {r}')
-        self.debug('==============================')
+            self.debug(f"    {r}")
+        self.debug("==============================")
 
         address = self._make_address()
 
@@ -37,20 +36,21 @@ class VisaCommunicator(Communicator):
             return True
 
     def _make_address(self):
-        address = self.config('address')
+        address = self.config("address")
         if address:
             return address
 
-        b = self.config('board', 0)
-        m = self.config('manufacture_id', 0)
-        mc = self.config('model_code', 0)
-        sn = self.config('serial_number', 0)
+        b = self.config("board", 0)
+        m = self.config("manufacture_id", 0)
+        mc = self.config("model_code", 0)
+        sn = self.config("serial_number", 0)
 
-        base = f'USB{b}::{m}::{mc}::{sn}'
-        uin = self.config('usb_interface_number')
+        base = f"USB{b}::{m}::{mc}::{sn}"
+        uin = self.config("usb_interface_number")
         if uin:
-            base = f'{base}::{uin}'
+            base = f"{base}::{uin}"
 
-        return f'{base}::INSTR'
+        return f"{base}::INSTR"
+
 
 # ============= EOF =============================================
