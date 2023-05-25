@@ -232,6 +232,7 @@ class BaseScan(DeviceCard):
 
         t = Thread(target=_scan)
         self._scan_thread = t
+        self._scan_thread.setDaemon(True)
         self._scan_thread.start()
 
     def _scan_hook(self, i, df, st, args, kw):
