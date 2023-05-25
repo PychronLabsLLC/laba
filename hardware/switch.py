@@ -137,6 +137,7 @@ class SwitchController(Device):
         self._cancel_ramp = Event()
 
         def ramp():
+            print("ramp", self.canvas)
             if self.canvas:
                 self.canvas.set_switch_state(s.name, "moving")
 

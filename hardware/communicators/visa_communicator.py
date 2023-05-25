@@ -52,5 +52,8 @@ class VisaCommunicator(Communicator):
 
         return f"{base}::INSTR"
 
+    def _ask(self, *args, **kw):
+        if self.handle:
+            return self.handle.query(*args, **kw)
 
 # ============= EOF =============================================

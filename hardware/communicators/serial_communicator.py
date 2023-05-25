@@ -13,44 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from loggable import Loggable
+import serial
+
+from hardware.communicator import Communicator
 
 
-class Communicator(Loggable):
-    handle = None
-    simulation = True
-
+class SerialCommunicator(Communicator):
     def open(self):
-        pass
-
-    def ask(self, msg, *args, **kw):
-        resp = self._ask(msg, *args, **kw)
-        self.debug(f"{msg}=>{resp}")
-        return resp
-
-    def _ask(self, *args, **kw):
-        raise NotImplementedError
-
-    def bootstrap(self):
         try:
-            if self.open():
-                self.simulation = False
-        except BaseException:
-            self.debug(f"failed bootstrap {self}")
-            self.debug_exception()
+            self.handle = serial.Serial(self.configobj.get("port", "COM1"))
+            return True
+        except serial.SerialException as e:
+            self.warning(f"Failed opening serial port {e}")
+            return
 
-
-class EthernetCommunicator(Communicator):
-    pass
-
-
-class TelnetCommunicator(Communicator):
-    pass
-
-
-
-class ZmqCommunicator(Communicator):
-    pass
+    def _ask(self, msg, *args, **kw):
+        if self.handle:
+            self.handle.write(msg)
+            return self.handle.read()
 
 
 # ============= EOF =============================================

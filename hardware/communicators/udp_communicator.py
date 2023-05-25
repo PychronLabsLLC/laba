@@ -13,44 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from loggable import Loggable
+from hardware.communicator import EthernetCommunicator
 
-
-class Communicator(Loggable):
-    handle = None
-    simulation = True
-
-    def open(self):
-        pass
-
-    def ask(self, msg, *args, **kw):
-        resp = self._ask(msg, *args, **kw)
-        self.debug(f"{msg}=>{resp}")
-        return resp
-
-    def _ask(self, *args, **kw):
-        raise NotImplementedError
-
-    def bootstrap(self):
-        try:
-            if self.open():
-                self.simulation = False
-        except BaseException:
-            self.debug(f"failed bootstrap {self}")
-            self.debug_exception()
-
-
-class EthernetCommunicator(Communicator):
+class UDPCommunicator(EthernetCommunicator):
     pass
-
-
-class TelnetCommunicator(Communicator):
-    pass
-
-
-
-class ZmqCommunicator(Communicator):
-    pass
-
-
 # ============= EOF =============================================

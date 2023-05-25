@@ -51,11 +51,15 @@ class Card(Loggable):
         self.application = application
 
     def traits_view(self):
-        v = View(VGroup(*self.make_view(), show_border=True, label=self.name))
+        name = self.get_name()
+        v = View(VGroup(*self.make_view(), show_border=True, label=name))
         return v
 
     def make_view(self):
         raise NotImplementedError
+
+    def get_name(self):
+        return self.name
 
 
 class DeviceCard(Card):
@@ -321,6 +325,9 @@ class Switch(DeviceCard):
                 Item("state", style="readonly", label="State"),
             ),
         )
+
+    def get_name(self):
+        return f'{self.name} ({self.switch_name})'
 
 
 class EMSwitch(Switch):
