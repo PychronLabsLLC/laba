@@ -327,7 +327,7 @@ class Switch(DeviceCard):
         )
 
     def get_name(self):
-        return f'{self.name} ({self.switch_name})'
+        return f"{self.name} ({self.switch_name})"
 
 
 class EMSwitch(Switch):

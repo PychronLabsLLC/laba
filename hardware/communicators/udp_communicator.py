@@ -15,6 +15,9 @@
 # ===============================================================================
 from hardware.communicator import EthernetCommunicator
 
+
 class UDPCommunicator(EthernetCommunicator):
     pass
+
+
 # ============= EOF =============================================

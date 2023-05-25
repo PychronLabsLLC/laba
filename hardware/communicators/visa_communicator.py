@@ -56,4 +56,5 @@ class VisaCommunicator(Communicator):
         if self.handle:
             return self.handle.query(*args, **kw)
 
+
 # ============= EOF =============================================

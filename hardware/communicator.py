@@ -48,7 +48,6 @@ class TelnetCommunicator(Communicator):
     pass
 
 
-
 class ZmqCommunicator(Communicator):
     pass
 
