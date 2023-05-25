@@ -59,7 +59,7 @@ if __name__ == "__main__":
     try:
         main()
     except KeyError as e:
-        print(f'key error. {e}')
+        print(f"key error. {e}")
     except BaseException as e:
         # give user option to roll back to a previous version
         rollback()
