@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import socket
+
 from hardware.communicator import EthernetCommunicator
 
 
 class UDPCommunicator(EthernetCommunicator):
-    pass
+    def open(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.handle = sock
+        return True
 
 
 # ============= EOF =============================================

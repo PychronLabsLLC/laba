@@ -13,8 +13,9 @@ devices:
     driver:
       kind: Qtegra
       communicator:
-        kind: ethernet
-        address: localhost:8000
+        kind: tcp
+        host: localhost
+        port: 1069
 
   - name: adc
     kind: ADC
@@ -45,16 +46,18 @@ devices:
     driver:
       kind: MKS
       communicator:
-        kind: ethernet
-        address: localhost:8000
+        kind: tcp
+        host: localhost
+        port: 1068
   - name: laser_controller
     kind: LaserController
     enabled: True
     driver:
       kind: Chromium
       communicator:
-        kind: ethernet
-        address: localhost:8000
+        kind: tcp
+        host: localhost
+        port: 1060
   - name: switch_controller
     kind: SwitchController
     enabled: True

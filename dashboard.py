@@ -230,9 +230,8 @@ class BaseScan(DeviceCard):
 
             self.active = False
 
-        t = Thread(target=_scan)
+        t = Thread(target=_scan, daemon=True)
         self._scan_thread = t
-        self._scan_thread.setDaemon(True)
         self._scan_thread.start()
 
     def _scan_hook(self, i, df, st, args, kw):

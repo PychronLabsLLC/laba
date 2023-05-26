@@ -32,8 +32,7 @@ class Server(Loggable):
     port = Int
 
     def run(self):
-        self._thread = Thread(target=self._run)
-        self._thread.setDaemon(True)
+        self._thread = Thread(target=self._run, daemon=True)
         self._thread.start()
 
     def _run(self):

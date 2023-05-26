@@ -24,9 +24,22 @@ class Communicator(Loggable):
         pass
 
     def ask(self, msg, *args, **kw):
+        wt = self.configobj.get('write_terminator')
+        if wt:
+            msg = f'{msg}{wt}'
+
         resp = self._ask(msg, *args, **kw)
-        self.debug(f"{msg}=>{resp}")
+        self._log_response(msg, resp)
+
         return resp
+
+    def _log_response(self, msg, resp):
+        def convert(m):
+            if m is None:
+                return 'None'
+            return ''.join([c if c.isalnum() else f'[{ord(c)}]' for c in m])
+
+        self.debug(f"{convert(msg)}=>{convert(resp)}")
 
     def _ask(self, *args, **kw):
         raise NotImplementedError
@@ -41,7 +54,33 @@ class Communicator(Loggable):
 
 
 class EthernetCommunicator(Communicator):
-    pass
+    def _ask(self, msg, *args, **kw):
+        if not self.handle:
+            self.warning('No handle')
+            return
+
+        if isinstance(msg, str):
+            msg = msg.encode('utf-8')
+
+        self.handle.send(msg)
+
+        rt = self.configobj.get('read_terminator')
+        if rt:
+            return self._read_terminator(rt)
+        else:
+            return self._read_bytes()
+
+    def _read_terminator(self, rt):
+        buf = []
+        while True:
+            c = self.handle.recv(1)
+            if c == rt:
+                break
+            buf.append(c)
+        return ''.join(buf)
+
+    def _read_bytes(self, bytes=1024):
+        return self.handle.recv(bytes)
 
 
 class TelnetCommunicator(Communicator):
@@ -50,6 +89,5 @@ class TelnetCommunicator(Communicator):
 
 class ZmqCommunicator(Communicator):
     pass
-
 
 # ============= EOF =============================================

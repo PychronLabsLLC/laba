@@ -95,8 +95,7 @@ class Automation(Loggable):
         if block:
             self._run()
         else:
-            self._runthread = Thread(target=self._run)
-            self._runthread.setDaemon(True)
+            self._runthread = Thread(target=self._run, daemon=True)
             self._runthread.start()
             return self._runthread
 
@@ -160,8 +159,7 @@ class Automation(Loggable):
                     if pe:
                         time.sleep(pe)
 
-        self._recording_thread = Thread(target=func)
-        self._recording_thread.setDaemon(True)
+        self._recording_thread = Thread(target=func, daemon=True)
         self._recording_thread.start()
 
     def stop_recording(self):
