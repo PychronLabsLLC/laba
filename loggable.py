@@ -18,7 +18,7 @@ import logging
 from traits.api import HasTraits, Str, Dict
 
 shandler = logging.StreamHandler()
-fmt = '%(name)-40s: %(asctime)s %(levelname)-9s (%(threadName)-10s) %(message)s'
+fmt = "%(name)-40s: %(asctime)s %(levelname)-9s (%(threadName)-10s) %(message)s"
 fmtter = logging.Formatter(fmt)
 shandler.setFormatter(fmtter)
 

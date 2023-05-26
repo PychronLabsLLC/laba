@@ -21,11 +21,15 @@ from hardware.communicator import EthernetCommunicator
 class TcpCommunicator(EthernetCommunicator):
     def open(self):
         self.handle = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.handle.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE,
-                               self.configobj.get('keep_alive', 0))
+        self.handle.setsockopt(
+            socket.SOL_SOCKET, socket.SO_KEEPALIVE, self.configobj.get("keep_alive", 0)
+        )
 
-        addr = (self.configobj.get('host', 'localhost'), self.configobj.get('port', 8000))
-        self.handle.settimeout(self.configobj.get('timeout', 3))
+        addr = (
+            self.configobj.get("host", "localhost"),
+            self.configobj.get("port", 8000),
+        )
+        self.handle.settimeout(self.configobj.get("timeout", 3))
         try:
             self.handle.connect(addr)
         except ConnectionRefusedError:
@@ -33,5 +37,6 @@ class TcpCommunicator(EthernetCommunicator):
             self.handle = None
 
         return True
+
 
 # ============= EOF =============================================
