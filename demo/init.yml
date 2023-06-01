@@ -31,7 +31,7 @@ devices:
       kind: M1000
       communicator:
         kind: serial
-        address: com4
+        port: com4
 
   - name:  mks
     enabled: True
@@ -39,7 +39,7 @@ devices:
       kind: MKS
       communicator:
         kind: serial
-        address: com3
+        port: com3
   
   - name: ethernet_device
     enabled: True
