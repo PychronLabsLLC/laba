@@ -29,7 +29,6 @@ class SerialCommunicator(Communicator):
 
     def _ask(self, msg, *args, **kw):
         if self.handle:
-
             if isinstance(msg, str):
                 msg = msg.encode("utf-8")
 
