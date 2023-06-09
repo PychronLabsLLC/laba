@@ -46,7 +46,8 @@ class Communicator(Loggable):
                 ]
             )
 
-        self.debug(f"{convert(msg)}=>{convert(resp)}")
+        # self.debug(f"{convert(msg)}=>{convert(resp)}")
+        self.debug(f"{convert(msg)}=>{resp}")
 
     def _ask(self, *args, **kw):
         raise NotImplementedError
