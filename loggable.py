@@ -53,6 +53,7 @@ class Loggable(HasTraits):
             l = logging.getLogger(name)
             l.setLevel(logging.DEBUG)
             l.addHandler(shandler)
+            # l.addHandler()
             self.logger = l
 
         self.configobj = cfg
