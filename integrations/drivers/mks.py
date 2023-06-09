@@ -29,7 +29,7 @@ class MKS(BasePressureDriver):
         msg = self._make_global_message("02", "0?")
         resp = self.ask(msg)
         if resp:
-            torr = resp.split(" ")[1].strip()
+            torr = resp.split("\n")[1].strip()
             return torr
 
     def _make_global_message(self, parameter, data):
