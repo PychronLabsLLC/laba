@@ -18,7 +18,7 @@ from hardware.device import Device
 
 class Gauge(Device):
     def scan_pressure(self, *args, **kw):
-        print('asdfsdfdsf', args, kw)
+        print("asdfsdfdsf", args, kw)
         channel = 1
         return self.driver.read_pressure(channel)
 
