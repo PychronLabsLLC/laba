@@ -74,6 +74,7 @@ class DeviceCard(Card):
             dd = application.get_service(Device, f"name=='{dev['name']}'")
             dvs.append(dd)
             func = dev.get("function", {"name": "get_value"})
+            print(dd, func)
             if func:
                 aa = func.get("args", ())
                 kk = func.get("kwargs", {})

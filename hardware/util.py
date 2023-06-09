@@ -15,7 +15,7 @@
 # ===============================================================================
 
 
-def get_float(default=None):
+def get_float(default=0):
     def dec(func):
         def wrapper(*args, **kw):
             t = func(*args, **kw)
