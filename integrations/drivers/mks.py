@@ -33,7 +33,7 @@ class MKS(BasePressureDriver):
             return torr
 
     def _make_global_message(self, parameter, data):
-        return f"@{parameter}{data}\n"
+        return f"@{parameter}{data}\r"
 
 
 # ============= EOF =============================================
