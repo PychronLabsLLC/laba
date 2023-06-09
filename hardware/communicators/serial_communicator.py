@@ -41,7 +41,7 @@ class SerialCommunicator(Communicator):
                 msg = msg.encode("utf-8")
 
             self.handle.write(msg)
-            return self.handle.read()
+            return self.handle.readline()
 
 
 # ============= EOF =============================================
