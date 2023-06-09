@@ -26,8 +26,8 @@ class Communicator(Loggable):
     def ask(self, msg, *args, **kw):
         wt = self.configobj.get("write_terminator")
         if wt:
-            if wt == 'CR':
-                wt = '\r'
+            if wt == "CR":
+                wt = "\r"
             msg = f"{msg}{wt}"
 
         resp = self._ask(msg, *args, **kw)
