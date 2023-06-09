@@ -21,7 +21,11 @@ from hardware.communicator import Communicator
 class SerialCommunicator(Communicator):
     def open(self):
         try:
-            self.handle = serial.Serial(self.configobj.get("port", "COM1"))
+            self.handle = serial.Serial(self.configobj.get("port", "COM1"),
+                                        parity=self.configobj.get("parity", "N"),
+                                        stopbits=self.configobj.get("stopbits", 1),
+                                        bytesize=self.configobj.get("bytesize", 8),
+                                        baudrate=self.configobj.get("baudrate", 9600))
             return True
         except serial.SerialException as e:
             self.warning(f"Failed opening serial port {e}")
