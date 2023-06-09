@@ -37,7 +37,12 @@ class Communicator(Loggable):
         def convert(m):
             if m is None:
                 return "None"
-            return "".join([c if (ascii(c) and not ord(c) in (10,13)) else f"[{ord(c)}]" for c in m])
+            return "".join(
+                [
+                    c if (ascii(c) and not ord(c) in (10, 13)) else f"[{ord(c)}]"
+                    for c in m
+                ]
+            )
 
         self.debug(f"{convert(msg)}=>{convert(resp)}")
 
