@@ -43,8 +43,8 @@ def setup():
     shandler = logging.StreamHandler()
     HANDLERS.append(shandler)
 
-    name = datetime.now().strftime('%Y%m%d-%H.%M.%S')
-    p = os.path.join(paths.logs_dir, f'{name}.log')
+    name = datetime.now().strftime("%Y%m%d-%H.%M.%S")
+    p = os.path.join(paths.logs_dir, f"{name}.log")
 
     rhandler = RotatingFileHandler(p, maxBytes=1e8, backupCount=50)
 
@@ -58,7 +58,7 @@ def setup():
 
     # archive old logs
     now = datetime.now()
-    for p in glob.glob(os.path.join(paths.logs_dir, '*.log')):
+    for p in glob.glob(os.path.join(paths.logs_dir, "*.log")):
         result = os.stat(p)
         mt = result.st_mtime
         creation_date = datetime.fromtimestamp(mt)
@@ -92,4 +92,6 @@ def archive(root, p):
         shutil.move(src, dst)
     except Exception as e:
         print(f"Failed archiving {src} to {dst}. e={e}")
+
+
 # ============= EOF =============================================

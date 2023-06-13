@@ -43,7 +43,7 @@ class Driver(Loggable):
     def _terminate_message(self, msg):
         wt = self.write_terminator
         if wt:
-            msg = f'{msg}{wt}'
+            msg = f"{msg}{wt}"
         return msg
 
     def setup_communicator(self, cfg):
