@@ -19,6 +19,8 @@ from integrations.drivers.base import BasePressureDriver
 
 
 class MKS(BasePressureDriver):
+    write_terminator = "\r"
+
     def initialize(self):
         msg = self._make_global_message("01", "00")
         self.ask(msg)
@@ -37,7 +39,7 @@ class MKS(BasePressureDriver):
             return random.random() * 1e-6
 
     def _make_global_message(self, parameter, data):
-        return f"@{parameter}{data}\r"
+        return f"@{parameter}{data}"
 
 
 # ============= EOF =============================================

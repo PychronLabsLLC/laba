@@ -21,9 +21,11 @@ from traits.api import Instance
 
 class Driver(Loggable):
     communicator = Instance(Communicator)
+    write_terminator = None
 
-    def ask(self, *args, **kw):
-        return self.communicator.ask(*args, **kw)
+    def ask(self, msg, *args, **kw):
+        msg = self._terminate_message(msg)
+        return self.communicator.ask(msg, *args, **kw)
 
     def bootstrap(self, cfg):
         self.setup_communicator(cfg["communicator"])
@@ -37,6 +39,12 @@ class Driver(Loggable):
 
     def open(self):
         return True
+
+    def _terminate_message(self, msg):
+        wt = self.write_terminator
+        if wt:
+            msg = f'{msg}{wt}'
+        return msg
 
     def setup_communicator(self, cfg):
         kind = cfg["kind"]

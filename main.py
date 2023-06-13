@@ -20,6 +20,7 @@ import zmq
 
 from application import Application
 from db.db import DBClient
+from logging_setup import setup
 
 
 def demo():
@@ -46,6 +47,7 @@ def demo():
 
 
 def main():
+    setup()
     app = Application()
     app.run()
 

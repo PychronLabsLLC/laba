@@ -19,6 +19,8 @@ from loggable import Loggable
 
 
 class U2351A(BaseSwitchDriver):
+    write_terminator = "\r"
+
     def _actuate_channel(self, channel, v):
         if isinstance(v, bool):
             v = 10 if v else 0

@@ -294,7 +294,6 @@ class ValueReadOut(BaseScan):
     def _scan_hook(self, i, df, st, args, kw):
         value = df(*args, **kw)
         setattr(self, f"value{i}", value)
-        self.debug(f"scan hook {value}")
 
     def make_view(self):
         items = []

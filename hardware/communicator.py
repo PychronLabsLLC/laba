@@ -28,6 +28,12 @@ class Communicator(Loggable):
         if wt:
             if wt == "CR":
                 wt = "\r"
+            elif wt == "LF":
+                wt = "\n"
+            elif wt == "CRLF":
+                wt = "\r\n"
+
+        if wt and not msg.endswith(wt):
             msg = f"{msg}{wt}"
 
         resp = self._ask(msg, *args, **kw)

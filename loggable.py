@@ -14,13 +14,12 @@
 # limitations under the License.
 # ===============================================================================
 import logging
+from logging.handlers import RotatingFileHandler
 
 from traits.api import HasTraits, Str, Dict
 
-shandler = logging.StreamHandler()
-fmt = "%(name)-40s: %(asctime)s %(levelname)-9s (%(threadName)-10s) %(message)s"
-fmtter = logging.Formatter(fmt)
-shandler.setFormatter(fmtter)
+
+from logging_setup import HANDLERS
 
 
 class Loggable(HasTraits):
@@ -39,7 +38,6 @@ class Loggable(HasTraits):
         if name is None:
             name = cfg.get("name", self.__class__.__name__)
 
-        print(self, cfg)
         super().__init__(name=name, *args, **kw)
 
         if self.logger_name:
@@ -53,8 +51,9 @@ class Loggable(HasTraits):
             name = f"{name:<30}"
             l = logging.getLogger(name)
             l.setLevel(logging.DEBUG)
-            l.addHandler(shandler)
-            # l.addHandler()
+            for h in HANDLERS:
+                l.addHandler(h)
+
             self.logger = l
 
         self.configobj = cfg
