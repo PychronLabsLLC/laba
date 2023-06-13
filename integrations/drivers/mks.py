@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import random
+
 from integrations.drivers.base import BasePressureDriver
 
 
@@ -31,6 +33,8 @@ class MKS(BasePressureDriver):
         if resp:
             torr = resp.split(" ")[1].strip()
             return torr
+        else:
+            return random.random() * 1e-6
 
     def _make_global_message(self, parameter, data):
         return f"@{parameter}{data}\r"

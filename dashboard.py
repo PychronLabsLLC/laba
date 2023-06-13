@@ -42,6 +42,7 @@ from traits.api import Instance, Button, Bool, Float, List, Str
 from traitsui.api import View, UItem, VGroup, HGroup, spring, Item, EnumEditor, HSplit
 
 from paths import paths
+from ui.lcd_editor import LCDEditor
 from util import yload
 
 
@@ -67,20 +68,18 @@ class DeviceCard(Card):
     devices = List
 
     def __init__(self, application, cfg, *args, **kw):
-        super().__init__(cfg, *args, **kw)
+        super().__init__(application, cfg=cfg, *args, **kw)
         dfs = []
         dvs = []
         for dev in cfg.get("devices", []):
             dd = application.get_service(Device, f"name=='{dev['name']}'")
             dvs.append(dd)
             func = dev.get("function", {"name": "get_value"})
-            print(dd, func)
-            if func:
-                aa = func.get("args", ())
-                kk = func.get("kwargs", {})
-                name = func.get("name", "get_value")
-
-            dfs.append((getattr(dd, name), aa, kk))
+            aa = func.get("args", ())
+            kk = func.get("kwargs", {})
+            name = func.get("name", "get_value")
+            display_name = dev.get('display_name', dd.name)
+            dfs.append((getattr(dd, name), aa, kk, display_name))
 
         self.devices = dvs
         self.device_functions = dfs
@@ -223,7 +222,7 @@ class BaseScan(DeviceCard):
                 d.update = {"clear": True, "datastream": "scan"}
 
             while not self._scan_evt.is_set():
-                for i, (df, args, kw) in enumerate(self.device_functions):
+                for i, (df, args, kw, display_name) in enumerate(self.device_functions):
                     kw["datastream"] = "scan"
                     self._scan_hook(i, df, st, args, kw)
                 # time.sleep(sp)
@@ -283,19 +282,45 @@ class Scan(BaseScan):
         )
 
 
-class LEDReadOut(BaseScan):
-    value = Float(format_str="%0.3e")
+class ValueReadOut(BaseScan):
+    def __init__(self, application, cfg, *args, **kw):
+        super().__init__(application, cfg, *args, **kw)
 
-    def __init__(self, *args, **kw):
-        super().__init__(*args, **kw)
+        for i in range(len(self.device_functions)):
+            self.add_trait(f"value{i}", Float)
+
         self._scan()
 
     def _scan_hook(self, i, df, st, args, kw):
-        self.value = df(*args, **kw)
-        self.debug(f"scan hook {self.value}")
+        value = df(*args, **kw)
+        setattr(self, f'value{i}', value)
+        self.debug(f"scan hook {value}")
 
     def make_view(self):
-        return (Item("value", label=self.name, editor=LEDEditor()), Item("value"))
+        items = []
+        for i, (_, _, _, display_name) in enumerate(self.device_functions):
+            kw = {'show_label': False}
+            if display_name:
+                kw['label'] = display_name
+                kw['show_label'] = True
+
+            items.append(Item(f"value{i}", format_str="%.4e", **kw))
+
+        return tuple(items)
+
+
+class LEDReadOut(ValueReadOut):
+    def make_view(self):
+        items = []
+        for i, (_, _, _, display_name) in enumerate(self.device_functions):
+            kw = {'show_label': False}
+            if display_name:
+                kw['label'] = display_name
+                kw['show_label'] = True
+
+            items.append(Item(f"value{i}",
+                              editor=LCDEditor(), **kw))
+        return tuple(items)
 
 
 class Switch(DeviceCard):
@@ -535,6 +560,5 @@ class Dashboard(BaseDashboard):
     # def traits_view(self):
     #     v = View(self._build_dashboard_elements())
     #     return v
-
 
 # ============= EOF =============================================
