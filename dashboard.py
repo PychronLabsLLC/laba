@@ -292,6 +292,7 @@ class LEDReadOut(BaseScan):
 
     def _scan_hook(self, i, df, st, args, kw):
         self.value = df(*args, **kw)
+        self.debug(f"scan hook {self.value}")
 
     def make_view(self):
         return (Item("value", label=self.name, editor=LEDEditor()),

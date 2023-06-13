@@ -23,7 +23,7 @@ class Driver(Loggable):
     communicator = Instance(Communicator)
 
     def ask(self, *args, **kw):
-        self.communicator.ask(*args, **kw)
+        return self.communicator.ask(*args, **kw)
 
     def bootstrap(self, cfg):
         self.setup_communicator(cfg["communicator"])
