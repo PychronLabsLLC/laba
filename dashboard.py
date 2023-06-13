@@ -294,8 +294,7 @@ class LEDReadOut(BaseScan):
         self.value = df(*args, **kw)
 
     def make_view(self):
-        return (Item("value", label=self.name, editor=LEDEditor()),
-                Item('value'))
+        return (Item("value", label=self.name, editor=LEDEditor()), Item("value"))
 
 
 class Switch(DeviceCard):
