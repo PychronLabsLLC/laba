@@ -78,7 +78,7 @@ class DeviceCard(Card):
             aa = func.get("args", ())
             kk = func.get("kwargs", {})
             name = func.get("name", "get_value")
-            display_name = dev.get('display_name', dd.name)
+            display_name = dev.get("display_name", dd.name)
             dfs.append((getattr(dd, name), aa, kk, display_name))
 
         self.devices = dvs
@@ -293,16 +293,16 @@ class ValueReadOut(BaseScan):
 
     def _scan_hook(self, i, df, st, args, kw):
         value = df(*args, **kw)
-        setattr(self, f'value{i}', value)
+        setattr(self, f"value{i}", value)
         self.debug(f"scan hook {value}")
 
     def make_view(self):
         items = []
         for i, (_, _, _, display_name) in enumerate(self.device_functions):
-            kw = {'show_label': False}
+            kw = {"show_label": False}
             if display_name:
-                kw['label'] = display_name
-                kw['show_label'] = True
+                kw["label"] = display_name
+                kw["show_label"] = True
 
             items.append(Item(f"value{i}", format_str="%.4e", **kw))
 
@@ -313,13 +313,12 @@ class LEDReadOut(ValueReadOut):
     def make_view(self):
         items = []
         for i, (_, _, _, display_name) in enumerate(self.device_functions):
-            kw = {'show_label': False}
+            kw = {"show_label": False}
             if display_name:
-                kw['label'] = display_name
-                kw['show_label'] = True
+                kw["label"] = display_name
+                kw["show_label"] = True
 
-            items.append(Item(f"value{i}",
-                              editor=LCDEditor(), **kw))
+            items.append(Item(f"value{i}", editor=LCDEditor(), **kw))
         return tuple(items)
 
 
@@ -560,5 +559,6 @@ class Dashboard(BaseDashboard):
     # def traits_view(self):
     #     v = View(self._build_dashboard_elements())
     #     return v
+
 
 # ============= EOF =============================================

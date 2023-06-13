@@ -67,6 +67,7 @@ class LCDEditor(BasicEditorFactory):
         if format_func:
             return format_func(value)
         else:
-            return f'{value:0.3e}'
+            return f"{value:0.3e}"
+
 
 # ============= EOF ====================================
