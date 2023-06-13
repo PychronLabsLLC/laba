@@ -20,7 +20,7 @@ class Gauge(Device):
     def scan_pressure(self, *args, **kw):
         print("asdfsdfdsf", args, kw)
         pressure = self.driver.read_pressure(args[0])
-        self.debug(f'scan pressure {pressure}, {type(pressure)})')
+        self.debug(f"scan pressure {pressure}, {type(pressure)})")
         return pressure
 
 
