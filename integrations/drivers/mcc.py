@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from hardware.driver.driver import Driver
+from integrations.drivers.base import BaseDAQDriver
 
 
-class MCC(Driver):
-    def read_channel(self, channel):
+class MCC(BaseDAQDriver):
+    def _read_channel(self, channel):
         return self.communicator.a_in(channel)
-
 
 # ============= EOF =============================================

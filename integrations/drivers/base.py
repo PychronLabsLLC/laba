@@ -27,6 +27,10 @@ class BaseADCDriver(Driver):
         raise NotImplementedError
 
 
+class BaseDAQDriver(BaseADCDriver):
+    pass
+
+
 class BaseDACDriver(Driver):
     def write_channel(self, channel, value):
         self.debug(f"write channel {channel} value={value}")
