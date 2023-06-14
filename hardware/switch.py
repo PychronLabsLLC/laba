@@ -33,7 +33,7 @@ class Switch(Loggable):
         self.channel = str(cfg["channel"])
 
     def get_state_value(self, state):
-        return self.config('open_value', 1) if state else self.config('close_value', 0)
+        return self.config("open_value", 1) if state else self.config("close_value", 0)
 
 
 class RampSwitch(Switch):
