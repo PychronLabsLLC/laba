@@ -35,7 +35,7 @@ class U2351A(BaseSwitchDriver):
         self.debug(f"current voltage {current_voltage}")
 
         msg = f"SOUR:VOLT {output:0.3f}, (@{channel})"
-        self.ask(msg)
+        self.tell(msg)
 
     def get_voltage(self, channel):
         msg = f"SOUR:VOLT? (@{channel})"
