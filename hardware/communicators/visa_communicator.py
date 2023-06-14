@@ -57,7 +57,7 @@ class VisaCommunicator(Communicator):
             try:
                 return self.handle.query(*args, **kw)
             except pyvisa.errors.VisaIOError as e:
-                self.debug(f'ask error {args}, {kw}')
+                self.debug(f"ask error {args}, {kw}")
                 self.debug_exception()
 
 
