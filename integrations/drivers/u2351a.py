@@ -29,7 +29,7 @@ class U2351A(BaseSwitchDriver):
 
     def _actuate_channel(self, channel, v):
         if isinstance(v, bool):
-            v = self.config('max_voltage', 10) if v else self.config('min_voltage', 0)
+            v = self.config("max_voltage", 10) if v else self.config("min_voltage", 0)
         self.set_voltage(channel, v)
 
     def set_voltage(self, channel, output):
