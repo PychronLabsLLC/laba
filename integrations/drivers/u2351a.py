@@ -22,7 +22,7 @@ class U2351A(BaseSwitchDriver):
     # write_terminator = "\n"
 
     def load(self, cfg):
-        self.tell('*RST; *CLS')
+        self.tell("*RST; *CLS")
         self.ask("*IDN?")
 
     def _actuate_channel(self, channel, v):

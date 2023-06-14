@@ -20,10 +20,7 @@ def convert(m):
     if m is None:
         return "None"
     return "".join(
-        [
-            c if (ascii(c) and not ord(c) in (10, 13)) else f"[{ord(c)}]"
-            for c in m
-        ]
+        [c if (ascii(c) and not ord(c) in (10, 13)) else f"[{ord(c)}]" for c in m]
     )
 
 
@@ -61,7 +58,7 @@ class Communicator(Loggable):
         return msg
 
     def _log_tell(self, msg):
-        self.debug(f'tell {convert(msg)}')
+        self.debug(f"tell {convert(msg)}")
 
     def _log_response(self, msg, resp):
         self.debug(f"{convert(msg)}=>{resp}")
@@ -117,5 +114,6 @@ class TelnetCommunicator(Communicator):
 
 class ZmqCommunicator(Communicator):
     pass
+
 
 # ============= EOF =============================================

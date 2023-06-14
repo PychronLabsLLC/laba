@@ -31,7 +31,9 @@ class VisaCommunicator(Communicator):
 
         address = self._make_address()
 
-        self.handle = resource_manager.open_resource(address, write_termination="\n", read_termination="\n")
+        self.handle = resource_manager.open_resource(
+            address, write_termination="\n", read_termination="\n"
+        )
         if self.handle is not None:
             return True
 
