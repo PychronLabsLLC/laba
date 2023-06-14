@@ -129,7 +129,6 @@ class SwitchController(Device):
             if slow:
                 self._ramp_channel(s, state, block)
             else:
-                state = s.get_state_value(state)
                 self._actuate_channel(s, state)
         else:
             return f"invalid switch={name}"
@@ -184,7 +183,9 @@ class SwitchController(Device):
 
     def _actuate_channel(self, switch, state):
         channel = switch.channel
-        v = switch.max_value if state else switch.min_value
+
+        v = switch.get_state_value(state)
+
         self.debug(f"actuate channel {channel} state={state}, voltage={v}")
         self.driver.actuate_channel(channel, v)
 
