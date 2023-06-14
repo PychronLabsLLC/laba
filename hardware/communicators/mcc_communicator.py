@@ -15,18 +15,22 @@
 # ===============================================================================
 try:
     from mcculw import ul
-    from mcculw.enums import ULRange, InterfaceType, DigitalIODirection, DigitalPortType, TempScale
+    from mcculw.enums import (
+        ULRange,
+        InterfaceType,
+        DigitalIODirection,
+        DigitalPortType,
+        TempScale,
+    )
     from mcculw.device_info import DaqDeviceInfo
 
     CELSIUS = TempScale.CELSIUS
 except (ImportError, NameError):
     CELSIUS = 0
 
-
     class UL:
         def t_in(self, *args, **kw):
             return 0
-
 
     ul = UL()
 
@@ -181,5 +185,6 @@ class MccCommunicator(Communicator):
         # if not port:
         #     raise Exception('Error: The DAQ device does not support '
         #                     'digital input')
+
 
 # ============= EOF =============================================

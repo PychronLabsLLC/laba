@@ -68,4 +68,5 @@ class BasePressureDriver(Driver):
     def _read_pressure(self, channel):
         raise NotImplementedError
 
+
 # ============= EOF =============================================

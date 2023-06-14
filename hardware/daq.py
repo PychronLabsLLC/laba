@@ -22,9 +22,9 @@ class DAQ(Device):
     channels = List(Channel)
 
     def load(self, cfg):
-        self.channels = [Channel(**ci) for ci in cfg.get("channels",[])]
+        self.channels = [Channel(**ci) for ci in cfg.get("channels", [])]
         if not self.channels:
-            self.warning('No channels defined in config file')
+            self.warning("No channels defined in config file")
 
     def get_value(self, idx=0, datastream="default"):
         ch = self.channels[idx]
@@ -38,14 +38,12 @@ class DAQ(Device):
     def scan_temperature(self, channel, **kw):
         vv = self.driver.read_temperature(channel)
         self.debug(f"scan temperature {channel} {vv}")
-        self.update = {"datastream":
-                           f"temperature{channel}",
-                       'units': 'c',
-                       "value": vv}
+        self.update = {"datastream": f"temperature{channel}", "units": "c", "value": vv}
         return vv
 
 
 class USBTemp(DAQ):
     pass
+
 
 # ============= EOF =============================================

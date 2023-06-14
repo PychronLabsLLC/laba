@@ -586,4 +586,5 @@ class Dashboard(BaseDashboard):
     #     v = View(self._build_dashboard_elements())
     #     return v
 
+
 # ============= EOF =============================================

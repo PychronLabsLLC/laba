@@ -62,6 +62,7 @@ if __name__ == "__main__":
         main()
     except KeyError as e:
         import traceback
+
         # print the error stack
         traceback.print_exc()
 
