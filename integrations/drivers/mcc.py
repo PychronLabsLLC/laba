@@ -20,4 +20,5 @@ class MCC(BaseDAQDriver):
     def _read_channel(self, channel):
         return self.communicator.a_in(channel)
 
+
 # ============= EOF =============================================
