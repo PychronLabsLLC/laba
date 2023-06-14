@@ -31,7 +31,7 @@ class U2351A(BaseSwitchDriver):
 
     def set_voltage(self, channel, output):
         current_voltage = self.get_voltage(channel)
-        self.debug(f'current voltage {current_voltage}')
+        self.debug(f"current voltage {current_voltage}")
 
         msg = f"SOUR:VOLT {output:0.3f}, (@{channel})"
         self.ask(msg)
@@ -40,5 +40,6 @@ class U2351A(BaseSwitchDriver):
         msg = f"SOUR:VOLT? (@{channel})"
         resp = self.ask(msg)
         return float(resp)
+
 
 # ============= EOF =============================================
