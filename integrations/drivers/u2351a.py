@@ -19,7 +19,7 @@ from loggable import Loggable
 
 
 class U2351A(BaseSwitchDriver):
-    write_terminator = "\r"
+    write_terminator = "\n"
 
     def load(self, cfg):
         self.ask("*IDN?")
