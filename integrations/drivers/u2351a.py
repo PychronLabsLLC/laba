@@ -24,6 +24,12 @@ class U2351A(BaseSwitchDriver):
     def load(self, cfg):
         self.tell("*RST; *CLS")
         self.ask("*IDN?")
+        self.ask('SYST:ERR?')
+        self.ask('*STB?')
+
+        for i in range(64):
+            self.set_voltage(i, 0)
+
 
     def _actuate_channel(self, channel, v):
         if isinstance(v, bool):
@@ -40,7 +46,8 @@ class U2351A(BaseSwitchDriver):
     def get_voltage(self, channel):
         msg = f"SOUR:VOLT? (@{channel})"
         resp = self.ask(msg)
-        return float(resp)
+        if resp is not None:
+            return float(resp)
 
 
 # ============= EOF =============================================
