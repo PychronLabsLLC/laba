@@ -27,12 +27,13 @@ from traits.api import List, Str, Float, Int, Bool, Array
 class Switch(Loggable):
     channel = Str
     state = Bool
-    min_value = Float(0)
-    max_value = Float(1)
 
     def __init__(self, cfg, *args, **kw):
         super().__init__(cfg, *args, **kw)
         self.channel = str(cfg["channel"])
+
+    def get_state_value(self, state):
+        return self.config('open_value', 1) if state else self.config('close_value', 0)
 
 
 class RampSwitch(Switch):
@@ -128,6 +129,7 @@ class SwitchController(Device):
             if slow:
                 self._ramp_channel(s, state, block)
             else:
+                state = s.get_state_value(state)
                 self._actuate_channel(s, state)
         else:
             return f"invalid switch={name}"
