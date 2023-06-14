@@ -16,6 +16,17 @@
 from loggable import Loggable
 
 
+def convert(m):
+    if m is None:
+        return "None"
+    return "".join(
+        [
+            c if (ascii(c) and not ord(c) in (10, 13)) else f"[{ord(c)}]"
+            for c in m
+        ]
+    )
+
+
 class Communicator(Loggable):
     handle = None
     simulation = True
@@ -23,7 +34,19 @@ class Communicator(Loggable):
     def open(self):
         pass
 
+    def tell(self, msg, *args, **kw):
+        msg = self._prep_message(msg)
+        self._tell(msg, *args, **kw)
+        self._log_tell(msg)
+
     def ask(self, msg, *args, **kw):
+        msg = self._prep_message(msg)
+        resp = self._ask(msg, *args, **kw)
+        self._log_response(msg, resp)
+
+        return resp
+
+    def _prep_message(self, msg):
         wt = self.configobj.get("write_terminator")
         if wt:
             if wt == "CR":
@@ -35,25 +58,16 @@ class Communicator(Loggable):
 
         if wt and not msg.endswith(wt):
             msg = f"{msg}{wt}"
+        return msg
 
-        resp = self._ask(msg, *args, **kw)
-        self._log_response(msg, resp)
-
-        return resp
+    def _log_tell(self, msg):
+        self.debug(f'tell {convert(msg)}')
 
     def _log_response(self, msg, resp):
-        def convert(m):
-            if m is None:
-                return "None"
-            return "".join(
-                [
-                    c if (ascii(c) and not ord(c) in (10, 13)) else f"[{ord(c)}]"
-                    for c in m
-                ]
-            )
-
-        # self.debug(f"{convert(msg)}=>{convert(resp)}")
         self.debug(f"{convert(msg)}=>{resp}")
+
+    def _tell(self, *args, **kw):
+        raise NotImplementedError
 
     def _ask(self, *args, **kw):
         raise NotImplementedError
@@ -103,6 +117,5 @@ class TelnetCommunicator(Communicator):
 
 class ZmqCommunicator(Communicator):
     pass
-
 
 # ============= EOF =============================================

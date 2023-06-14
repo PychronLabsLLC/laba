@@ -27,6 +27,10 @@ class Driver(Loggable):
         msg = self._terminate_message(msg)
         return self.communicator.ask(msg, *args, **kw)
 
+    def tell(self, msg, *args, **kw):
+        msg = self._terminate_message(msg)
+        return self.communicator.tell(msg, *args, **kw)
+
     def bootstrap(self, cfg):
         self.setup_communicator(cfg["communicator"])
         self.load(cfg)
