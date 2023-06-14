@@ -31,8 +31,9 @@ class VisaCommunicator(Communicator):
         address = self._make_address()
 
         self.handle = resource_manager.open_resource(
-            address, write_termination=self.config('write_terminator', '\n'),
-            read_termination=self.config('read_terminator', '\n')
+            address,
+            write_termination=self.config("write_terminator", "\n"),
+            read_termination=self.config("read_terminator", "\n"),
         )
 
         if self.handle is not None:
@@ -70,5 +71,6 @@ class VisaCommunicator(Communicator):
             except pyvisa.errors.VisaIOError as e:
                 self.debug(f"ask error {args}, {kw}")
                 self.debug_exception()
+
 
 # ============= EOF =============================================
