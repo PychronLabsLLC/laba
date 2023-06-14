@@ -63,7 +63,6 @@ def config_first_detected_device(board_num, dev_id_list=None):
     ul.create_daq_device(board_num, device)
 
 
-
 class MccCommunicator(Communicator):
     """
     https://github.com/mccdaq/mcculw
@@ -76,7 +75,7 @@ class MccCommunicator(Communicator):
         #     config, "Communications", "board_num", cast="int"
         # )
         # self.config_on_startup = self.config_get(config, 'General',  'config_on_startup', cast='boolean')
-        self.board_num = self.config('board_num', 0)
+        self.board_num = self.config("board_num", 0)
         return super(MccCommunicator, self).load(config, path)
 
     def initialize(self, *args, **kw):
@@ -162,7 +161,6 @@ class MccCommunicator(Communicator):
         # if not port:
         #     raise Exception('Error: The DAQ device does not support '
         #                     'digital input')
-
 
 
 # ============= EOF =============================================

@@ -36,4 +36,6 @@ class DAQ(Device):
 
 class USBTemp(DAQ):
     pass
+
+
 # ============= EOF =============================================
