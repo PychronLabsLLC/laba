@@ -58,7 +58,7 @@ class LCDEditor(BasicEditorFactory):
     """ """
 
     klass = _LCDEditor
-    ndigits = Int(8)
+    ndigits = Int(10)
     use_small_decimal_point = Bool(True)
     width = Int(400)
     height = Int(100)

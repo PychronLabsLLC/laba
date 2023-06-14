@@ -38,5 +38,7 @@ class TcpCommunicator(EthernetCommunicator):
 
         return True
 
+    def _tell(self, *args, **kw):
+        pass
 
 # ============= EOF =============================================

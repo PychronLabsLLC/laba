@@ -19,7 +19,7 @@ from loggable import Loggable
 
 
 class U2351A(BaseSwitchDriver):
-    # write_terminator = "\n"
+    write_terminator = "\n"
 
     def load(self, cfg):
         self.tell("*RST; *CLS")
