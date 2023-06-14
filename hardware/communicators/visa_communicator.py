@@ -54,7 +54,11 @@ class VisaCommunicator(Communicator):
 
     def _ask(self, *args, **kw):
         if self.handle:
-            return self.handle.query(*args, **kw)
+            try:
+                return self.handle.query(*args, **kw)
+            except pyvisa.errors.VisaIOError as e:
+                self.debug(f'ask error {args}, {kw}')
+                self.debug_exception()
 
 
 # ============= EOF =============================================
