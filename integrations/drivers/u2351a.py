@@ -24,8 +24,8 @@ class U2351A(BaseSwitchDriver):
     def load(self, cfg):
         self.tell("*RST; *CLS")
         self.ask("*IDN?")
-        self.ask('SYST:ERR?')
-        self.ask('*STB?')
+        self.ask("SYST:ERR?")
+        self.ask("*STB?")
 
     def _actuate_channel(self, channel, v):
         if isinstance(v, bool):
