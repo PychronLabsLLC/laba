@@ -26,6 +26,7 @@ from loggable import Loggable
 from paths import paths
 from plugin import HardwarePlugin
 from server import Server
+from trigger import Trigger
 from util import import_klass, yload
 
 
@@ -89,6 +90,11 @@ class Application(TasksApplication, Loggable):
                     dbclient.add_datastream("default", device.name)
                     device.on_trait_change(self._handle_device_update, "update")
 
+                    for trigger in device_cfg.get('triggers', []):
+                        trigger = Trigger(trigger)
+                        device.on_trait_change(trigger.handle, "update")
+                        device.triggers.append(trigger)
+
         server = init.get("server")
 
         if server:
@@ -133,14 +139,32 @@ class Application(TasksApplication, Loggable):
     def open_task(self, tid, **kw):
         return self.get_task(tid, True, **kw)
 
+    # def _handle_trigger(self, trigger, obj, name, old, new):
+    #     trigger.evaluate(obj, name, old, new)
+    #     for test in trigger.get('tests', []):
+    #         tvalue = test.get('value')
+    #         comparator = test.get('comparator', '==')
+    #         attribute = test.get('attribute', 'value')
+    #         if attribute in new:
+    #             v = new[attribute]
+    #             result = eval(f'{tvalue} {comparator} {v}')
+    #             if result:
+    #                 self.info(f'Trigger fired, {trigger}')
+    #                 action = trigger.get('action')
+    #                 for k, v in action.items():
+    #                     if k == 'log':
+    #                         self.info(f'trigger log: {v}')
+    #                 break
+
     def _handle_device_update(self, obj, name, old, new):
+        self.debug(f'handling device update. {obj}, {new}')
         if new:
             dbclient = self.dbclient
             device_name = obj.name
             if "value" in new or "value_string" in new:
-                dbclient.add_measurement(
-                    new.get("datastream", "default"), device_name, **new
-                )
+                dsname = new.get("datastream", "default")
+                dbclient.add_measurement(dsname, device_name, **new)
+
             elif "datastream" in new:
                 dbclient.add_datastream(new["datastream"], device_name, unique=False)
 
@@ -151,6 +175,5 @@ class Application(TasksApplication, Loggable):
     def _get_plugins(self):
         yobj = yload(paths.initialization_path)
         return yobj.get("plugins", [])
-
 
 # ============= EOF =============================================

@@ -28,6 +28,7 @@ from traitsui.api import View, Item
 class Device(Loggable):
     driver = Instance(Driver)
     update = Event
+    triggers = List
 
     def traits_view(self):
         return View(Item("name"))
