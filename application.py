@@ -90,7 +90,7 @@ class Application(TasksApplication, Loggable):
                     dbclient.add_datastream("default", device.name)
                     device.on_trait_change(self._handle_device_update, "update")
 
-                    for trigger in device_cfg.get('triggers', []):
+                    for trigger in device_cfg.get("triggers", []):
                         trigger = Trigger(trigger)
                         device.on_trait_change(trigger.handle, "update")
                         device.triggers.append(trigger)
@@ -157,7 +157,7 @@ class Application(TasksApplication, Loggable):
     #                 break
 
     def _handle_device_update(self, obj, name, old, new):
-        self.debug(f'handling device update. {obj}, {new}')
+        self.debug(f"handling device update. {obj}, {new}")
         if new:
             dbclient = self.dbclient
             device_name = obj.name
@@ -175,5 +175,6 @@ class Application(TasksApplication, Loggable):
     def _get_plugins(self):
         yobj = yload(paths.initialization_path)
         return yobj.get("plugins", [])
+
 
 # ============= EOF =============================================

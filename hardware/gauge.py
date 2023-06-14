@@ -21,10 +21,9 @@ class Gauge(Device):
         pressure = self.driver.read_pressure(args[0])
         self.debug(f"scan pressure {pressure}, {type(pressure)})")
         self.update = {
-            'value': pressure,
-            'datastream': f'pressure{args[0]}',
-            
-            'pressure': pressure,
+            "value": pressure,
+            "datastream": f"pressure{args[0]}",
+            "pressure": pressure,
         }
         return pressure
 

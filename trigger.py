@@ -16,24 +16,23 @@
 from loggable import Loggable
 
 
-
 class Trigger(Loggable):
     def handle(self, obj, name, old, new):
-        self.debug(f'handle {obj}, {new}')
-        for test in self.config('tests'):
+        self.debug(f"handle {obj}, {new}")
+        for test in self.config("tests"):
             if self._test(obj, test, new):
                 self._action(obj, test, new)
                 break
 
     def _test(self, obj, test, new):
-        if test['attribute'] in new:
-            attribute = test['attribute']
+        if test["attribute"] in new:
+            attribute = test["attribute"]
             tvalue = new[attribute]
             from_value, to_value = None, None
 
             for k, v in test.items():
                 ret = False
-                if k == 'attribute':
+                if k == "attribute":
                     continue
 
                 try:
@@ -41,36 +40,39 @@ class Trigger(Loggable):
                 except (ValueError, TypeError):
                     continue
 
-                if k == 'le':
+                if k == "le":
                     ret = tvalue <= v
-                elif k == 'ge':
+                elif k == "ge":
                     ret = tvalue >= v
-                elif k == 'lt':
+                elif k == "lt":
                     ret = tvalue < v
-                elif k == 'gt':
+                elif k == "gt":
                     ret = tvalue > v
-                elif k == 'eq':
+                elif k == "eq":
                     ret = tvalue == v
-                elif k == 'from':
+                elif k == "from":
                     from_value = v
-                elif k == 'to':
+                elif k == "to":
                     to_value = v
 
-                if k not in ('from', 'to'):
-                    self.debug(f'testing {tvalue} {k} {v}')
+                if k not in ("from", "to"):
+                    self.debug(f"testing {tvalue} {k} {v}")
 
                 if to_value is not None and from_value is not None:
-                    self.debug(f'testing {tvalue} {from_value} <= {tvalue} <= {to_value}')
+                    self.debug(
+                        f"testing {tvalue} {from_value} <= {tvalue} <= {to_value}"
+                    )
                     ret = from_value <= tvalue <= to_value
 
                 if ret:
                     return True
 
     def _action(self, obj, test, new):
-        self.info(f'Trigger fired, {self}')
-        action = self.config('action')
+        self.info(f"Trigger fired, {self}")
+        action = self.config("action")
         for k, v in action.items():
-            if k == 'log':
-                self.info(f'trigger log: {v}')
+            if k == "log":
+                self.info(f"trigger log: {v}")
+
 
 # ============= EOF =============================================
