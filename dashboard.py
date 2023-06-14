@@ -78,8 +78,8 @@ class DeviceCard(Card):
             aa = func.get("args", ())
             kk = func.get("kwargs", {})
             name = func.get("name", "get_value")
-            display_name = dev.get("display_name", dd.name)
-            dfs.append((getattr(dd, name), aa, kk, display_name))
+            label = dev.get("label", dd.name)
+            dfs.append((getattr(dd, name), aa, kk, label))
 
         self.devices = dvs
         self.device_functions = dfs
@@ -222,7 +222,7 @@ class BaseScan(DeviceCard):
                 d.update = {"clear": True, "datastream": "scan"}
 
             while not self._scan_evt.is_set():
-                for i, (df, args, kw, display_name) in enumerate(self.device_functions):
+                for i, (df, args, kw, _) in enumerate(self.device_functions):
                     kw["datastream"] = "scan"
                     self._scan_hook(i, df, st, args, kw)
                 # time.sleep(sp)
@@ -324,10 +324,10 @@ class ValueReadOut(BaseScan):
 
     def make_view(self):
         items = []
-        for i, (_, _, _, display_name) in enumerate(self.device_functions):
+        for i, (_, _, _, label) in enumerate(self.device_functions):
             kw = {"show_label": False}
-            if display_name:
-                kw["label"] = display_name
+            if label:
+                kw["label"] = label
                 kw["show_label"] = True
 
             items.append(Item(f"value{i}", format_str="%.4e", **kw))
@@ -338,10 +338,10 @@ class ValueReadOut(BaseScan):
 class LEDReadOut(ValueReadOut):
     def make_view(self):
         items = []
-        for i, (_, _, _, display_name) in enumerate(self.device_functions):
+        for i, (_, _, _, label) in enumerate(self.device_functions):
             kw = {"show_label": False}
-            if display_name:
-                kw["label"] = display_name
+            if label:
+                kw["label"] = label
                 kw["show_label"] = True
 
             items.append(Item(f"value{i}", editor=LCDEditor(), **kw))
