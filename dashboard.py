@@ -282,6 +282,33 @@ class Scan(BaseScan):
         )
 
 
+class MultiScan(Scan):
+    def _figure_default(self):
+        f = Figure()
+        f.new_plot(
+            xtitle="Time(s)",
+            ytitle="Valve",
+            padding_left=50,
+            padding_bottom=50,
+            padding_top=20,
+            padding_right=20,
+        )
+        f.new_series("s0")
+        f.set_x_limits(0, 5)
+
+        return f
+
+    def make_view(self):
+        return (
+            HGroup(
+                spring,
+                UItem("start_button", enabled_when="start_enabled"),
+                UItem("stop_button", enabled_when="not start_enabled"),
+            ),
+            UItem("figure", style="custom"),
+        )
+
+
 class ValueReadOut(BaseScan):
     def __init__(self, application, cfg, *args, **kw):
         super().__init__(application, cfg, *args, **kw)
@@ -558,6 +585,5 @@ class Dashboard(BaseDashboard):
     # def traits_view(self):
     #     v = View(self._build_dashboard_elements())
     #     return v
-
 
 # ============= EOF =============================================

@@ -28,7 +28,17 @@ class BaseADCDriver(Driver):
 
 
 class BaseDAQDriver(BaseADCDriver):
-    pass
+    @get_float()
+    def read_temperature(self, channel):
+        """
+        return temperature in deg C
+        """
+
+        self.debug(f"read temperature {channel}")
+        return self._read_temperature(channel)
+
+    def _read_temperature(self, channel):
+        raise NotImplementedError
 
 
 class BaseDACDriver(Driver):
@@ -57,6 +67,5 @@ class BasePressureDriver(Driver):
 
     def _read_pressure(self, channel):
         raise NotImplementedError
-
 
 # ============= EOF =============================================

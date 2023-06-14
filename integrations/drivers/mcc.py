@@ -20,5 +20,6 @@ class MCC(BaseDAQDriver):
     def _read_channel(self, channel):
         return self.communicator.a_in(channel)
 
-
+    def _read_temperature(self, channel):
+        return self.communicator.t_in(channel)
 # ============= EOF =============================================

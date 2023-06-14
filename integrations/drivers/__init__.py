@@ -18,5 +18,6 @@ from integrations.drivers.mks import MKS
 from integrations.drivers.m1000 import M1000
 from integrations.drivers.qtegra import Qtegra
 from integrations.drivers.chromium import Chromium
+from integrations.drivers.mcc import MCC
 
 # ============= EOF =============================================

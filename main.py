@@ -61,6 +61,10 @@ if __name__ == "__main__":
     try:
         main()
     except KeyError as e:
+        import traceback
+        # print the error stack
+        traceback.print_exc()
+
         print(f"key error. {e}")
     except BaseException as e:
         # give user option to roll back to a previous version

@@ -13,9 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from mcculw import ul
-from mcculw.enums import ULRange, InterfaceType, DigitalIODirection, DigitalPortType
-from mcculw.device_info import DaqDeviceInfo
+try:
+    from mcculw import ul
+    from mcculw.enums import ULRange, InterfaceType, DigitalIODirection, DigitalPortType, TempScale
+    from mcculw.device_info import DaqDeviceInfo
+
+    CELSIUS = TempScale.CELSIUS
+except (ImportError, NameError):
+    CELSIUS = 0
+
+
+    class UL:
+        def t_in(self, *args, **kw):
+            return 0
+
+
+    ul = UL()
 
 from hardware.communicator import Communicator
 
@@ -92,6 +105,21 @@ class MccCommunicator(Communicator):
         eng_units_value = ul.to_eng_units(self.board_num, ai_range, value)
         return eng_units_value
 
+    def d_in(self, channel):
+        port = self._get_port(channel)
+        if port:
+            bit_num = self._get_bit_num(channel)
+
+            bit_value = ul.d_bit_in(self.board_num, port.type, bit_num)
+            return bool(bit_value)
+
+    def t_in(self, channel):
+        """
+        get temperature in celsius
+        """
+        value = ul.t_in(self.board_num, channel, CELSIUS)
+        return value
+
     def d_out(self, channel, bit_value):
         channel = str(channel)
         port = self._get_port(channel)
@@ -112,14 +140,6 @@ class MccCommunicator(Communicator):
                 ul.d_bit_out(self.board_num, port.type, bit_num, bit_value)
             except BaseException:
                 self.debug_exception()
-
-    def d_in(self, channel):
-        port = self._get_port(channel)
-        if port:
-            bit_num = self._get_bit_num(channel)
-
-            bit_value = ul.d_bit_in(self.board_num, port.type, bit_num)
-            return bool(bit_value)
 
     def _get_bit_num(self, channel):
         channel = str(channel)
@@ -161,6 +181,5 @@ class MccCommunicator(Communicator):
         # if not port:
         #     raise Exception('Error: The DAQ device does not support '
         #                     'digital input')
-
 
 # ============= EOF =============================================
