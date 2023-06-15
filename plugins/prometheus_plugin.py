@@ -31,11 +31,11 @@ class PrometheusPlugin(BasePlugin):
             self.debug(f"adding gauge {gconfig['name']}")
 
             def func(obj, old, name, new):
-                if 'value' in new:
+                if "value" in new:
                     self.debug(f"updating gauge {gconfig['name']} to {new['value']}")
-                    g.set(new['value'])
+                    g.set(new["value"])
 
-            event = (gconfig["name"], func, gconfig.get('event', 'update'))
+            event = (gconfig["name"], func, gconfig.get("event", "update"))
             events.append(event)
 
         self.device_events = events

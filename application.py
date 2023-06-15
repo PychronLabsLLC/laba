@@ -96,9 +96,9 @@ class Application(TasksApplication, Loggable):
                     dbclient.add_device(device.name)
                     dbclient.add_datastream("default", device.name)
                     device.on_trait_change(self._handle_device_update, "update")
-                    print('asdf', hw.device_events)
+                    print("asdf", hw.device_events)
                     for devicename, handler, event in hw.device_events:
-                        print('asdfasfasdfasdf', devicename, device.name)
+                        print("asdfasfasdfasdf", devicename, device.name)
                         if devicename == device.name:
                             device.on_trait_change(handler, event)
 
