@@ -16,9 +16,12 @@
 import os
 
 from envisage.core_plugin import CorePlugin
+from envisage.extension_point import ExtensionPoint
 from envisage.ui.tasks.tasks_application import TasksApplication
 from envisage.ui.tasks.tasks_plugin import TasksPlugin
 from pyface.tasks.task_window_layout import TaskWindowLayout
+from traits.has_traits import on_trait_change
+from traits.trait_types import List
 
 from db.db import DBClient
 from hardware.device import Device
@@ -56,30 +59,34 @@ class Application(TasksApplication, Loggable):
         for plugin_obj in self._get_plugins():
             if plugin_obj.get("enabled", True):
                 name = plugin_obj.get("name")
+                klass = None
                 if name == "SwitchPlugin":
                     klass = "plugins.switch_plugin.SwitchPlugin"
                 elif name == "SpectrometerPlugin":
                     klass = "plugins.spectrometer_plugin.SpectrometerPlugin"
                 elif name == "LaserPlugin":
                     klass = "plugins.laser_plugin.LaserPlugin"
+                elif name == 'PrometheusPlugin':
+                    klass = 'plugins.prometheus_plugin.PrometheusPlugin'
 
-                factory = import_klass(klass)
-                plugin = factory()
+                if klass:
+                    factory = import_klass(klass)
+                    plugin = factory()
+                    self.add_plugin(plugin)
+                else:
+                    self.warning(f'Invalid plugin. {name}')
 
-                self.add_plugin(plugin)
-
-    def start(self):
-        self.initialize()
-        return True
-
+    @on_trait_change('started')
     def initialize(self):
         init = self._get_initization()
+
         self.dbclient = dbclient = DBClient()
 
         dbclient.build(drop=bool(int(os.environ.get("BUILD_DB", "0"))))
 
         dbclient.backup()
 
+        hw = self.get_plugin('laba.hardware.plugin')
         for device_cfg in init.get("devices"):
             if device_cfg.get("enabled", True):
                 device = make_device(device_cfg)
@@ -90,10 +97,9 @@ class Application(TasksApplication, Loggable):
                     dbclient.add_datastream("default", device.name)
                     device.on_trait_change(self._handle_device_update, "update")
 
-                    for trigger in device_cfg.get("triggers", []):
-                        trigger = Trigger(trigger)
-                        device.on_trait_change(trigger.handle, "update")
-                        device.triggers.append(trigger)
+                    for devicename, handler, event in hw.device_events:
+                        if devicename == device.name:
+                            device.on_trait_change(handler, event)
 
         server = init.get("server")
 

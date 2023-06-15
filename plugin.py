@@ -23,6 +23,7 @@ from envisage.ui.tasks.task_extension import TaskExtension
 from envisage.ui.tasks.task_factory import TaskFactory
 from pyface.action.schema.schema import SMenu, SMenuBar
 from pyface.action.schema.schema_addition import SchemaAddition
+from traits.has_traits import on_trait_change
 from traitsui.menu import Action
 
 from automation import Automation
@@ -36,6 +37,7 @@ from paths import paths
 from persister import JSONPersister
 from task import HardwareTask
 from tasks.sequencer_task import SequencerTask
+from trigger import Trigger
 from util import yload
 
 
@@ -49,6 +51,8 @@ class BasePlugin(Plugin, Loggable):
 class HardwarePlugin(BasePlugin):
     # an extension point for adding additional commands to automations
     automation_commands = ExtensionPoint(List, id="laba.automation.commands")
+    device_events = ExtensionPoint(List, id="laba.device.events")
+    id = "laba.hardware.plugin"
 
     def _hardware_task_factory(self):
         devices = self.application.get_services(Device)

@@ -51,8 +51,6 @@ class Loggable(HasTraits):
             name = f"{name:<30}"
             l = logging.getLogger(name)
             l.setLevel(logging.DEBUG)
-            for h in HANDLERS:
-                l.addHandler(h)
 
             self.logger = l
 

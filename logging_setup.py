@@ -52,9 +52,11 @@ def setup():
 
     fmt = "%(name)-40s: %(asctime)s %(levelname)-9s (%(threadName)-10s) %(message)s"
     fmtter = logging.Formatter(fmt)
+    root = logging.getLogger()
     for h in HANDLERS:
         h.setFormatter(fmtter)
         h.setLevel(logging.DEBUG)
+        root.addHandler(h)
 
     # archive old logs
     now = datetime.now()
