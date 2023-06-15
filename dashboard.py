@@ -425,7 +425,14 @@ class EMSwitch(Switch):
                 self.figure.add_datum(
                     "vt", new["relative_time_seconds"], new["voltage"]
                 )
-                self.figure.set_x_limits(-1, new["max_time"])
+                plot = self.figure.get_plot(0)
+                ymax = plot.index_range.high
+                if 'max_time' in new:
+                    ymax = new["max_time"] * 1.1
+                elif new["relative_time_seconds"] > ymax:
+                    ymax = new["relative_time_seconds"] * 1.1
+
+                plot.index_range.high = ymax
                 self.figure.set_y_limits(-1, new["max_voltage"])
 
     def make_view(self):
