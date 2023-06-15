@@ -39,7 +39,9 @@ class Switch(Loggable):
     def get_state_value(self, state):
         ret = state
         if isinstance(state, bool):
-            ret = self.config("open_value", 1) if state else self.config("close_value", 0)
+            ret = (
+                self.config("open_value", 1) if state else self.config("close_value", 0)
+            )
 
         return ret
 
@@ -76,17 +78,17 @@ class RampSwitch(Switch):
     #     for yi in ys:
     #         yield yi
 
-        # curve = bezier.Curve(nodes, degree=self.degree)
-        # ma = nodes.max()
-        # for j, i in enumerate(linspace(0.0, 1.0, self.nsteps + 1)):
-        #     if not j:
-        #         # skip first because we already are at this value
-        #         continue
-        #
-        #     curve2 = bezier.Curve([[i, i], [0, ma]], degree=1)
-        #     intersections = curve.intersect(curve2)
-        #     output = curve.evaluate_multi(intersections[0, :])[1][0]
-        #     yield output
+    # curve = bezier.Curve(nodes, degree=self.degree)
+    # ma = nodes.max()
+    # for j, i in enumerate(linspace(0.0, 1.0, self.nsteps + 1)):
+    #     if not j:
+    #         # skip first because we already are at this value
+    #         continue
+    #
+    #     curve2 = bezier.Curve([[i, i], [0, ma]], degree=1)
+    #     intersections = curve.intersect(curve2)
+    #     output = curve.evaluate_multi(intersections[0, :])[1][0]
+    #     yield output
 
 
 class SwitchController(Device):
@@ -183,7 +185,7 @@ class SwitchController(Device):
         #     if self.canvas:
         #         self.canvas.set_switch_state(s.name, state)
         def script():
-            scriptname = 'default'
+            scriptname = "default"
             if isinstance(slow, str):
                 scriptname = slow
 
@@ -199,15 +201,15 @@ class SwitchController(Device):
             self._ramp_thread.start()
 
     def _load_ramp_script(self, name):
-        p = Path(paths.curves_dir, f'{name}.csv')
-        with open(p, 'r') as rfile:
-            reader = csv.reader(rfile, delimiter=',')
+        p = Path(paths.curves_dir, f"{name}.csv")
+        with open(p, "r") as rfile:
+            reader = csv.reader(rfile, delimiter=",")
             rows = [row for row in reader]
             for row in rows[1:]:
                 yield row
 
     def _execute_script_row(self, idx, row, s, st):
-        self.debug(f'execute script row. line={idx+1}, {row}')
+        self.debug(f"execute script row. line={idx+1}, {row}")
         voltage, nsteps, dwelltime, curve = row[:4]
         voltage = float(voltage)
         nsteps = int(nsteps)
@@ -217,17 +219,20 @@ class SwitchController(Device):
         self.debug(f"set output {voltage}")
 
         def make_curve(curvename, nsteps=100, invert=False):
-            curvepath = Path(paths.curves_dir, f'curve_rates.csv')
-            with open(curvepath, 'r') as rfile:
-                reader = csv.reader(rfile, delimiter=',')
+            curvepath = Path(paths.curves_dir, f"curve_rates.csv")
+            with open(curvepath, "r") as rfile:
+                reader = csv.reader(rfile, delimiter=",")
                 rows = [row for row in reader]
-                control_points = rows[curvename-1]
-                self.debug(f'using control points {control_points}')
+                control_points = rows[curvename - 1]
+                self.debug(f"using control points {control_points}")
                 n = len(control_points) + 1
-                control_points = [((i+1)/n, float(cp)/100) for i, cp in enumerate(control_points)]
+                control_points = [
+                    ((i + 1) / n, float(cp) / 100)
+                    for i, cp in enumerate(control_points)
+                ]
                 control_points.insert(0, (0, 0))
                 control_points.append((1, 1))
-                xs, ys = bezier_curve(control_points, nsteps+1)
+                xs, ys = bezier_curve(control_points, nsteps + 1)
                 if invert:
                     ys = [1 - yi for yi in ys]
                 return ys
@@ -235,13 +240,12 @@ class SwitchController(Device):
         for out in make_curve(curve, nsteps):
             vi = voltage * out
             self.debug(f"set output {out}, voltage={vi}")
-            kw = {"relative_time_seconds": time.time() - st,
-                  "max_voltage": 7}
+            kw = {"relative_time_seconds": time.time() - st, "max_voltage": 7}
             self._set_voltage(s, vi, **kw)
             time.sleep(1)
 
         if dwelltime:
-            self.debug(f'dwelling {dwelltime}s')
+            self.debug(f"dwelling {dwelltime}s")
             time.sleep(dwelltime)
 
     def _set_voltage(self, s, voltage, **kw):
@@ -250,12 +254,12 @@ class SwitchController(Device):
             self.canvas.set_switch_voltage(s.name, voltage)
 
         self.update = {
-                    "voltage": voltage,
-                    "value": voltage,
-                    "datastream": "ramp",
-                    "switch_name": s.name,
-                    **kw
-                }
+            "voltage": voltage,
+            "value": voltage,
+            "datastream": "ramp",
+            "switch_name": s.name,
+            **kw,
+        }
 
     def _actuate_channel(self, switch, state):
         channel = switch.channel

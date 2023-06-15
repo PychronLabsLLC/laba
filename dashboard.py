@@ -427,7 +427,7 @@ class EMSwitch(Switch):
                 )
                 plot = self.figure.get_plot(0)
                 ymax = plot.index_range.high
-                if 'max_time' in new:
+                if "max_time" in new:
                     ymax = new["max_time"] * 1.1
                 elif new["relative_time_seconds"] > ymax:
                     ymax = new["relative_time_seconds"] * 1.1

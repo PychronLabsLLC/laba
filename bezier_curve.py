@@ -61,24 +61,26 @@ def bezier_curve(points, nsamples=1000):
     return xvals, yvals
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import matplotlib.pyplot as plt
     import csv
 
-    curvepath = '/Users/jross/laba/curves/curve_rates.csv'
+    curvepath = "/Users/jross/laba/curves/curve_rates.csv"
     nsteps = 100
     curvename = 3
     invert = True
-    with open(curvepath, 'r') as rfile:
-        reader = csv.reader(rfile, delimiter=',')
+    with open(curvepath, "r") as rfile:
+        reader = csv.reader(rfile, delimiter=",")
         rows = [row for row in reader]
         control_points = rows[curvename - 1]
         # self.debug(f'using control points {control_points}')
         n = len(control_points) + 1
-        control_points = [((i + 1) / n, float(cp) / 100) for i, cp in enumerate(control_points)]
+        control_points = [
+            ((i + 1) / n, float(cp) / 100) for i, cp in enumerate(control_points)
+        ]
         control_points.insert(0, (0, 0))
         control_points.append((1, 1))
-        xs, ys = bezier_curve(control_points, nsteps+1)
+        xs, ys = bezier_curve(control_points, nsteps + 1)
         if invert:
             ys = [1 - yi for yi in ys]
 
