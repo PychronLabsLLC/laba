@@ -185,16 +185,16 @@ class SwitchController(Device):
         #     if self.canvas:
         #         self.canvas.set_switch_state(s.name, state)
         def script():
-            scriptname = 'default'
+            scriptname = "default"
             dry = True
             if isinstance(slow, str):
                 scriptname = slow
                 dry = False
 
             st = time.time()
-            with open(Path(paths.curves_dir, f'{scriptname}_output.csv'), 'w') as wfile:
-                writer = csv.writer(wfile, delimiter=',')
-                writer.writerow(['step', 'time', 'stepidx', 'output', 'voltage'])
+            with open(Path(paths.curves_dir, f"{scriptname}_output.csv"), "w") as wfile:
+                writer = csv.writer(wfile, delimiter=",")
+                writer.writerow(["step", "time", "stepidx", "output", "voltage"])
                 for idx, row in enumerate(self._load_ramp_script(scriptname)):
                     self._execute_script_row(writer, idx, row, s, st, dry=dry)
 
@@ -213,7 +213,7 @@ class SwitchController(Device):
                 yield row
 
     def _execute_script_row(self, writer, idx, row, s, st, dry):
-        self.debug(f'execute script row. line={idx+1}, {row}')
+        self.debug(f"execute script row. line={idx+1}, {row}")
         voltage, n_steps, dwell_time, curve = row[:4]
         voltage = float(voltage)
         n_steps = int(n_steps)
@@ -223,12 +223,12 @@ class SwitchController(Device):
         self.debug(f"set output {voltage}")
 
         def make_curve(curve_name, nsteps=100, invert=False):
-            curve_path = Path(paths.curves_dir, f'curve_rates.csv')
-            with open(curve_path, 'r') as rfile:
-                reader = csv.reader(rfile, delimiter=',')
+            curve_path = Path(paths.curves_dir, f"curve_rates.csv")
+            with open(curve_path, "r") as rfile:
+                reader = csv.reader(rfile, delimiter=",")
                 rows = [row for row in reader]
                 control_points = rows[curve_name - 1]
-                self.debug(f'using control points {control_points}')
+                self.debug(f"using control points {control_points}")
                 n = len(control_points) + 1
                 control_points = [
                     ((i + 1) / n, float(cp) / 100)
@@ -245,8 +245,7 @@ class SwitchController(Device):
             vi = voltage * out
             self.debug(f"set output {out}, voltage={vi}")
             ct = time.time() - st
-            kw = {"relative_time_seconds": ct,
-                  "max_voltage": 7}
+            kw = {"relative_time_seconds": ct, "max_voltage": 7}
 
             self._set_voltage(s, vi, **kw)
             if not dry:
@@ -255,7 +254,7 @@ class SwitchController(Device):
             writer.writerow([idx, ct, stepidx, out, vi])
 
         if dwell_time and not dry:
-            self.debug(f'dwelling {dwell_time}s')
+            self.debug(f"dwelling {dwell_time}s")
             time.sleep(dwell_time)
 
     def _set_voltage(self, s, voltage, **kw):
