@@ -71,7 +71,7 @@ class Application(TasksApplication, Loggable):
 
                 if klass:
                     factory = import_klass(klass)
-                    plugin = factory()
+                    plugin = factory(plugin_obj)
                     self.add_plugin(plugin)
                 else:
                     self.warning(f"Invalid plugin. {name}")
@@ -96,8 +96,9 @@ class Application(TasksApplication, Loggable):
                     dbclient.add_device(device.name)
                     dbclient.add_datastream("default", device.name)
                     device.on_trait_change(self._handle_device_update, "update")
-
+                    print('asdf', hw.device_events)
                     for devicename, handler, event in hw.device_events:
+                        print('asdfasfasdfasdf', devicename, device.name)
                         if devicename == device.name:
                             device.on_trait_change(handler, event)
 
