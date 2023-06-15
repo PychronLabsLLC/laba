@@ -66,17 +66,17 @@ class Application(TasksApplication, Loggable):
                     klass = "plugins.spectrometer_plugin.SpectrometerPlugin"
                 elif name == "LaserPlugin":
                     klass = "plugins.laser_plugin.LaserPlugin"
-                elif name == 'PrometheusPlugin':
-                    klass = 'plugins.prometheus_plugin.PrometheusPlugin'
+                elif name == "PrometheusPlugin":
+                    klass = "plugins.prometheus_plugin.PrometheusPlugin"
 
                 if klass:
                     factory = import_klass(klass)
                     plugin = factory()
                     self.add_plugin(plugin)
                 else:
-                    self.warning(f'Invalid plugin. {name}')
+                    self.warning(f"Invalid plugin. {name}")
 
-    @on_trait_change('started')
+    @on_trait_change("started")
     def initialize(self):
         init = self._get_initization()
 
@@ -86,7 +86,7 @@ class Application(TasksApplication, Loggable):
 
         dbclient.backup()
 
-        hw = self.get_plugin('laba.hardware.plugin')
+        hw = self.get_plugin("laba.hardware.plugin")
         for device_cfg in init.get("devices"):
             if device_cfg.get("enabled", True):
                 device = make_device(device_cfg)

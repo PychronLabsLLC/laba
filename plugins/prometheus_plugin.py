@@ -24,17 +24,19 @@ class PrometheusPlugin(BasePlugin):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
 
-        g = Gauge('pressure', 'MKS description')
+        g = Gauge("pressure", "MKS description")
 
         def mks_func(obj, old, name, new):
-            self.debug(f'handling mks update {new}')
-            if 'pressure' in new:
-                g.set(new['value'])
+            self.debug(f"handling mks update {new}")
+            if "pressure" in new:
+                g.set(new["value"])
 
-        self.device_events = [('mks', mks_func, 'update'), ]
+        self.device_events = [
+            ("mks", mks_func, "update"),
+        ]
 
     def start(self):
-        start_http_server(self.config('port', 8000))
+        start_http_server(self.config("port", 8000))
 
     # def _device_events_default(self):
     #     return [('mks', self._handle_update, 'update'), ]

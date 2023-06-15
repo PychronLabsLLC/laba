@@ -17,7 +17,6 @@ from loggable import Loggable
 
 
 class Trigger(Loggable):
-
     def handle(self, obj, name, old, new):
         self.debug(f"handle {obj}, {new}")
         for test in self.config("tests"):
