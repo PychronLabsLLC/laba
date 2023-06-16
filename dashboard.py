@@ -395,9 +395,9 @@ class EMSwitch(Switch):
         super().__init__(*args, **kw)
 
         for p in os.listdir(paths.curves_dir):
-            if not p.endswith('.csv'):
+            if not p.endswith(".csv"):
                 continue
-            if os.path.basename(p) == 'curve_rates.csv':
+            if os.path.basename(p) == "curve_rates.csv":
                 continue
 
             self.scripts.append(os.path.splitext(os.path.basename(p))[0])
@@ -459,16 +459,21 @@ class EMSwitch(Switch):
                     UItem("open_button"),
                     UItem("close_button"),
                     spring,
-
                 ),
-                HGroup(UItem("slow_open_button"),
-                       UItem("slow_close_button"),
-                       Item("dry",
-                            tooltip="Generate the voltage curve but don't actually apply it",
-                            label="Dry Run"),
-                       spring,
-                       UItem("selected_script", editor=EnumEditor(name="scripts")),),
-                HGroup(Item("state", style="readonly", label="State"),),
+                HGroup(
+                    UItem("slow_open_button"),
+                    UItem("slow_close_button"),
+                    Item(
+                        "dry",
+                        tooltip="Generate the voltage curve but don't actually apply it",
+                        label="Dry Run",
+                    ),
+                    spring,
+                    UItem("selected_script", editor=EnumEditor(name="scripts")),
+                ),
+                HGroup(
+                    Item("state", style="readonly", label="State"),
+                ),
                 UItem("figure", style="custom"),
             ),
         )

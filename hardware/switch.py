@@ -146,7 +146,9 @@ class SwitchController(Device):
             return f"invalid switch={name}"
 
     def _script_channel(self, s, state, slow, block, dry):
-        self.debug(f"ramp switch {s} state={state} slow={slow}, block={block}, dry={dry}")
+        self.debug(
+            f"ramp switch {s} state={state} slow={slow}, block={block}, dry={dry}"
+        )
         self._cancel_script = Event()
 
         # def ramp():
@@ -193,9 +195,13 @@ class SwitchController(Device):
 
             st = time.time()
 
-            with open(Path(paths.curves_output_dir, f"{scriptname}_output.csv"), "w") as wfile:
+            with open(
+                Path(paths.curves_output_dir, f"{scriptname}_output.csv"), "w"
+            ) as wfile:
                 writer = csv.writer(wfile, delimiter=",")
-                writer.writerow(["step", "time", "stepidx", "output", "voltage", "comment"])
+                writer.writerow(
+                    ["step", "time", "stepidx", "output", "voltage", "comment"]
+                )
                 ts = 0
                 for idx, row in enumerate(self._load_ramp_script(scriptname)):
                     if self._cancel_script.is_set():
@@ -253,7 +259,7 @@ class SwitchController(Device):
             kw = {"relative_time_seconds": ct, "max_voltage": 7}
             if dry:
                 timestep += 1
-                kw['relative_time_seconds'] = timestep
+                kw["relative_time_seconds"] = timestep
 
             self._set_voltage(s, vi, **kw)
 
@@ -262,7 +268,7 @@ class SwitchController(Device):
             if self._cancel_script.is_set():
                 break
 
-            writer.writerow([idx, ct, stepidx, out, vi, 'ramping'])
+            writer.writerow([idx, ct, stepidx, out, vi, "ramping"])
 
         if self._cancel_script.is_set():
             return
@@ -277,7 +283,7 @@ class SwitchController(Device):
                 time.sleep(0.01 if dry else 1)
                 if dry:
                     timestep += 1
-                    kw['relative_time_seconds'] = timestep
+                    kw["relative_time_seconds"] = timestep
 
                 self.update = {
                     "voltage": vi,
@@ -286,7 +292,7 @@ class SwitchController(Device):
                     "switch_name": s.name,
                     **kw,
                 }
-                writer.writerow([idx, ct, i, -1, vi, 'dwelling'])
+                writer.writerow([idx, ct, i, -1, vi, "dwelling"])
 
         return timestep
         # if dry:
@@ -322,5 +328,6 @@ class SwitchController(Device):
         if self.canvas:
             self.canvas.set_switch_state(switch.name, state)
             self.canvas.set_switch_voltage(switch.name, v)
+
 
 # ============= EOF =============================================
