@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import os
 import time
 from threading import Thread, Event
 
@@ -386,6 +387,22 @@ class EMSwitch(Switch):
     slow_open_button = Button("Slow Open")
     slow_close_button = Button("Slow Close")
     figure = Instance(Figure)
+    scripts = List
+    selected_script = Str
+    dry = Bool(True)
+
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
+
+        for p in os.listdir(paths.curves_dir):
+            if not p.endswith('.csv'):
+                continue
+            if os.path.basename(p) == 'curve_rates.csv':
+                continue
+
+            self.scripts.append(os.path.splitext(os.path.basename(p))[0])
+        if self.scripts:
+            self.selected_script = self.scripts[0]
 
     def _figure_default(self):
         fig = Figure()
@@ -396,7 +413,7 @@ class EMSwitch(Switch):
         p.y_axis.title = "Voltage (V)"
         fig.new_series("vt", type="line")
         p.index_range.low = 0
-        p.index_range.high = 60
+        p.index_range.high = 300
 
         p.value_range.low = 0
         p.value_range.high = 10
@@ -405,12 +422,12 @@ class EMSwitch(Switch):
 
     def _slow_close_button_fired(self):
         dev = self.device
-        dev.close_switch(self.switch_name, slow=True)
+        dev.close_switch(self.switch_name, slow=self.selected_script, dry=self.dry)
         self.state = False
 
     def _slow_open_button_fired(self):
         dev = self.device
-        dev.open_switch(self.switch_name, slow=True)
+        dev.open_switch(self.switch_name, slow=self.selected_script, dry=self.dry)
         self.state = True
 
     @on_trait_change("device:update")
@@ -442,10 +459,16 @@ class EMSwitch(Switch):
                     UItem("open_button"),
                     UItem("close_button"),
                     spring,
-                    UItem("slow_open_button"),
-                    UItem("slow_close_button"),
-                    Item("state", style="readonly", label="State"),
+
                 ),
+                HGroup(UItem("slow_open_button"),
+                       UItem("slow_close_button"),
+                       Item("dry",
+                            tooltip="Generate the voltage curve but don't actually apply it",
+                            label="Dry Run"),
+                       spring,
+                       UItem("selected_script", editor=EnumEditor(name="scripts")),),
+                HGroup(Item("state", style="readonly", label="State"),),
                 UItem("figure", style="custom"),
             ),
         )

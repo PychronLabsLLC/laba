@@ -49,7 +49,6 @@ class SequencerTask(BaseTask):
         return s
 
     def _pause_button_fired(self):
-        print("asdfasf", self.sequencer.selected_step)
         # for a in self.sequencer.selected_step.automations:
         #     a.timer.pause()
         seq = self.sequencer.active_sequence

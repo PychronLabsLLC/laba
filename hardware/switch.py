@@ -47,9 +47,11 @@ class Switch(Loggable):
 
 
 class RampSwitch(Switch):
-    ramp_period = Float
-    min_value = Float
-    max_value = Float
+    pass
+
+    # ramp_period = Float
+    # min_value = Float
+    # max_value = Float
     # control_points = List
     # nsteps = Int
     # open_nodes = Array
@@ -122,30 +124,30 @@ class SwitchController(Device):
                 self.open_switch(name)
                 return "open"
 
-    def open_switch(self, name, slow=False, block=False):
-        return self._actuate_switch(name, True, slow, block)
+    def open_switch(self, name, slow=False, block=False, dry=False):
+        return self._actuate_switch(name, True, slow, block, dry)
 
-    def close_switch(self, name, slow=False, block=False):
-        return self._actuate_switch(name, False, slow, block)
+    def close_switch(self, name, slow=False, block=False, dry=False):
+        return self._actuate_switch(name, False, slow, block, dry)
 
     def cancel_ramp(self):
         self.debug("canceling ramp")
-        self._cancel_ramp.set()
+        self._cancel_script.set()
 
-    def _actuate_switch(self, name, state, slow, block):
-        self.debug(f"actuate switch {name} state={state} block={block}")
+    def _actuate_switch(self, name, state, slow, block, dry):
+        self.debug(f"actuate switch {name} state={state} block={block}, dry={dry}")
         s = self.get_switch(name)
         if s:
             if slow:
-                self._script_channel(s, state, slow, block)
+                self._script_channel(s, state, slow, block, dry)
             else:
                 self._actuate_channel(s, state)
         else:
             return f"invalid switch={name}"
 
-    def _script_channel(self, s, state, slow, block):
-        self.debug(f"ramp switch {s} state={state} slow={slow}, block={block}")
-        self._cancel_ramp = Event()
+    def _script_channel(self, s, state, slow, block, dry):
+        self.debug(f"ramp switch {s} state={state} slow={slow}, block={block}, dry={dry}")
+        self._cancel_script = Event()
 
         # def ramp():
         #     print("ramp", self.canvas)
@@ -186,17 +188,19 @@ class SwitchController(Device):
         #         self.canvas.set_switch_state(s.name, state)
         def script():
             scriptname = "default"
-            dry = True
             if isinstance(slow, str):
                 scriptname = slow
-                dry = False
 
             st = time.time()
-            with open(Path(paths.curves_dir, f"{scriptname}_output.csv"), "w") as wfile:
+
+            with open(Path(paths.curves_output_dir, f"{scriptname}_output.csv"), "w") as wfile:
                 writer = csv.writer(wfile, delimiter=",")
-                writer.writerow(["step", "time", "stepidx", "output", "voltage"])
+                writer.writerow(["step", "time", "stepidx", "output", "voltage", "comment"])
+                ts = 0
                 for idx, row in enumerate(self._load_ramp_script(scriptname)):
-                    self._execute_script_row(writer, idx, row, s, st, dry=dry)
+                    if self._cancel_script.is_set():
+                        break
+                    ts = self._execute_script_row(writer, idx, row, s, st, dry, ts)
 
         if block:
             script()
@@ -212,8 +216,8 @@ class SwitchController(Device):
             for row in rows[1:]:
                 yield row
 
-    def _execute_script_row(self, writer, idx, row, s, st, dry):
-        self.debug(f"execute script row. line={idx+1}, {row}")
+    def _execute_script_row(self, writer, idx, row, s, st, dry, timestep):
+        self.debug(f"execute script row. line={idx + 1}, {row}")
         voltage, n_steps, dwell_time, curve = row[:4]
         voltage = float(voltage)
         n_steps = int(n_steps)
@@ -236,26 +240,62 @@ class SwitchController(Device):
                 ]
                 control_points.insert(0, (0, 0))
                 control_points.append((1, 1))
-                xs, ys = bezier_curve(control_points, nsteps + 1)
+                xs, ys = bezier_curve(control_points, nsteps)
                 if invert:
                     ys = [1 - yi for yi in ys]
-                return ys[:-1]
+                return ys
 
+        vi = 0
         for stepidx, out in enumerate(make_curve(curve, n_steps)):
             vi = voltage * out
             self.debug(f"set output {out}, voltage={vi}")
             ct = time.time() - st
             kw = {"relative_time_seconds": ct, "max_voltage": 7}
+            if dry:
+                timestep += 1
+                kw['relative_time_seconds'] = timestep
 
             self._set_voltage(s, vi, **kw)
-            if not dry:
-                time.sleep(1)
 
-            writer.writerow([idx, ct, stepidx, out, vi])
+            time.sleep(0.01 if dry else 1)
 
-        if dwell_time and not dry:
-            self.debug(f"dwelling {dwell_time}s")
-            time.sleep(dwell_time)
+            if self._cancel_script.is_set():
+                break
+
+            writer.writerow([idx, ct, stepidx, out, vi, 'ramping'])
+
+        if self._cancel_script.is_set():
+            return
+
+        if dwell_time:
+            for i in range(int(dwell_time)):
+                if self._cancel_script.is_set():
+                    break
+
+                ct = time.time() - st
+                kw = {"relative_time_seconds": ct, "max_voltage": 7}
+                time.sleep(0.01 if dry else 1)
+                if dry:
+                    timestep += 1
+                    kw['relative_time_seconds'] = timestep
+
+                self.update = {
+                    "voltage": vi,
+                    "value": vi,
+                    "datastream": "ramp",
+                    "switch_name": s.name,
+                    **kw,
+                }
+                writer.writerow([idx, ct, i, -1, vi, 'dwelling'])
+
+        return timestep
+        # if dry:
+
+        # else:
+        # time.sleep(dwell_time)
+        # if dwell_time and not dry and not self._cancel_script.is_set():
+        #     self.debug(f"dwelling {dwell_time}s")
+        #     time.sleep(dwell_time)
 
     def _set_voltage(self, s, voltage, **kw):
         self.driver.set_voltage(s.channel, voltage)
@@ -282,6 +322,5 @@ class SwitchController(Device):
         if self.canvas:
             self.canvas.set_switch_state(switch.name, state)
             self.canvas.set_switch_voltage(switch.name, v)
-
 
 # ============= EOF =============================================

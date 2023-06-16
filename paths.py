@@ -42,6 +42,7 @@ class Paths(Loggable):
         self.root = Path(os.environ.get("LABA_ROOT", default))
         self.logs_dir = Path(self.root, "logs")
         self.curves_dir = Path(self.root, "curves")
+        self.curves_output_dir = Path(self.root, "curves", "output")
         self.initialization_path = Path(self.root, "init.yml")
         self.dashboards_path = Path(self.root, "dashboard.yml")
         self.automations_path = Path(self.root, "automations.yml")
@@ -56,7 +57,7 @@ class Paths(Loggable):
         self.make_dir("automations")
         self.make_dir("sequence_templates")
         self.make_dir("logs")
-        self.make_dir("curves")
+        self.make_dir("curves", "output")
 
     def make_dir(self, *basename):
         rp = Path(self.root, *basename)

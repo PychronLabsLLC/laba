@@ -94,9 +94,7 @@ class Application(TasksApplication, Loggable):
                     dbclient.add_device(device.name)
                     dbclient.add_datastream("default", device.name)
                     device.on_trait_change(self._handle_device_update, "update")
-                    print("asdf", hw.device_events)
                     for devicename, handler, event in hw.device_events:
-                        print("asdfasfasdfasdf", devicename, device.name)
                         if devicename == device.name:
                             device.on_trait_change(handler, event)
 
@@ -130,9 +128,7 @@ class Application(TasksApplication, Loggable):
         else:
             w = TaskWindowLayout(tid)
             win = self.create_window(w)
-            print("asfasf", win)
             if activate:
-                print("pppp")
                 win.open()
 
         if win:
