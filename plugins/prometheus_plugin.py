@@ -28,6 +28,7 @@ class PrometheusPlugin(BasePlugin):
         events = []
         for gconfig in self.config("gauges", []):
             self.debug(f"adding gauge {gconfig['name']}")
+
             def func(obj, old, name, new):
                 g = Gauge(gconfig["name"], gconfig.get("description", ""))
                 if "value" in new:
@@ -40,10 +41,11 @@ class PrometheusPlugin(BasePlugin):
         self.device_events = events
 
     def start(self):
-        self.debug('Starting prometheus plugin')
-        self.debug('registering devices as gauges')
+        self.debug("Starting prometheus plugin")
+        self.debug("registering devices as gauges")
         for device in self.application.get_services(Device):
             g = Gauge(device.name, device.name)
+
             def func(obj, old, name, new):
                 if "value" in new:
                     obj.gauge.set(new["value"])
