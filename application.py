@@ -76,8 +76,6 @@ class Application(TasksApplication, Loggable):
                 else:
                     self.warning(f"Invalid plugin. {name}")
 
-    @on_trait_change("started")
-    def initialize(self):
         init = self._get_initization()
 
         self.dbclient = dbclient = DBClient()

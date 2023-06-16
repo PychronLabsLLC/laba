@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from hardware.device import Device
 from plugin import BasePlugin
 from traits.api import List
 from prometheus_client import start_http_server, Gauge
@@ -25,12 +26,10 @@ class PrometheusPlugin(BasePlugin):
         super().__init__(*args, **kw)
 
         events = []
-        print(self.configobj)
         for gconfig in self.config("gauges", []):
-            g = Gauge(gconfig["name"], gconfig.get("description", ""))
             self.debug(f"adding gauge {gconfig['name']}")
-
             def func(obj, old, name, new):
+                g = Gauge(gconfig["name"], gconfig.get("description", ""))
                 if "value" in new:
                     self.debug(f"updating gauge {gconfig['name']} to {new['value']}")
                     g.set(new["value"])
@@ -41,6 +40,17 @@ class PrometheusPlugin(BasePlugin):
         self.device_events = events
 
     def start(self):
+        self.debug('Starting prometheus plugin')
+        self.debug('registering devices as gauges')
+        for device in self.application.get_services(Device):
+            g = Gauge(device.name, device.name)
+            def func(obj, old, name, new):
+                if "value" in new:
+                    obj.gauge.set(new["value"])
+
+            device.gauge = g
+            device.on_trait_change(func, "update")
+
         start_http_server(self.config("port", 8000))
 
     # def _device_events_default(self):
