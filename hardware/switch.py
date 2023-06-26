@@ -124,30 +124,30 @@ class SwitchController(Device):
                 self.open_switch(name)
                 return "open"
 
-    def open_switch(self, name, slow=False, block=False, dry=False):
-        return self._actuate_switch(name, True, slow, block, dry)
+    def open_switch(self, name, script=None, block=False, dry=False):
+        return self._actuate_switch(name, True, script, block, dry)
 
-    def close_switch(self, name, slow=False, block=False, dry=False):
-        return self._actuate_switch(name, False, slow, block, dry)
+    def close_switch(self, name, script=None, block=False, dry=False):
+        return self._actuate_switch(name, False, script, block, dry)
 
     def cancel_ramp(self):
         self.debug("canceling ramp")
         self._cancel_script.set()
 
-    def _actuate_switch(self, name, state, slow, block, dry):
+    def _actuate_switch(self, name, state, script, block, dry):
         self.debug(f"actuate switch {name} state={state} block={block}, dry={dry}")
         s = self.get_switch(name)
         if s:
-            if slow:
-                self._script_channel(s, state, slow, block, dry)
+            if script:
+                self._script_channel(s, state, script, block, dry)
             else:
                 self._actuate_channel(s, state)
         else:
             return f"invalid switch={name}"
 
-    def _script_channel(self, s, state, slow, block, dry):
+    def _script_channel(self, s, state, script, block, dry):
         self.debug(
-            f"ramp switch {s} state={state} slow={slow}, block={block}, dry={dry}"
+            f"ramp switch {s} state={state} slow={script}, block={block}, dry={dry}"
         )
         self._cancel_script = Event()
 
@@ -188,10 +188,10 @@ class SwitchController(Device):
         #     s.state = state
         #     if self.canvas:
         #         self.canvas.set_switch_state(s.name, state)
-        def script():
+        def scriptfunc():
             scriptname = "default"
-            if isinstance(slow, str):
-                scriptname = slow
+            if isinstance(script, str):
+                scriptname = script
 
             st = time.time()
 
@@ -209,9 +209,9 @@ class SwitchController(Device):
                     ts = self._execute_script_row(writer, idx, row, s, st, dry, ts)
 
         if block:
-            script()
+            scriptfunc()
         else:
-            self._ramp_thread = Thread(target=script)
+            self._ramp_thread = Thread(target=scriptfunc)
             self._ramp_thread.start()
 
     def _load_ramp_script(self, name):

@@ -29,6 +29,13 @@ from paths import paths
 from persister import CSVPersister
 from timer import Timer
 
+REGISTRY = []
+
+
+def register(func):
+    REGISTRY.append(func.__name__)
+    return func
+
 
 def is_alive(func):
     def wrapper(obj, *args, **kw):
@@ -36,6 +43,7 @@ def is_alive(func):
         if obj.alive:
             return func(obj, *args, **kw)
 
+    register(func)
     return wrapper
 
 
@@ -44,6 +52,7 @@ def contributed_is_alive(func, obj):
         if obj.alive:
             return func(*args, **kw)
 
+    register(func)
     return wrapper
 
 
@@ -162,6 +171,7 @@ class Automation(Loggable):
         self._recording_thread = Thread(target=func, daemon=True)
         self._recording_thread.start()
 
+    @register
     def stop_recording(self):
         if self._recording_event:
             self._recording_event.set()
@@ -208,18 +218,15 @@ class Automation(Loggable):
 
     # command helpers
     def _get_context(self):
-        ctx = dict(
-            info=self.info,
-            sleep=self.sleep,
-            start_recording=self.start_recording,
-            stop_recording=self.stop_recording,
-            dfunc=self.dev_function,
-            message=self.debug,
-        )
+        ctx = {}
+        for name in REGISTRY:
+            ctx[name] = getattr(self, name)
 
+        ctx['info'] = self.info
         messages = self.application.get_extensions("laba.automation.commands")
 
         ctx.update({n: contributed_is_alive(f, self) for n, f in messages})
+
         return ctx
 
     def traits_view(self):
@@ -233,6 +240,5 @@ class Automation(Loggable):
     #     return View(HGroup(spring,
     #                        UItem('start_button'),
     #                        UItem('stop_button')))
-
 
 # ============= EOF =============================================

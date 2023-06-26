@@ -25,13 +25,13 @@ class SwitchPlugin(BasePlugin):
     def _automation_commands_default(self):
         return [("open_switch", self.open_switch), ("close_switch", self.close_switch)]
 
-    def open_switch(self, name, *args, **kw):
-        self._actuate_switch(name, True, *args, **kw)
+    def open_switch(self, name: str, script: str = None, *args, **kw):
+        self._actuate_switch(name, True, script, *args, **kw)
 
-    def close_switch(self, name, *args, **kw):
-        self._actuate_switch(name, False, *args, **kw)
+    def close_switch(self, name, script: str = None, *args, **kw):
+        self._actuate_switch(name, False, script, *args, **kw)
 
-    def _actuate_switch(self, name, state, *args, **kw):
+    def _actuate_switch(self, name, state, script, *args, **kw):
         for sw in self.application.get_services(Device):
             if not hasattr(sw, "switches"):
                 continue
@@ -39,8 +39,7 @@ class SwitchPlugin(BasePlugin):
             for si in sw.switches:
                 if si.name == name:
                     func = sw.open_switch if state else sw.close_switch
-                    func(name, *args, **kw)
+                    func(name, script=script, *args, **kw)
                     break
-
 
 # ============= EOF =============================================
