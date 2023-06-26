@@ -42,4 +42,5 @@ class SwitchPlugin(BasePlugin):
                     func(name, script=script, *args, **kw)
                     break
 
+
 # ============= EOF =============================================

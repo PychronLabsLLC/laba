@@ -222,7 +222,7 @@ class Automation(Loggable):
         for name in REGISTRY:
             ctx[name] = getattr(self, name)
 
-        ctx['info'] = self.info
+        ctx["info"] = self.info
         messages = self.application.get_extensions("laba.automation.commands")
 
         ctx.update({n: contributed_is_alive(f, self) for n, f in messages})
@@ -240,5 +240,6 @@ class Automation(Loggable):
     #     return View(HGroup(spring,
     #                        UItem('start_button'),
     #                        UItem('stop_button')))
+
 
 # ============= EOF =============================================
