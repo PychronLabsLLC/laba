@@ -413,7 +413,7 @@ class EMSwitch(Switch):
         p.y_axis.title = "Voltage (V)"
         fig.new_series("vt", type="line")
         p.index_range.low = 0
-        p.index_range.high = 300
+        p.index_range.high = 400
 
         p.value_range.low = 0
         p.value_range.high = 10

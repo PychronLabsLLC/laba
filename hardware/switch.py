@@ -222,6 +222,7 @@ class SwitchController(Device):
             for row in rows[1:]:
                 yield row
 
+    _current_voltage = 0
     def _execute_script_row(self, writer, idx, row, s, st, dry, timestep):
         self.debug(f"execute script row. line={idx + 1}, {row}")
         voltage, n_steps, dwell_time, curve = row[:4]
@@ -232,7 +233,7 @@ class SwitchController(Device):
 
         self.debug(f"set output {voltage}")
 
-        def make_curve(curve_name, nsteps=100, invert=True):
+        def make_curve(curve_name, nsteps=100, invert=False):
             curve_path = Path(paths.curves_dir, f"curve_rates.csv")
             with open(curve_path, "r") as rfile:
                 reader = csv.reader(rfile, delimiter=",")
@@ -252,10 +253,13 @@ class SwitchController(Device):
                 return ys
 
         vi = 0
-        period = 0.1
+        period = 1
+        current_voltage = self._current_voltage
+        span = current_voltage - voltage
+        self._current_voltage = voltage
         for stepidx, out in enumerate(make_curve(curve, int(n_steps / period))):
-            vi = voltage * out
-            self.debug(f"set output {out}, voltage={vi}")
+            vi = current_voltage - span*out
+            self.debug(f"set output {out}, voltage={vi} span={span}")
             ct = time.time() - st
             kw = {"relative_time_seconds": ct, "max_voltage": 7}
             if dry:
@@ -271,6 +275,12 @@ class SwitchController(Device):
 
             writer.writerow([idx, ct, stepidx, out, vi, "ramping"])
 
+        kw = {"relative_time_seconds": time.time()-st, "max_voltage": 7}
+        if dry:
+            timestep += 1 * period
+            kw["relative_time_seconds"] = timestep
+
+        self._set_voltage(s, voltage, dry=dry, **kw)
         if self._cancel_script.is_set():
             return
 
@@ -287,8 +297,8 @@ class SwitchController(Device):
                     kw["relative_time_seconds"] = timestep
 
                 self.update = {
-                    "voltage": vi,
-                    "value": vi,
+                    "voltage": voltage,
+                    "value": voltage,
                     "datastream": "ramp",
                     "switch_name": s.name,
                     **kw,

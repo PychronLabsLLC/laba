@@ -158,7 +158,7 @@ class Application(TasksApplication, Loggable):
     #                 break
 
     def _handle_device_update(self, obj, name, old, new):
-        self.debug(f"handling device update. {obj}, {new}")
+        # self.debug(f"handling device update. {obj}, {new}")
         if new:
             dbclient = self.dbclient
             device_name = obj.name
