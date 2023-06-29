@@ -223,6 +223,7 @@ class SwitchController(Device):
                 yield row
 
     _current_voltage = 0
+
     def _execute_script_row(self, writer, idx, row, s, st, dry, timestep):
         self.debug(f"execute script row. line={idx + 1}, {row}")
         voltage, n_steps, dwell_time, curve = row[:4]
@@ -258,7 +259,7 @@ class SwitchController(Device):
         span = current_voltage - voltage
         self._current_voltage = voltage
         for stepidx, out in enumerate(make_curve(curve, int(n_steps / period))):
-            vi = current_voltage - span*out
+            vi = current_voltage - span * out
             self.debug(f"set output {out}, voltage={vi} span={span}")
             ct = time.time() - st
             kw = {"relative_time_seconds": ct, "max_voltage": 7}
@@ -275,7 +276,7 @@ class SwitchController(Device):
 
             writer.writerow([idx, ct, stepidx, out, vi, "ramping"])
 
-        kw = {"relative_time_seconds": time.time()-st, "max_voltage": 7}
+        kw = {"relative_time_seconds": time.time() - st, "max_voltage": 7}
         if dry:
             timestep += 1 * period
             kw["relative_time_seconds"] = timestep
