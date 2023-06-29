@@ -232,7 +232,7 @@ class SwitchController(Device):
 
         self.debug(f"set output {voltage}")
 
-        def make_curve(curve_name, nsteps=100, invert=False):
+        def make_curve(curve_name, nsteps=100, invert=True):
             curve_path = Path(paths.curves_dir, f"curve_rates.csv")
             with open(curve_path, "r") as rfile:
                 reader = csv.reader(rfile, delimiter=",")
@@ -246,24 +246,25 @@ class SwitchController(Device):
                 ]
                 control_points.insert(0, (0, 0))
                 control_points.append((1, 1))
-                xs, ys = bezier_curve(control_points, nsteps)
+                xs, ys = bezier_curve(control_points[::-1], nsteps)
                 if invert:
                     ys = [1 - yi for yi in ys]
                 return ys
 
         vi = 0
-        for stepidx, out in enumerate(make_curve(curve, n_steps)):
+        period = 0.1
+        for stepidx, out in enumerate(make_curve(curve, int(n_steps/period))):
             vi = voltage * out
             self.debug(f"set output {out}, voltage={vi}")
             ct = time.time() - st
             kw = {"relative_time_seconds": ct, "max_voltage": 7}
             if dry:
-                timestep += 1
+                timestep += 1*period
                 kw["relative_time_seconds"] = timestep
 
-            self._set_voltage(s, vi, **kw)
+            self._set_voltage(s, vi, dry=dry, **kw)
 
-            time.sleep(0.01 if dry else 1)
+            time.sleep(0.0001 if dry else period)
 
             if self._cancel_script.is_set():
                 break
@@ -280,9 +281,9 @@ class SwitchController(Device):
 
                 ct = time.time() - st
                 kw = {"relative_time_seconds": ct, "max_voltage": 7}
-                time.sleep(0.01 if dry else 1)
+                time.sleep(0.0001 if dry else period)
                 if dry:
-                    timestep += 1
+                    timestep += 1*period
                     kw["relative_time_seconds"] = timestep
 
                 self.update = {
@@ -303,8 +304,10 @@ class SwitchController(Device):
         #     self.debug(f"dwelling {dwell_time}s")
         #     time.sleep(dwell_time)
 
-    def _set_voltage(self, s, voltage, **kw):
-        self.driver.set_voltage(s.channel, voltage)
+    def _set_voltage(self, s, voltage, dry=True, **kw):
+        if not dry:
+            self.driver.set_voltage(s.channel, voltage)
+
         if self.canvas:
             self.canvas.set_switch_voltage(s.name, voltage)
 
