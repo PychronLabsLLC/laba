@@ -421,11 +421,13 @@ class EMSwitch(Switch):
         return fig
 
     def _slow_close_button_fired(self):
+        self.figure.clear_data('vt')
         dev = self.device
         dev.close_switch(self.switch_name, script=self.selected_script, dry=self.dry)
         self.state = False
 
     def _slow_open_button_fired(self):
+        self.figure.clear_data('vt')
         dev = self.device
         dev.open_switch(self.switch_name, script=self.selected_script, dry=self.dry)
         self.state = True

@@ -81,12 +81,16 @@ class Figure(Loggable):
 
     def clear_data(self, name=None, plotid=0):
         series = self.get_series(name, plotid)
-        series.index.set_data([])
-        series.value.set_data([])
+        if series:
+            series.index.set_data([])
+            series.value.set_data([])
 
     def get_series(self, name, plotid=0):
         plot = self.get_plot(plotid)
-        return plot.plots[name][0]
+        try:
+            return plot.plots[name][0]
+        except KeyError:
+            pass
 
     def get_plot(self, idx):
         return self.plotcontainer.components[idx]
