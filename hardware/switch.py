@@ -253,13 +253,13 @@ class SwitchController(Device):
 
         vi = 0
         period = 0.1
-        for stepidx, out in enumerate(make_curve(curve, int(n_steps/period))):
+        for stepidx, out in enumerate(make_curve(curve, int(n_steps / period))):
             vi = voltage * out
             self.debug(f"set output {out}, voltage={vi}")
             ct = time.time() - st
             kw = {"relative_time_seconds": ct, "max_voltage": 7}
             if dry:
-                timestep += 1*period
+                timestep += 1 * period
                 kw["relative_time_seconds"] = timestep
 
             self._set_voltage(s, vi, dry=dry, **kw)
@@ -283,7 +283,7 @@ class SwitchController(Device):
                 kw = {"relative_time_seconds": ct, "max_voltage": 7}
                 time.sleep(0.0001 if dry else period)
                 if dry:
-                    timestep += 1*period
+                    timestep += 1 * period
                     kw["relative_time_seconds"] = timestep
 
                 self.update = {
