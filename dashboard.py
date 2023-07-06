@@ -281,7 +281,7 @@ class Scan(BaseScan):
             padding_right=20,
         )
         f.new_series("s0")
-        f.set_x_limits(0, 5)
+        f.set_x_limits(0, 300)
 
         return f
 
@@ -307,8 +307,9 @@ class MultiScan(Scan):
             padding_top=20,
             padding_right=20,
         )
-        f.new_series("s0")
-        f.set_x_limits(0, 5)
+        for i, df in enumerate(self.device_functions):
+            f.new_series(f"s{i}")
+        f.set_x_limits(0, 300)
 
         return f
 

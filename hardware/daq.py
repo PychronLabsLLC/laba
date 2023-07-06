@@ -36,10 +36,11 @@ class DAQ(SwitchController):
         self.update = {"datastream": datastream, "value": vv}
         return vv
 
-    def scan_temperature(self, channel, **kw):
-        vv = self.driver.read_temperature(channel)
-        self.debug(f"scan temperature {channel} {vv}")
-        self.update = {"datastream": f"temperature{channel}", "units": "c", "value": vv}
+    def scan_temperature(self, idx, **kw):
+        ch = self.channels[idx]
+        vv = self.driver.read_temperature(ch.address)
+        self.debug(f"scan temperature {idx} {vv}")
+        self.update = {"datastream": f"temperature{idx}", "units": "c", "value": vv}
         return vv
 
 
