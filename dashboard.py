@@ -224,24 +224,23 @@ class BaseScan(DeviceCard):
                 d.update = {"clear": True, "datastream": "scan"}
 
             with CSVPersister(path_name=f"scan{self.name}") as writer:
-                header = [k for df in self.device_functions for k in ('time', 'value')]
+                header = [k for df in self.device_functions for k in ("time", "value")]
                 writer.write(header)
 
                 while not self._scan_evt.is_set():
-
                     row = []
                     for i, (df, args, kw, _) in enumerate(self.device_functions):
                         kw["datastream"] = "scan"
                         ret = {}
                         ret["time"] = time.time() - st
-                        ret['value'] = df(*args, **kw)
+                        ret["value"] = df(*args, **kw)
 
                         self._scan_hook(i, ret)
                         row.append(ret["time"])
                         row.append(ret["value"])
 
                     writer.write(row)
-                    self._scan_evt.wait(sp/1000.)
+                    self._scan_evt.wait(sp / 1000.0)
 
             self.active = False
 
@@ -270,7 +269,6 @@ class Scan(BaseScan):
 
     def _scan_hook(self, i, result):
         self.figure.add_datum(f"s{i}", result["time"], result["value"])
-
 
     def _figure_default(self):
         f = Figure()
