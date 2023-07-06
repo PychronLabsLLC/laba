@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import random
+
 try:
     from mcculw import ul
     from mcculw.enums import (
@@ -30,7 +32,7 @@ except (ImportError, NameError):
 
     class UL:
         def t_in(self, *args, **kw):
-            return 0
+            return random.random()
 
     ul = UL()
 
@@ -97,7 +99,6 @@ class MccCommunicator(Communicator):
 
     def initialize(self, *args, **kw):
         config_first_detected_device(self.board_num)
-
         return True
 
     def a_in(self, channel, ai_range=None):

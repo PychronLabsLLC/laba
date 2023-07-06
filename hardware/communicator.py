@@ -28,6 +28,9 @@ class Communicator(Loggable):
     handle = None
     simulation = True
 
+    def initialize(self):
+        return True
+
     def open(self):
         pass
 

@@ -22,9 +22,10 @@ class MKS(BasePressureDriver):
     write_terminator = "\r"
 
     def initialize(self):
+        ret = super().initialize()
         msg = self._make_global_message("01", "00")
         self.ask(msg)
-        return True
+        return ret
 
     def _read_pressure(self, channel):
         msg = self._make_global_message("00", f"{channel:02n}")

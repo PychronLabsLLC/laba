@@ -39,7 +39,7 @@ class Driver(Loggable):
         pass
 
     def initialize(self):
-        return True
+        return self.communicator.initialize()
 
     def open(self):
         return True
