@@ -90,10 +90,6 @@ class MccCommunicator(Communicator):
     board_num = 0
 
     def load(self, config, path):
-        # self.board_num = self.config_get(
-        #     config, "Communications", "board_num", cast="int"
-        # )
-        # self.config_on_startup = self.config_get(config, 'General',  'config_on_startup', cast='boolean')
         self.board_num = self.config("board_num", 0)
         return super(MccCommunicator, self).load(config, path)
 
@@ -122,7 +118,7 @@ class MccCommunicator(Communicator):
         """
         get temperature in celsius
         """
-        value = ul.t_in(self.board_num, channel, CELSIUS)
+        value = ul.t_in(self.board_num, int(channel), CELSIUS)
         return value
 
     def d_out(self, channel, bit_value):
