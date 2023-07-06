@@ -223,11 +223,11 @@ class BaseScan(DeviceCard):
                 d.update = {"clear": True, "datastream": "scan"}
 
             while not self._scan_evt.is_set():
-                print('asdf', sp)
+                print("asdf", sp)
                 for i, (df, args, kw, _) in enumerate(self.device_functions):
                     kw["datastream"] = "scan"
                     self._scan_hook(i, df, st, args, kw)
-                self._scan_evt.wait(sp/1000.)
+                self._scan_evt.wait(sp / 1000.0)
 
             self.active = False
 
