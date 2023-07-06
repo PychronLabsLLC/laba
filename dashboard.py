@@ -43,6 +43,7 @@ from traits.api import Instance, Button, Bool, Float, List, Str
 from traitsui.api import View, UItem, VGroup, HGroup, spring, Item, EnumEditor, HSplit
 
 from paths import paths
+from persister import CSVPersister
 from ui.lcd_editor import LCDEditor
 from util import yload
 
@@ -222,12 +223,25 @@ class BaseScan(DeviceCard):
             for d in self.devices:
                 d.update = {"clear": True, "datastream": "scan"}
 
-            while not self._scan_evt.is_set():
-                print("asdf", sp)
-                for i, (df, args, kw, _) in enumerate(self.device_functions):
-                    kw["datastream"] = "scan"
-                    self._scan_hook(i, df, st, args, kw)
-                self._scan_evt.wait(sp / 1000.0)
+            with CSVPersister(path_name=f"scan{self.name}") as writer:
+                header = [k for df in self.device_functions for k in ('time', 'value')]
+                writer.write(header)
+
+                while not self._scan_evt.is_set():
+
+                    row = []
+                    for i, (df, args, kw, _) in enumerate(self.device_functions):
+                        kw["datastream"] = "scan"
+                        ret = {}
+                        ret["time"] = time.time() - st
+                        ret['value'] = df(*args, **kw)
+
+                        self._scan_hook(i, ret)
+                        row.append(ret["time"])
+                        row.append(ret["value"])
+
+                    writer.write(row)
+                    self._scan_evt.wait(sp/1000.)
 
             self.active = False
 
@@ -235,7 +249,7 @@ class BaseScan(DeviceCard):
         self._scan_thread = t
         self._scan_thread.start()
 
-    def _scan_hook(self, i, df, st, args, kw):
+    def _scan_hook(self, i, ret):
         pass
 
 
@@ -254,8 +268,9 @@ class Scan(BaseScan):
         self.figure.clear_data("s0")
         self._scan()
 
-    def _scan_hook(self, i, df, st, args, kw):
-        self.figure.add_datum(f"s{i}", time.time() - st, df(*args, **kw))
+    def _scan_hook(self, i, result):
+        self.figure.add_datum(f"s{i}", result["time"], result["value"])
+
 
     def _figure_default(self):
         f = Figure()
@@ -319,9 +334,8 @@ class ValueReadOut(BaseScan):
 
         self._scan()
 
-    def _scan_hook(self, i, df, st, args, kw):
-        value = df(*args, **kw)
-        setattr(self, f"value{i}", value)
+    def _scan_hook(self, i, result):
+        setattr(self, f"value{i}", result["value"])
 
     def make_view(self):
         items = []

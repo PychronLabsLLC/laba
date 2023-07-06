@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from hardware import SwitchController
 from hardware.adc import Channel
 from hardware.device import Device
 from traits.api import List
 
 
-class DAQ(Device):
+class DAQ(SwitchController):
     channels = List(Channel)
 
     def load(self, cfg):

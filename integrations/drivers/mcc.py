@@ -17,6 +17,9 @@ from integrations.drivers.base import BaseDAQDriver
 
 
 class MCC(BaseDAQDriver):
+    def actuate_channel(self, channel):
+        pass
+
     def _read_channel(self, channel):
         return self.communicator.a_in(channel)
 

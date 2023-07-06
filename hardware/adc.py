@@ -36,7 +36,7 @@ class Channel(HasTraits):
     mapping = List
 
     def __init__(self, *args, **kw):
-        if kw["mapping"]:
+        if kw.get("mapping"):
             mapping = kw.pop("mapping")
             self.mapping = [float(c) for c in mapping.split(",")]
 
