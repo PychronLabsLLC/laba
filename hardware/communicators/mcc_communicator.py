@@ -90,7 +90,6 @@ class MccCommunicator(Communicator):
     board_num = 0
     device_info = None
 
-
     def load(self, config, path):
         self.board_num = self.config("board_num", 0)
         return super(MccCommunicator, self).load(config, path)
@@ -131,22 +130,23 @@ class MccCommunicator(Communicator):
 
         # port = self._get_port(channel)
         # if port:
-    #         bit_num = self._get_bit_num(channel)
-    #
-    #         self.debug(
-    #             "channel={}, bit_num={}, bit_value={}".format(
-    #                 channel, bit_num, bit_value
-    #             )
-    #         )
-    #         # if port.is_port_configurable:
-    #         #    self.debug('configuring {} to OUT'.format(port.type))
-    #         #    ul.d_config_port(self.board_num, port.type, DigitalIODirection.OUT)
-    #         # Output the value to the bit
+        #         bit_num = self._get_bit_num(channel)
+        #
+        #         self.debug(
+        #             "channel={}, bit_num={}, bit_value={}".format(
+        #                 channel, bit_num, bit_value
+        #             )
+        #         )
+        #         # if port.is_port_configurable:
+        #         #    self.debug('configuring {} to OUT'.format(port.type))
+        #         #    ul.d_config_port(self.board_num, port.type, DigitalIODirection.OUT)
+        #         # Output the value to the bit
         porttype = DigitalPortType.FIRSTPORTA
         try:
             ul.d_bit_out(self.board_num, porttype, bit_num, bit_value)
         except BaseException:
             self.debug_exception()
+
     #
     # def _get_bit_num(self, channel):
     #     channel = str(channel)
@@ -181,13 +181,13 @@ class MccCommunicator(Communicator):
     #     else:
     #         self.debug("Invalid port_id={}", port_id)
 
-        # Find the first port that supports input, defaulting to None
-        # if one is not found.
-        # port = next((port for port in dio_info.port_info if port.supports_input),
-        #             None)
-        # if not port:
-        #     raise Exception('Error: The DAQ device does not support '
-        #                     'digital input')
+    # Find the first port that supports input, defaulting to None
+    # if one is not found.
+    # port = next((port for port in dio_info.port_info if port.supports_input),
+    #             None)
+    # if not port:
+    #     raise Exception('Error: The DAQ device does not support '
+    #                     'digital input')
 
 
 # ============= EOF =============================================
