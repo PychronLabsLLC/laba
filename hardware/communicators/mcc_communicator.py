@@ -27,14 +27,24 @@ try:
     from mcculw.device_info import DaqDeviceInfo
 
     CELSIUS = TempScale.CELSIUS
+    ANY = InterfaceType.ANY
 except (ImportError, NameError):
     CELSIUS = 0
+    ANY = 0
+
 
     class UL:
         ULError = BaseException
 
         def t_in(self, *args, **kw):
             return random.random()
+
+        def ignore_instacal(self):
+            pass
+
+        def get_daq_device_inventory(self, *args, **kw):
+            return []
+
 
     ul = UL()
 
@@ -67,31 +77,31 @@ class MccCommunicator(Communicator):
             See UL documentation for device IDs.
         """
         ul.ignore_instacal()
-        devices = ul.get_daq_device_inventory(InterfaceType.ANY)
-        if not devices:
-            raise Exception("Error: No DAQ devices found")
-
-        self.info(f"Found {len(devices)} DAQ device(s)")
-        for device in devices:
-            self.info(
-                f"  {device.product_name} ({device.unique_id}) - Device ID = {device.product_id}"
-            )
-
-        self.info(f"Using device_id: {self.device_id}")
-        device = devices[self.device_id]
-        # if dev_id_list:
-        #     device = next(
-        #         (device for device in devices if device.product_id in dev_id_list), None
-        #     )
-        #     if not device:
-        #         err_str = "Error: No DAQ device found in device ID list: "
-        #         err_str += ",".join(str(dev_id) for dev_id in dev_id_list)
-        #         raise Exception(err_str)
-        #
-        # Add the first DAQ device to the UL with the specified board number
-        ul.create_daq_device(self.board_num, device)
-
+        devices = ul.get_daq_device_inventory()
         try:
+            if not devices:
+                raise Exception("Error: No DAQ devices found")
+
+            self.info(f"Found {len(devices)} DAQ device(s)")
+            for device in devices:
+                self.info(
+                    f"  {device.product_name} ({device.unique_id}) - Device ID = {device.product_id}"
+                )
+
+            self.info(f"Using device_id: {self.device_id}")
+            device = devices[self.device_id]
+            # if dev_id_list:
+            #     device = next(
+            #         (device for device in devices if device.product_id in dev_id_list), None
+            #     )
+            #     if not device:
+            #         err_str = "Error: No DAQ device found in device ID list: "
+            #         err_str += ",".join(str(dev_id) for dev_id in dev_id_list)
+            #         raise Exception(err_str)
+            #
+            # Add the first DAQ device to the UL with the specified board number
+            ul.create_daq_device(self.board_num, device)
+
             self.device_info = DaqDeviceInfo(self.board_num)
             self.report_device_info()
         except ul.ULError:
@@ -223,6 +233,5 @@ class MccCommunicator(Communicator):
     # if not port:
     #     raise Exception('Error: The DAQ device does not support '
     #                     'digital input')
-
 
 # ============= EOF =============================================

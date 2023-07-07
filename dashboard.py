@@ -17,6 +17,7 @@ import os
 import time
 from threading import Thread, Event
 
+from chaco import default_colors
 from chaco.data_view import DataView
 from enable.component_editor import ComponentEditor
 from enable.container import Container
@@ -81,10 +82,14 @@ class DeviceCard(Card):
             kk = func.get("kwargs", {})
             name = func.get("name", "get_value")
             label = dev.get("label", dd.name)
-            dfs.append((getattr(dd, name), aa, kk, label))
+            fmt = dev.get("format", "{:0.3f}")
+            dfs.append((getattr(dd, name), aa, kk, label, fmt))
 
         self.devices = dvs
         self.device_functions = dfs
+
+        for i in range(len(self.device_functions)):
+            self.add_trait(f"value{i}", Float)
 
 
 class Canvas(Card):
@@ -229,11 +234,13 @@ class BaseScan(DeviceCard):
 
                 while not self._scan_evt.is_set():
                     row = []
-                    for i, (df, args, kw, _) in enumerate(self.device_functions):
+                    for i, (df, args, kw, *_) in enumerate(self.device_functions):
                         kw["datastream"] = "scan"
                         ret = {}
                         ret["time"] = time.time() - st
                         ret["value"] = df(*args, **kw)
+
+                        self.trait_set(**{f"value{i}": ret["value"]})
 
                         self._scan_hook(i, ret)
                         row.append(ret["time"])
@@ -296,10 +303,13 @@ class Scan(BaseScan):
         )
 
 
+colors = default_colors.palette11
+
+
 class MultiScan(Scan):
     def _figure_default(self):
         f = Figure()
-        f.new_plot(
+        p = f.new_plot(
             xtitle="Time(s)",
             ytitle="Valve",
             padding_left=50,
@@ -308,28 +318,39 @@ class MultiScan(Scan):
             padding_right=20,
         )
         for i, df in enumerate(self.device_functions):
-            f.new_series(f"s{i}")
+            f.new_series(f"s{i}", color=colors[i % len(colors)])
+
+        p.legend.visible = True
         f.set_x_limits(0, 300)
 
         return f
 
     def make_view(self):
+        items = []
+        for i, (_, _, _, label, *_) in enumerate(self.device_functions):
+            kw = {"show_label": False, "style": "readonly", "format_str": "%.3f"}
+            if label:
+                kw["label"] = label
+                kw["show_label"] = True
+
+            items.append(Item(f"value{i}", **kw))
+        lcds = tuple(items)
+
         return (
             HGroup(
                 spring,
                 UItem("start_button", enabled_when="start_enabled"),
                 UItem("stop_button", enabled_when="not start_enabled"),
             ),
-            UItem("figure", style="custom"),
+            HGroup(
+                UItem("figure", style="custom"),
+                VGroup(*lcds))
         )
 
 
 class ValueReadOut(BaseScan):
     def __init__(self, application, cfg, *args, **kw):
         super().__init__(application, cfg, *args, **kw)
-
-        for i in range(len(self.device_functions)):
-            self.add_trait(f"value{i}", Float)
 
         self._scan()
 
@@ -338,7 +359,7 @@ class ValueReadOut(BaseScan):
 
     def make_view(self):
         items = []
-        for i, (_, _, _, label) in enumerate(self.device_functions):
+        for i, (_, _, _, label, *_) in enumerate(self.device_functions):
             kw = {"show_label": False}
             if label:
                 kw["label"] = label
@@ -352,7 +373,7 @@ class ValueReadOut(BaseScan):
 class LEDReadOut(ValueReadOut):
     def make_view(self):
         items = []
-        for i, (_, _, _, label) in enumerate(self.device_functions):
+        for i, (_, _, _, label, *_) in enumerate(self.device_functions):
             kw = {"show_label": False}
             if label:
                 kw["label"] = label
@@ -635,6 +656,5 @@ class Dashboard(BaseDashboard):
     # def traits_view(self):
     #     v = View(self._build_dashboard_elements())
     #     return v
-
 
 # ============= EOF =============================================
