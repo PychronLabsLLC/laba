@@ -31,6 +31,7 @@ try:
 except (ImportError, NameError):
     CELSIUS = 0
     ANY = 0
+
     class _DigitalPortType:
         AUXPORT = 0
 

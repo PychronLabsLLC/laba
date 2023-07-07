@@ -107,7 +107,8 @@ class Canvas(Card):
                 o
                 for o in self.container.overlays
                 if hasattr(o, "name") and o.name == name
-            ), None
+            ),
+            None,
         )
 
     def set_switch_voltage(self, name, si):
