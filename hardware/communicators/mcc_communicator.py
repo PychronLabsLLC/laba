@@ -31,12 +31,19 @@ try:
 except (ImportError, NameError):
     CELSIUS = 0
     ANY = 0
+    class _DigitalPortType:
+        AUXPORT = 0
+
+    DigitalPortType = _DigitalPortType()
 
     class UL:
         ULError = BaseException
 
         def t_in(self, board, bit, *args, **kw):
             return random.random() + (bit * 20)
+
+        def d_bit_out(self, board, port, bit, *args, **kw):
+            pass
 
         def ignore_instacal(self):
             pass

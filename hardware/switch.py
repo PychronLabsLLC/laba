@@ -111,7 +111,7 @@ class SwitchController(Device):
             self.switches.append(klass(sw))
 
     def get_switch(self, name):
-        self.debug(f"get {name}")
+        self.debug(f"get {name} {self},{[s.name for s in self.switches]}")
         return next((s for s in self.switches if s.name == name), None)
 
     def toggle_switch(self, name):

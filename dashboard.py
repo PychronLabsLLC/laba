@@ -38,6 +38,7 @@ from canvas.network import CanvasNetwork
 from canvas.tools import CanvasInteractor
 from db.db import DBClient
 from figure import Figure
+from hardware import SwitchController
 from hardware.device import Device
 from loggable import Loggable
 from traits.api import Instance, Button, Bool, Float, List, Str
@@ -106,7 +107,7 @@ class Canvas(Card):
                 o
                 for o in self.container.overlays
                 if hasattr(o, "name") and o.name == name
-            )
+            ), None
         )
 
     def set_switch_voltage(self, name, si):
@@ -116,12 +117,14 @@ class Canvas(Card):
 
     def set_switch_state(self, name, state):
         o = self.get_switch(name)
-        if isinstance(state, bool):
-            state = "open" if state else "closed"
-        o.state = state
+        if o is not None:
+            if isinstance(state, bool):
+                state = "open" if state else "closed"
+            o.state = state
 
-        self.network.update(name)
-        o.request_redraw()
+            self.network.update(name)
+            o.request_redraw()
+            return True
 
     def render(self):
         self.container = dv = DataView()
@@ -136,10 +139,12 @@ class Canvas(Card):
         dv.value_range.low = -50
         dv.value_range.high = 50
 
-        controller = self.application.get_service(Device, f"name=='switch_controller'")
-        tool = CanvasInteractor(component=dv, controller=controller)
+        # controller = self.application.get_service(Device, f"name=='switch_controller'")
+        controllers = self.application.get_services(Device)
+        controllers = [c for c in controllers if isinstance(c, SwitchController)]
+        tool = CanvasInteractor(component=dv, controllers=controllers)
 
-        controller.canvas = self
+        # controller.canvas = self
 
         self.container.tools.append(tool)
         cv = CanvasOverlay(component=dv)
@@ -185,9 +190,9 @@ class Canvas(Card):
 
         self.network = CanvasNetwork(dv)
 
-        for s in controller.switches:
-            self.set_switch_state(s.name, s.state)
-            self.network.update(s.name)
+        for controller in controllers:
+            for s in controller.switches:
+                self.set_switch_state(s.name, s.state)
 
         dv.padding = 0
         dv.bgcolor = "orange"
