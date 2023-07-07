@@ -88,6 +88,8 @@ class MccCommunicator(Communicator):
     """
 
     board_num = 0
+    device_info = None
+
 
     def load(self, config, path):
         self.board_num = self.config("board_num", 0)
@@ -95,6 +97,8 @@ class MccCommunicator(Communicator):
 
     def initialize(self, *args, **kw):
         config_first_detected_device(self.board_num)
+        self.device_info = DaqDeviceInfo(self.board_num)
+
         return True
 
     def a_in(self, channel, ai_range=None):
@@ -106,13 +110,13 @@ class MccCommunicator(Communicator):
         eng_units_value = ul.to_eng_units(self.board_num, ai_range, value)
         return eng_units_value
 
-    def d_in(self, channel):
-        port = self._get_port(channel)
-        if port:
-            bit_num = self._get_bit_num(channel)
-
-            bit_value = ul.d_bit_in(self.board_num, port.type, bit_num)
-            return bool(bit_value)
+    # def d_in(self, channel):
+    #     port = self._get_port(channel)
+    #     if port:
+    #         bit_num = self._get_bit_num(channel)
+    #
+    #         bit_value = ul.d_bit_in(self.board_num, port.type, bit_num)
+    #         return bool(bit_value)
 
     def t_in(self, channel):
         """
@@ -122,58 +126,60 @@ class MccCommunicator(Communicator):
         return value
 
     def d_out(self, channel, bit_value):
-        channel = str(channel)
-        port = self._get_port(channel)
-        if port:
-            bit_num = self._get_bit_num(channel)
+        # channel = str(channel)
+        bit_num = int(channel)
 
-            self.debug(
-                "channel={}, bit_num={}, bit_value={}".format(
-                    channel, bit_num, bit_value
-                )
-            )
-            # if port.is_port_configurable:
-            #    self.debug('configuring {} to OUT'.format(port.type))
-            #    ul.d_config_port(self.board_num, port.type, DigitalIODirection.OUT)
-            # Output the value to the bit
+        # port = self._get_port(channel)
+        # if port:
+    #         bit_num = self._get_bit_num(channel)
+    #
+    #         self.debug(
+    #             "channel={}, bit_num={}, bit_value={}".format(
+    #                 channel, bit_num, bit_value
+    #             )
+    #         )
+    #         # if port.is_port_configurable:
+    #         #    self.debug('configuring {} to OUT'.format(port.type))
+    #         #    ul.d_config_port(self.board_num, port.type, DigitalIODirection.OUT)
+    #         # Output the value to the bit
+        porttype = DigitalPortType.FIRSTPORTA
+        try:
+            ul.d_bit_out(self.board_num, porttype, bit_num, bit_value)
+        except BaseException:
+            self.debug_exception()
+    #
+    # def _get_bit_num(self, channel):
+    #     channel = str(channel)
+    #     bit_num = int(channel.split("-")[1])
+    #     self.debug("channel={}  bit_num={}".format(channel, bit_num))
+    #     return bit_num
 
-            try:
-                ul.d_bit_out(self.board_num, port.type, bit_num, bit_value)
-            except BaseException:
-                self.debug_exception()
-
-    def _get_bit_num(self, channel):
-        channel = str(channel)
-        bit_num = int(channel.split("-")[1])
-        self.debug("channel={}  bit_num={}".format(channel, bit_num))
-        return bit_num
-
-    def _get_port(self, channel):
-        port_id = int(str(channel).split("-")[0])
-        self.debug("channel={} port={}".format(channel, port_id))
-
-        daq_dev_info = DaqDeviceInfo(self.board_num)
-        if not daq_dev_info.supports_digital_io:
-            raise Exception("Error: The DAQ device does not support " "digital I/O")
-
-        self.debug(
-            "Active DAQ device: {} {}".format(
-                daq_dev_info.product_name, daq_dev_info.unique_id
-            )
-        )
-
-        dio_info = daq_dev_info.get_dio_info()
-
-        for i, p in enumerate(dio_info.port_info):
-            self.debug(
-                "{} {} {} {} {}".format(i, p, p.type, p.num_bits, p.supports_output)
-            )
-
-        for p in dio_info.port_info:
-            if int(p.type) == port_id:
-                return p
-        else:
-            self.debug("Invalid port_id={}", port_id)
+    # def _get_port(self, channel):
+    #     port_id = int(channel)
+    #     # port_id = int(str(channel).split("-")[0])
+    #     # self.debug("channel={} port={}".format(channel, port_id))
+    #
+    #     if not self.device_info.supports_digital_io:
+    #         raise Exception("Error: The DAQ device does not support " "digital I/O")
+    #
+    #     self.debug(
+    #         "Active DAQ device: {} {}".format(
+    #             self.device_info.product_name, self.device_info.unique_id
+    #         )
+    #     )
+    #
+    #     dio_info = self.device_info.get_dio_info()
+    #
+    #     for i, p in enumerate(dio_info.port_info):
+    #         self.debug(
+    #             "{} {} {} {} {}".format(i, p, p.type, p.num_bits, p.supports_output)
+    #         )
+    #
+    #     for p in dio_info.port_info:
+    #         if int(p.type) == port_id:
+    #             return p
+    #     else:
+    #         self.debug("Invalid port_id={}", port_id)
 
         # Find the first port that supports input, defaulting to None
         # if one is not found.
