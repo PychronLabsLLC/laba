@@ -75,7 +75,7 @@ class MccCommunicator(Communicator):
             See UL documentation for device IDs.
         """
         ul.ignore_instacal()
-        devices = ul.get_daq_device_inventory()
+        devices = ul.get_daq_device_inventory(ANY)
         try:
             if not devices:
                 raise Exception("Error: No DAQ devices found")
