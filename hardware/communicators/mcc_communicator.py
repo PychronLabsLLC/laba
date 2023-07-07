@@ -35,8 +35,8 @@ except (ImportError, NameError):
     class UL:
         ULError = BaseException
 
-        def t_in(self, *args, **kw):
-            return random.random()
+        def t_in(self, board, bit, *args, **kw):
+            return random.random()+(bit*20)
 
         def ignore_instacal(self):
             pass

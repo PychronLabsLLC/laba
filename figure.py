@@ -20,7 +20,7 @@ from chaco.plot import Plot
 from chaco.plot_containers import VPlotContainer
 from enable.base_tool import BaseTool
 from enable.component_editor import ComponentEditor
-from numpy import hstack
+from numpy import hstack, array
 from traits.api import on_trait_change, Instance
 from traitsui.api import View, UItem, Item, VGroup, HGroup, TextEditor, Handler
 
@@ -49,13 +49,15 @@ class Figure(Loggable):
 
     def new_series(self, name, plotid=0, type="line", xdata=None, ydata=None, **kw):
         if xdata is None:
-            xdata = []
+            xdata = array([])
         if ydata is None:
-            ydata = []
+            ydata = array([])
         plot = self.get_plot(plotid)
-        plot.data.set_data("x0", xdata)
-        plot.data.set_data("y0", ydata)
-        plot.plot(("x0", "y0"), name=name, type=type, **kw)
+        xname = f"x_{name}"
+        yname = f"y_{name}"
+        plot.data.set_data(xname, xdata)
+        plot.data.set_data(yname, ydata)
+        plot.plot((xname, yname), name=name, type=type, **kw)
 
     def add_datum(self, name, x, y, plotid=0):
         series = self.get_series(name, plotid)
@@ -82,8 +84,8 @@ class Figure(Loggable):
     def clear_data(self, name=None, plotid=0):
         series = self.get_series(name, plotid)
         if series:
-            series.index.set_data([])
-            series.value.set_data([])
+            series.index.set_data(())
+            series.value.set_data(())
 
     def get_series(self, name, plotid=0):
         plot = self.get_plot(plotid)
