@@ -32,7 +32,6 @@ except (ImportError, NameError):
     CELSIUS = 0
     ANY = 0
 
-
     class UL:
         ULError = BaseException
 
@@ -44,7 +43,6 @@ except (ImportError, NameError):
 
         def get_daq_device_inventory(self, *args, **kw):
             return []
-
 
     ul = UL()
 
@@ -233,5 +231,6 @@ class MccCommunicator(Communicator):
     # if not port:
     #     raise Exception('Error: The DAQ device does not support '
     #                     'digital input')
+
 
 # ============= EOF =============================================

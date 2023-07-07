@@ -342,9 +342,7 @@ class MultiScan(Scan):
                 UItem("start_button", enabled_when="start_enabled"),
                 UItem("stop_button", enabled_when="not start_enabled"),
             ),
-            HGroup(
-                UItem("figure", style="custom"),
-                VGroup(*lcds))
+            HGroup(UItem("figure", style="custom"), VGroup(*lcds)),
         )
 
 
@@ -656,5 +654,6 @@ class Dashboard(BaseDashboard):
     # def traits_view(self):
     #     v = View(self._build_dashboard_elements())
     #     return v
+
 
 # ============= EOF =============================================
