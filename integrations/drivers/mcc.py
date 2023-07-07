@@ -16,15 +16,16 @@
 from integrations.drivers.base import BaseDAQDriver
 
 
-class MCC(BaseDAQDriver):
+class USBTemp(BaseDAQDriver):
     def actuate_channel(self, channel, state):
-        self.communicator.d_out(channel, state)
+        self.communicator.d_out(channel, state, port='AUXPORT')
 
     def _read_channel(self, channel):
         return self.communicator.a_in(channel)
 
     def _read_temperature(self, channel):
         return self.communicator.t_in(channel)
+
 
 
 # ============= EOF =============================================

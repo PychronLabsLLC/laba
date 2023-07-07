@@ -97,8 +97,38 @@ class MccCommunicator(Communicator):
     def initialize(self, *args, **kw):
         config_first_detected_device(self.board_num)
         self.device_info = DaqDeviceInfo(self.board_num)
-
+        self.report_device_info()
         return True
+
+    def report_device_info(self):
+        di = self.device_info
+        self.info('-------------------- Device Info ---------------------')
+        self.info(f'Board Num: {self.board_num}')
+        self.info(f'Product Name: {di.product_name}')
+        self.info(f'Unique ID: {di.unique_id}')
+        if di.supports_digital_io:
+            dio = di.get_dio_info()
+            self.info(f'Number of Digital I/O Ports: {dio.num_ports}')
+            for p in dio.port_info:
+                self.info(f'    Port {p.type.name}')
+                self.info(f'        Number of Bits: {p.num_bits}')
+                self.info(f'        Supports Input: {p.supports_input}')
+                self.info(f'        Supports Input Scan: {p.supports_input_scan}')
+                self.info(f'        Supports Output: {p.supports_output}')
+                self.info(f'        Supports Output: {p.supports_output_scan}')
+                self.info(f'        Input Mask: {p.in_mask}')
+                self.info(f'        Output Mask: {p.out_mask}')
+                self.info(f'        First Dit: {p.first_bit}')
+                self.info(f'        Is Bit Configurable: {p.is_bit_configurable}')
+                self.info(f'        Is Port Configurable: {p.is_port_configurable}')
+
+        if di.supports_temp_input:
+            ai = di.get_ai_info()
+            self.info(f'Number of A/D Channels: {ai.num_chans}')
+            self.info(f'Number of Temp Channels: {ai.num_temp_chans}')
+            self.info(f'Number of A/D Resolution: {ai.resolution}')
+            self.info(f'Supports scan: {ai.supports_scan}')
+            self.info(f'Supports v_in: {ai.supports_v_in}')
 
     def a_in(self, channel, ai_range=None):
         if ai_range is None:
@@ -124,7 +154,7 @@ class MccCommunicator(Communicator):
         value = ul.t_in(self.board_num, int(channel), CELSIUS)
         return value
 
-    def d_out(self, channel, bit_value):
+    def d_out(self, channel, bit_value, port=None):
         # channel = str(channel)
         bit_num = int(channel)
 
@@ -141,9 +171,15 @@ class MccCommunicator(Communicator):
         #         #    self.debug('configuring {} to OUT'.format(port.type))
         #         #    ul.d_config_port(self.board_num, port.type, DigitalIODirection.OUT)
         #         # Output the value to the bit
-        porttype = DigitalPortType.FIRSTPORTA
+
+        # porttype = DigitalPortType.FIRSTPORTA
+        if port is None:
+            port = DigitalPortType.FIRSTPORTA
+        else:
+            port = getattr(DigitalPortType, port.upper())
+
         try:
-            ul.d_bit_out(self.board_num, porttype, bit_num, bit_value)
+            ul.d_bit_out(self.board_num, port, bit_num, bit_value)
         except BaseException:
             self.debug_exception()
 
