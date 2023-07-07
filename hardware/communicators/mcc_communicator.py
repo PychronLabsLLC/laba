@@ -102,33 +102,33 @@ class MccCommunicator(Communicator):
 
     def report_device_info(self):
         di = self.device_info
-        self.info('-------------------- Device Info ---------------------')
-        self.info(f'Board Num: {self.board_num}')
-        self.info(f'Product Name: {di.product_name}')
-        self.info(f'Unique ID: {di.unique_id}')
+        self.info("-------------------- Device Info ---------------------")
+        self.info(f"Board Num: {self.board_num}")
+        self.info(f"Product Name: {di.product_name}")
+        self.info(f"Unique ID: {di.unique_id}")
         if di.supports_digital_io:
             dio = di.get_dio_info()
-            self.info(f'Number of Digital I/O Ports: {dio.num_ports}')
+            self.info(f"Number of Digital I/O Ports: {dio.num_ports}")
             for p in dio.port_info:
-                self.info(f'    Port {p.type.name}')
-                self.info(f'        Number of Bits: {p.num_bits}')
-                self.info(f'        Supports Input: {p.supports_input}')
-                self.info(f'        Supports Input Scan: {p.supports_input_scan}')
-                self.info(f'        Supports Output: {p.supports_output}')
-                self.info(f'        Supports Output: {p.supports_output_scan}')
-                self.info(f'        Input Mask: {p.in_mask}')
-                self.info(f'        Output Mask: {p.out_mask}')
-                self.info(f'        First Dit: {p.first_bit}')
-                self.info(f'        Is Bit Configurable: {p.is_bit_configurable}')
-                self.info(f'        Is Port Configurable: {p.is_port_configurable}')
+                self.info(f"    Port {p.type.name}")
+                self.info(f"        Number of Bits: {p.num_bits}")
+                self.info(f"        Supports Input: {p.supports_input}")
+                self.info(f"        Supports Input Scan: {p.supports_input_scan}")
+                self.info(f"        Supports Output: {p.supports_output}")
+                self.info(f"        Supports Output: {p.supports_output_scan}")
+                self.info(f"        Input Mask: {p.in_mask}")
+                self.info(f"        Output Mask: {p.out_mask}")
+                self.info(f"        First Dit: {p.first_bit}")
+                self.info(f"        Is Bit Configurable: {p.is_bit_configurable}")
+                self.info(f"        Is Port Configurable: {p.is_port_configurable}")
 
         if di.supports_temp_input:
             ai = di.get_ai_info()
-            self.info(f'Number of A/D Channels: {ai.num_chans}')
-            self.info(f'Number of Temp Channels: {ai.num_temp_chans}')
-            self.info(f'Number of A/D Resolution: {ai.resolution}')
-            self.info(f'Supports scan: {ai.supports_scan}')
-            self.info(f'Supports v_in: {ai.supports_v_in}')
+            self.info(f"Number of A/D Channels: {ai.num_chans}")
+            self.info(f"Number of Temp Channels: {ai.num_temp_chans}")
+            self.info(f"Number of A/D Resolution: {ai.resolution}")
+            self.info(f"Supports scan: {ai.supports_scan}")
+            self.info(f"Supports v_in: {ai.supports_v_in}")
 
     def a_in(self, channel, ai_range=None):
         if ai_range is None:
