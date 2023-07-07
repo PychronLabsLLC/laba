@@ -32,13 +32,13 @@ except (ImportError, NameError):
 
     class UL:
         ULError = BaseException
+
         def t_in(self, *args, **kw):
             return random.random()
 
     ul = UL()
 
 from hardware.communicator import Communicator
-
 
 
 class MccCommunicator(Communicator):
@@ -73,9 +73,11 @@ class MccCommunicator(Communicator):
 
         self.info(f"Found {len(devices)} DAQ device(s)")
         for device in devices:
-            self.info(f'  {device.product_name} ({device.unique_id}) - Device ID = {device.product_id}')
+            self.info(
+                f"  {device.product_name} ({device.unique_id}) - Device ID = {device.product_id}"
+            )
 
-        self.info(f'Using device_id: {self.device_id}')
+        self.info(f"Using device_id: {self.device_id}")
         device = devices[self.device_id]
         # if dev_id_list:
         #     device = next(
