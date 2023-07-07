@@ -229,7 +229,11 @@ class BaseScan(DeviceCard):
                 d.update = {"clear": True, "datastream": "scan"}
 
             with CSVPersister(path_name=f"scan{self.name}") as writer:
-                header = [k for i, df in enumerate(self.device_functions) for k in (f"time{i}", f"value{i}")]
+                header = [
+                    k
+                    for i, df in enumerate(self.device_functions)
+                    for k in (f"time{i}", f"value{i}")
+                ]
                 writer.write(header)
 
                 while not self._scan_evt.is_set():
