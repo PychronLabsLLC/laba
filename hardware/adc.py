@@ -19,7 +19,7 @@ from numpy import polyval
 
 from hardware.device import Device
 from hardware.util import get_float
-from traits.api import HasTraits, Str, List
+from traits.api import HasTraits, Str, List, Enum
 
 # class ADC(Device):
 #     @get_float()
@@ -35,12 +35,22 @@ class Channel(HasTraits):
     address = Str
     mapping = List
 
+    iodir = Str
+
     def __init__(self, *args, **kw):
         if kw.get("mapping"):
             mapping = kw.pop("mapping")
             self.mapping = [float(c) for c in mapping.split(",")]
 
         super().__init__(*args, **kw)
+
+    @property
+    def is_output(self):
+        return self.iodir == "output"
+
+    @property
+    def is_input(self):
+        return self.iodir == "input"
 
     def map_value(self, v):
         """
@@ -71,6 +81,5 @@ class ADC(Device):
 
         self.update = {"datastream": datastream, "value": vv}
         return vv
-
 
 # ============= EOF =============================================

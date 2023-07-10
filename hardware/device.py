@@ -50,7 +50,14 @@ class Device(Loggable):
         self.driver.bootstrap(cfg)
 
     def initialize(self):
-        return self.driver.initialize()
+        r = self.driver.initialize()
+        if r:
+            self.initialize_hook()
+
+        return r
+
+    def initialize_hook(self):
+        pass
 
     def open(self):
         return self.driver.open()

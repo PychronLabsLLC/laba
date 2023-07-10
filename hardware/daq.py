@@ -45,7 +45,13 @@ class DAQ(SwitchController):
 
 
 class USBTemp(DAQ):
-    pass
+    def initialize_hook(self):
+        # configure dio channels
+        for c in self.channels:
+            if c.is_output:
+                self.driver.configure_output(c.address)
+            elif c.is_input:
+                self.driver.configure_input(c.address)
 
 
 # ============= EOF =============================================

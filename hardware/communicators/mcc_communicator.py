@@ -32,10 +32,13 @@ except (ImportError, NameError):
     CELSIUS = 0
     ANY = 0
 
+
     class _DigitalPortType:
         AUXPORT = 0
 
+
     DigitalPortType = _DigitalPortType()
+
 
     class UL:
         ULError = BaseException
@@ -52,9 +55,18 @@ except (ImportError, NameError):
         def get_daq_device_inventory(self, *args, **kw):
             return []
 
+
     ul = UL()
 
 from hardware.communicator import Communicator
+
+
+def get_porttype(port):
+    if port is None:
+        port = DigitalPortType.FIRSTPORTA
+    else:
+        port = getattr(DigitalPortType, port.upper())
+    return port
 
 
 class MccCommunicator(Communicator):
@@ -169,29 +181,19 @@ class MccCommunicator(Communicator):
         value = ul.t_in(self.board_num, int(channel), CELSIUS)
         return value
 
+    def configure_d_out(self, channel, port=None):
+        portt = get_porttype(port)
+        ul.d_config_bit(self.board_num, portt, channel, DigitalIODirection.OUT)
+
+    def configure_d_input(self, channel, port=None):
+        portt = get_porttype(port)
+        ul.d_config_bit(self.board_num, portt, channel, DigitalIODirection.IN)
+
     def d_out(self, channel, bit_value, port=None):
-        # channel = str(channel)
+        self.debug(f'digital out {channel}, {bit_value}')
+
         bit_num = int(channel)
-
-        # port = self._get_port(channel)
-        # if port:
-        #         bit_num = self._get_bit_num(channel)
-        #
-        #         self.debug(
-        #             "channel={}, bit_num={}, bit_value={}".format(
-        #                 channel, bit_num, bit_value
-        #             )
-        #         )
-        #         # if port.is_port_configurable:
-        #         #    self.debug('configuring {} to OUT'.format(port.type))
-        #         #    ul.d_config_port(self.board_num, port.type, DigitalIODirection.OUT)
-        #         # Output the value to the bit
-
-        # porttype = DigitalPortType.FIRSTPORTA
-        if port is None:
-            port = DigitalPortType.FIRSTPORTA
-        else:
-            port = getattr(DigitalPortType, port.upper())
+        port = get_porttype(port)
 
         try:
             ul.d_bit_out(self.board_num, port, bit_num, bit_value)
@@ -239,6 +241,5 @@ class MccCommunicator(Communicator):
     # if not port:
     #     raise Exception('Error: The DAQ device does not support '
     #                     'digital input')
-
 
 # ============= EOF =============================================
