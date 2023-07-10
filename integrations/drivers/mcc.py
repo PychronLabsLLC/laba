@@ -17,7 +17,6 @@ from integrations.drivers.base import BaseDAQDriver
 
 
 class USBTemp(BaseDAQDriver):
-
     # def initialize(self, *args, **kw):
     #     super().initialize(*args, **kw)
     #

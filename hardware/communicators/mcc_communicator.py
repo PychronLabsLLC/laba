@@ -32,13 +32,10 @@ except (ImportError, NameError):
     CELSIUS = 0
     ANY = 0
 
-
     class _DigitalPortType:
         AUXPORT = 0
 
-
     DigitalPortType = _DigitalPortType()
-
 
     class UL:
         ULError = BaseException
@@ -54,7 +51,6 @@ except (ImportError, NameError):
 
         def get_daq_device_inventory(self, *args, **kw):
             return []
-
 
     ul = UL()
 
@@ -190,7 +186,7 @@ class MccCommunicator(Communicator):
         ul.d_config_bit(self.board_num, portt, channel, DigitalIODirection.IN)
 
     def d_out(self, channel, bit_value, port=None):
-        self.debug(f'digital out {channel}, {bit_value}')
+        self.debug(f"digital out {channel}, {bit_value}")
 
         bit_num = int(channel)
         port = get_porttype(port)
@@ -241,5 +237,6 @@ class MccCommunicator(Communicator):
     # if not port:
     #     raise Exception('Error: The DAQ device does not support '
     #                     'digital input')
+
 
 # ============= EOF =============================================

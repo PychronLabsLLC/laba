@@ -82,4 +82,5 @@ class ADC(Device):
         self.update = {"datastream": datastream, "value": vv}
         return vv
 
+
 # ============= EOF =============================================
