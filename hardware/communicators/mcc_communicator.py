@@ -177,7 +177,7 @@ class MccCommunicator(Communicator):
         value = ul.t_in(self.board_num, int(channel), CELSIUS)
         return value
 
-    def configure_d_out(self, channel, port=None):
+    def configure_d_output(self, channel, port=None):
         portt = get_porttype(port)
         self.debug(f"configure digital output {channel}, {portt}")
         ul.d_config_bit(self.board_num, portt, channel, DigitalIODirection.OUT)

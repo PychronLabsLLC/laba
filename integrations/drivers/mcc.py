@@ -25,10 +25,10 @@ class USBTemp(BaseDAQDriver):
     #         self.communicator.d_config(i, 0, port="AUXPORT")
 
     def configure_input(self, channel):
-        self.communicator.configure_input(channel, port="AUXPORT")
+        self.communicator.configure_d_input(channel, port="AUXPORT")
 
     def configure_output(self, channel):
-        self.communicator.configure_output(channel, port="AUXPORT")
+        self.communicator.configure_d_output(channel, port="AUXPORT")
 
     def actuate_channel(self, channel, state):
         self.communicator.d_out(channel, state, port="AUXPORT")
