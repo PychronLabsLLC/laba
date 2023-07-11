@@ -138,7 +138,7 @@ class MccCommunicator(Communicator):
                 self.info(f"        Supports Input: {p.supports_input}")
                 self.info(f"        Supports Input Scan: {p.supports_input_scan}")
                 self.info(f"        Supports Output: {p.supports_output}")
-                self.info(f"        Supports Output: {p.supports_output_scan}")
+                self.info(f"        Supports Output Scan: {p.supports_output_scan}")
                 self.info(f"        Input Mask: {p.in_mask}")
                 self.info(f"        Output Mask: {p.out_mask}")
                 self.info(f"        First Dit: {p.first_bit}")
@@ -179,10 +179,12 @@ class MccCommunicator(Communicator):
 
     def configure_d_out(self, channel, port=None):
         portt = get_porttype(port)
+        self.debug(f'configure digital output {channel}, {portt}')
         ul.d_config_bit(self.board_num, portt, channel, DigitalIODirection.OUT)
 
     def configure_d_input(self, channel, port=None):
         portt = get_porttype(port)
+        self.debug(f'configure digital input {channel}, {portt}')
         ul.d_config_bit(self.board_num, portt, channel, DigitalIODirection.IN)
 
     def d_out(self, channel, bit_value, port=None):

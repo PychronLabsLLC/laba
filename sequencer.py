@@ -15,6 +15,7 @@
 # ===============================================================================
 import os
 import time
+from pprint import pprint, pformat
 from threading import Thread, Event
 
 import yaml
@@ -194,6 +195,8 @@ class Sequencer(Loggable):
         self.sequences = [
             Sequence(s, application=self.application) for s in yobj["sequences"]
         ]
+        self.debug(f'loaded sequences from "{self.path}"')
+        self.debug(f"sequences {pformat(self.sequences)}")
 
     def save(self):
         if self.path:
