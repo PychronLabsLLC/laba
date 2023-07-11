@@ -51,7 +51,7 @@ class Device(Loggable):
 
     def initialize(self):
         r = self.driver.initialize()
-        self.debug(f'initialize result {r}')
+        self.debug(f"initialize result {r}")
         if r:
             self.initialize_hook()
 
