@@ -48,7 +48,7 @@ class USBTemp(DAQ):
     def initialize_hook(self):
         self.debug(f"initialize usbtemp, configure channels {len(self.channels)}")
         for s in self.switches:
-            self.driver.configure_output(s.address)
+            self.driver.configure_output(s.channel)
 
         # configure dio channels
         for c in self.channels:
