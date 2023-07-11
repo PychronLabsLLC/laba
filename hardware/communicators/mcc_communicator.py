@@ -179,12 +179,12 @@ class MccCommunicator(Communicator):
 
     def configure_d_out(self, channel, port=None):
         portt = get_porttype(port)
-        self.debug(f'configure digital output {channel}, {portt}')
+        self.debug(f"configure digital output {channel}, {portt}")
         ul.d_config_bit(self.board_num, portt, channel, DigitalIODirection.OUT)
 
     def configure_d_input(self, channel, port=None):
         portt = get_porttype(port)
-        self.debug(f'configure digital input {channel}, {portt}')
+        self.debug(f"configure digital input {channel}, {portt}")
         ul.d_config_bit(self.board_num, portt, channel, DigitalIODirection.IN)
 
     def d_out(self, channel, bit_value, port=None):
