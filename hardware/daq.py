@@ -46,7 +46,10 @@ class DAQ(SwitchController):
 
 class USBTemp(DAQ):
     def initialize_hook(self):
-        self.debug(f"initialize usbtemp, configure channels {len(self.channels)}")
+        self.debug(f'initialize usbtemp, configure channels {len(self.channels)}')
+        for s in self.switches:
+            self.driver.configure_output(s.address)
+
         # configure dio channels
         for c in self.channels:
             if c.is_output:
