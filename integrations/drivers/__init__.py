@@ -19,5 +19,6 @@ from integrations.drivers.m1000 import M1000
 from integrations.drivers.qtegra import Qtegra
 from integrations.drivers.chromium import Chromium
 from integrations.drivers.mcc import USBTemp
+from integrations.drivers.scm9b import SCM9B3182
 
 # ============= EOF =============================================
