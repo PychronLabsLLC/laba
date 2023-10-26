@@ -36,37 +36,38 @@ class SCM9B3182(BaseSwitchDriver):
         # self.tell(msg)
 
         if self.use_handshake:
-            prompt = '#'
+            prompt = "#"
         else:
-            prompt = '$'
+            prompt = "$"
 
         resp = self.ask(f"{prompt}A0+{output:08.2f}")
         if self.use_handshake and resp:
-            '''
-            example handshake response 
+            """
+            example handshake response
              *1AO+00010.0095
-            '''
-            if resp[0] != '*':
-                self.warning(f'Error setting voltage. resp={resp}')
+            """
+            if resp[0] != "*":
+                self.warning(f"Error setting voltage. resp={resp}")
                 return
 
-            if '+' in resp:
-                resp = resp.split('+')[1]
+            if "+" in resp:
+                resp = resp.split("+")[1]
                 resp = resp[:-1]  # trim off checksum
                 if float(resp) != output:
-                    self.warning(f'Error setting voltage to {output}. resp={resp}')
+                    self.warning(f"Error setting voltage to {output}. resp={resp}")
                     return
 
-            resp = self.ask('$1ACK')
-            if resp.strip() != '*':
-                self.warning(f'Error setting voltage. resp={resp}')
+            resp = self.ask("$1ACK")
+            if resp.strip() != "*":
+                self.warning(f"Error setting voltage. resp={resp}")
 
     @get_float()
     def get_voltage(self, channel):
-        return self.ask('$1RD')
+        return self.ask("$1RD")
         # msg = f"SOUR:VOLT? (@{channel})"
         # resp = self.ask(msg)
         # if resp is not None:
         #     return float(resp)
+
 
 # ============= EOF =============================================
