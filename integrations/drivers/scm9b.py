@@ -40,7 +40,7 @@ class SCM9B3182(BaseSwitchDriver):
         else:
             prompt = "$"
 
-        resp = self.ask(f"{prompt}A0+{output:08.2f}")
+        resp = self.ask(f"{prompt}1A0+{output:08.2f}")
         if self.use_handshake and resp:
             """
             example handshake response
