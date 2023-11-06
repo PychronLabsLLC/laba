@@ -69,4 +69,5 @@ class SCM9B3182(BaseSwitchDriver):
         # if resp is not None:
         #     return float(resp)
 
+
 # ============= EOF =============================================
