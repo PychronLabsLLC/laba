@@ -52,7 +52,7 @@ class SCM9B3182(BaseSwitchDriver):
 
             if "+" in resp:
                 resp = resp.split("+")[1]
-                resp = resp[:-2]  # trim off checksum
+                resp = resp[:-3]  # trim off checksum
                 if float(resp) != output:
                     self.warning(f"Error setting voltage to {output}. resp={resp}")
                     return
