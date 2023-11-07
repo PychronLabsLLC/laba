@@ -492,7 +492,7 @@ class EMSwitch(Switch):
                 self.figure.clear_data("vt")
             else:
                 self.readback_voltage = new["voltage"]
-                if 'relative_time_seconds' not in new:
+                if "relative_time_seconds" not in new:
                     return
 
                 self.figure.add_datum(
@@ -514,10 +514,14 @@ class EMSwitch(Switch):
                 HGroup(
                     UItem("open_button"),
                     UItem("close_button"),
-
                     spring,
-                    Item('voltage'),
-                    UItem('readback_voltage', style='readonly', width=100, format_str='%.3f'),
+                    Item("voltage"),
+                    UItem(
+                        "readback_voltage",
+                        style="readonly",
+                        width=100,
+                        format_str="%.3f",
+                    ),
                 ),
                 HGroup(
                     UItem("slow_open_button"),
