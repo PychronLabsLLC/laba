@@ -433,6 +433,9 @@ class EMSwitch(Switch):
     selected_script = Str
     dry = Bool(True)
 
+    voltage = Float(auto_set=False, enter_set=True)
+    readback_voltage = Float
+
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
 
@@ -474,6 +477,11 @@ class EMSwitch(Switch):
         dev.open_switch(self.switch_name, script=self.selected_script, dry=self.dry)
         self.state = True
 
+    @on_trait_change("voltage")
+    def _handle_voltage(self, new):
+        dev = self.device
+        dev.set_voltage(self.switch_name, new)
+
     @on_trait_change("device:update")
     def _handle_device_update(self, new):
         if new:
@@ -483,6 +491,10 @@ class EMSwitch(Switch):
             if new.get("clear"):
                 self.figure.clear_data("vt")
             else:
+                self.readback_voltage = new["voltage"]
+                if 'relative_time_seconds' not in new:
+                    return
+
                 self.figure.add_datum(
                     "vt", new["relative_time_seconds"], new["voltage"]
                 )
@@ -502,7 +514,10 @@ class EMSwitch(Switch):
                 HGroup(
                     UItem("open_button"),
                     UItem("close_button"),
+
                     spring,
+                    Item('voltage'),
+                    UItem('readback_voltage', style='readonly', width=100, format_str='%.3f'),
                 ),
                 HGroup(
                     UItem("slow_open_button"),

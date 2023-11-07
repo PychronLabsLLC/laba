@@ -124,6 +124,11 @@ class SwitchController(Device):
                 self.open_switch(name)
                 return "open"
 
+    def set_voltage(self, name, voltage, dry=False):
+        s = self.get_switch(name)
+        if s:
+            self._set_voltage(s, voltage, dry=dry)
+
     def open_switch(self, name, script=None, block=False, dry=False):
         return self._actuate_switch(name, True, script, block, dry)
 

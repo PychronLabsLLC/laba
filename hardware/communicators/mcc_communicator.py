@@ -35,7 +35,11 @@ except (ImportError, NameError):
     class _DigitalPortType:
         AUXPORT = 0
 
+    class _DigitalIODirection:
+        OUT = 0
+
     DigitalPortType = _DigitalPortType()
+    DigitalIODirection = _DigitalIODirection()
 
     class UL:
         ULError = BaseException
@@ -51,6 +55,9 @@ except (ImportError, NameError):
 
         def get_daq_device_inventory(self, *args, **kw):
             return []
+
+        def d_config_bit(self, *args, **kw):
+            pass
 
     ul = UL()
 
