@@ -28,7 +28,7 @@ class SCM9B3182(BaseSwitchDriver):
             v = self.config("max_voltage", 10) if v else self.config("min_voltage", 0)
         self.set_voltage(channel, v)
 
-    def set_voltage(self, channel, output):
+    def set_voltage(self, channel, volts):
         # current_voltage = self.get_voltage(channel)
         # self.debug(f"current voltage {current_voltage}")
         #
@@ -40,6 +40,7 @@ class SCM9B3182(BaseSwitchDriver):
         else:
             prompt = "$"
 
+        output = volts * 1000
         resp = self.ask(f"{prompt}1AO+{output:08.2f}")
         if self.use_handshake and resp:
             """
@@ -54,7 +55,7 @@ class SCM9B3182(BaseSwitchDriver):
                 resp = resp.split("+")[1]
                 resp = resp[:-3]  # trim off checksum
                 if float(resp) != output:
-                    self.warning(f"Error setting voltage to {output}. resp={resp}")
+                    self.warning(f"Error setting voltage to {output}mV. resp={resp}")
                     return
 
             resp = self.ask("$1ACK")
