@@ -124,6 +124,11 @@ class SwitchController(Device):
                 self.open_switch(name)
                 return "open"
 
+    def get_voltage(self, name):
+        s = self.get_switch(name)
+        if s:
+            return self.driver.get_voltage(s.channel)
+
     def set_voltage(self, name, voltage, dry=False):
         s = self.get_switch(name)
         if s:
