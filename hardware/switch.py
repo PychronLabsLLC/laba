@@ -348,5 +348,6 @@ class SwitchController(Device):
             self.canvas.set_switch_state(switch.name, state)
             self.canvas.set_switch_voltage(switch.name, v)
 
+        self.update = {"voltage": v, "value": v, "datastream": "actuate", "switch_name": switch.name}
 
 # ============= EOF =============================================
