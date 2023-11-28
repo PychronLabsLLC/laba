@@ -109,6 +109,7 @@ class Automation(Loggable):
             return self._runthread
 
     def cancel(self):
+        self.stop_recording()
         self.alive = False
         self.timer.cancel()
 
