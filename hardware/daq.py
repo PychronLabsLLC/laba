@@ -37,7 +37,12 @@ class DAQ(SwitchController):
         return vv
 
     def scan_temperature(self, idx, **kw):
-        ch = self.channels[idx]
+        if isinstance(idx, str):
+            # get by name
+            ch = next((ci for ci in self.channels if ci.name == idx), None)
+        else:
+            ch = self.channels[idx]
+
         vv = self.driver.read_temperature(ch.address)
         self.debug(f"scan temperature {idx} {vv}")
         self.update = {"datastream": f"temperature{idx}", "units": "c", "value": vv}
