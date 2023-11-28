@@ -29,4 +29,5 @@ class Gauge(Device):
 
     read_pressure = scan_pressure
 
+
 # ============= EOF =============================================
