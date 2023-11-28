@@ -662,6 +662,10 @@ class Dashboard(BaseDashboard):
         for i, c in enumerate(self.cards):
             kind = c["kind"]
             factory = globals().get(kind)
+            if factory is None:
+                self.warning(f"Invalid card kind {kind}")
+                continue
+
             card = factory(self.application, c)
             height = c.get("height", 0.5)
             self.add_trait(c["name"], card)
