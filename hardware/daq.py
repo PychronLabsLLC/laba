@@ -43,6 +43,8 @@ class DAQ(SwitchController):
         self.update = {"datastream": f"temperature{idx}", "units": "c", "value": vv}
         return vv
 
+    read_temperature = scan_temperature
+
 
 class USBTemp(DAQ):
     def initialize_hook(self):
