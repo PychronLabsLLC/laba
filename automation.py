@@ -156,10 +156,15 @@ class Automation(Loggable):
         def func():
             st = time.time()
             with CSVPersister(path_name="datalog") as writer:
-
-                attribute_names = [':'.join(a) for a in attributes]
+                attribute_names = [":".join(a) for a in attributes]
                 # write header
-                writer.write(["timestamp", "elapsed_time", ] + attribute_names)
+                writer.write(
+                    [
+                        "timestamp",
+                        "elapsed_time",
+                    ]
+                    + attribute_names
+                )
 
                 while not self._recording_event.is_set():
                     sti = time.time()
@@ -257,5 +262,6 @@ class Automation(Loggable):
     #     return View(HGroup(spring,
     #                        UItem('start_button'),
     #                        UItem('stop_button')))
+
 
 # ============= EOF =============================================
