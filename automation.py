@@ -243,7 +243,8 @@ class Automation(Loggable):
     def _get_context(self):
         ctx = {}
         for name in REGISTRY:
-            ctx[name] = getattr(self, name)
+            if hasattr(self, name):
+                ctx[name] = getattr(self, name)
 
         ctx["info"] = self.info
         messages = self.application.get_extensions("laba.automation.commands")
