@@ -151,7 +151,7 @@ class Automation(Loggable):
                 time.sleep(0.5)
 
     @is_alive
-    def start_recording(self, attributes, name='datalog', period=1):
+    def start_recording(self, attributes, name="datalog", period=1):
         self._recording_event = Event()
 
         def func():
