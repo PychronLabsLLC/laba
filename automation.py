@@ -150,19 +150,36 @@ class Automation(Loggable):
                 time.sleep(0.5)
 
     @is_alive
-    def start_recording(self):
+    def start_recording(self, attributes, period=1):
         self._recording_event = Event()
 
         def func():
             st = time.time()
-            period = 1
             with CSVPersister(path_name="datalog") as writer:
+
+                attribute_names = [':'.join(a) for a in attributes]
+                # write header
+                writer.write(["timestamp", "elapsed_time", ] + attribute_names)
+
                 while not self._recording_event.is_set():
                     sti = time.time()
 
                     # get all the values that need to be recorded
                     now = datetime.now()
-                    writer.write([now.isoformat(), time.time() - st])
+                    row = [now.isoformat(), time.time() - st]
+
+                    for a in attributes:
+                        if len(a) == 2:
+                            device, function = a
+                            args, kwargs = [], {}
+                        elif len(a) == 3:
+                            device, function, args = a
+                            kwargs = {}
+                        elif len(a) == 4:
+                            device, function, args, kwargs = a
+
+                        row.append(self.dev_function(device, function, *args, **kwargs))
+                    writer.write(row)
 
                     pe = max(0, period - (time.time() - sti))
                     if pe:
@@ -240,6 +257,5 @@ class Automation(Loggable):
     #     return View(HGroup(spring,
     #                        UItem('start_button'),
     #                        UItem('stop_button')))
-
 
 # ============= EOF =============================================

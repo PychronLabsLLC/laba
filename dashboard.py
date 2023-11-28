@@ -542,7 +542,7 @@ class EMSwitch(Switch):
         )
 
 
-class Procedures(Card):
+class Automations(Card):
     start_button = Button("Start")
     stop_button = Button("Stop")
     script_name = Str
