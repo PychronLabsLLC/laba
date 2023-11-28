@@ -151,12 +151,12 @@ class Automation(Loggable):
                 time.sleep(0.5)
 
     @is_alive
-    def start_recording(self, attributes, period=1):
+    def start_recording(self, attributes, name='datalog', period=1):
         self._recording_event = Event()
 
         def func():
             st = time.time()
-            with CSVPersister(path_name="datalog") as writer:
+            with CSVPersister(path_name=name) as writer:
                 attribute_names = [":".join(a) for a in attributes]
                 # write header
                 writer.write(
