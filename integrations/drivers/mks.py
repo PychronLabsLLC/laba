@@ -29,7 +29,7 @@ class MKS(BasePressureDriver):
 
     def _read_pressure(self, channel):
         if isinstance(channel, str):
-            channel = int(str)
+            channel = int(channel)
 
         msg = self._make_global_message("00", f"{channel:02n}")
         self.ask(msg)
