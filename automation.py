@@ -157,7 +157,7 @@ class Automation(Loggable):
         def func():
             st = time.time()
             with CSVPersister(path_name=name) as writer:
-                attribute_names = [":".join(a) for a in attributes]
+                attribute_names = [":".join(str(a)) for a in attributes]
                 # write header
                 writer.write(
                     [
