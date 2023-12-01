@@ -187,7 +187,7 @@ class Automation(Loggable):
                             device, function, args, kwargs = a
 
                         row.append(self.dev_function(device, function, *args, **kwargs))
-                        print('rasd', row, device, function, args, kwargs)
+                        print("rasd", row, device, function, args, kwargs)
                     writer.write(row)
 
                     pe = max(0, period - (time.time() - sti))
