@@ -30,8 +30,8 @@ class Communicator(Loggable):
     handle = None
     simulation = True
 
-    def __init__(self):
-        super(Communicator, self).__init__()
+    def __init__(self, *args, **kw):
+        super(Communicator, self).__init__(*args, **kw)
         self.ask_lock = Lock()
 
     def initialize(self):
