@@ -39,7 +39,7 @@ def register(func):
 
 def is_alive(func):
     def wrapper(obj, *args, **kw):
-        print(obj, args, kw)
+        # print(obj, args, kw)
         if obj.alive:
             return func(obj, *args, **kw)
 
@@ -135,7 +135,7 @@ class Automation(Loggable):
             return
 
         func = getattr(dev, name)
-        func(*args, **kw)
+        return func(*args, **kw)
 
     @is_alive
     def sleep(self, nseconds):
@@ -157,7 +157,9 @@ class Automation(Loggable):
         def func():
             st = time.time()
             with CSVPersister(path_name=name) as writer:
-                attribute_names = [":".join(str(a)) for a in attributes]
+                print(attributes)
+                attribute_names = [":".join((str(ai) for ai in a)) for a in attributes]
+
                 # write header
                 writer.write(
                     [
@@ -185,6 +187,7 @@ class Automation(Loggable):
                             device, function, args, kwargs = a
 
                         row.append(self.dev_function(device, function, *args, **kwargs))
+                        print('rasd', row, device, function, args, kwargs)
                     writer.write(row)
 
                     pe = max(0, period - (time.time() - sti))
