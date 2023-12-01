@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+from threading import Lock
+
 from loggable import Loggable
 
 
@@ -28,6 +30,10 @@ class Communicator(Loggable):
     handle = None
     simulation = True
 
+    def __init__(self):
+        super(Communicator, self).__init__()
+        self.ask_lock = Lock()
+
     def initialize(self):
         return True
 
@@ -41,8 +47,9 @@ class Communicator(Loggable):
 
     def ask(self, msg, *args, **kw):
         msg = self._prep_message(msg)
-        resp = self._ask(msg, *args, **kw)
-        self._log_response(msg, resp)
+        with self.ask_lock:
+            resp = self._ask(msg, *args, **kw)
+            self._log_response(msg, resp)
 
         return resp
 
