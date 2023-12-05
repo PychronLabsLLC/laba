@@ -15,7 +15,7 @@
 # ===============================================================================
 import logging
 
-l = logging.getLogger('util')
+l = logging.getLogger("util")
 l.setLevel(logging.DEBUG)
 
 
