@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import logging
+
+l = logging.getLogger('util')
+l.setLevel(logging.DEBUG)
 
 
 def get_float(default=0):
@@ -21,7 +25,8 @@ def get_float(default=0):
             t = func(*args, **kw)
             try:
                 return float(t)
-            except (TypeError, ValueError):
+            except (TypeError, ValueError) as e:
+                l.debug(f'get_float failed for "{t}". exception={e}')
                 return default
 
         return wrapper

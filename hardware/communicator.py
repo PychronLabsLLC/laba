@@ -49,8 +49,7 @@ class Communicator(Loggable):
         msg = self._prep_message(msg)
         with self.ask_lock:
             resp = self._ask(msg, *args, **kw)
-            self._log_response(msg, resp)
-
+        self._log_response(msg, resp)
         return resp
 
     def _prep_message(self, msg):
