@@ -64,11 +64,14 @@ class SCM9B3182(BaseSwitchDriver):
 
     @get_float()
     def get_voltage(self, channel):
-        return self.ask("$1RD")
-        # msg = f"SOUR:VOLT? (@{channel})"
-        # resp = self.ask(msg)
-        # if resp is not None:
-        #     return float(resp)
+        """
+        example response:  *+05999.00
+        """
+        resp = self.ask("$1RD")
+        if resp is not None:
+            resp = resp[1:]
+
+        return resp
 
 
 # ============= EOF =============================================
