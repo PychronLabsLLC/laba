@@ -313,6 +313,7 @@ class Scan(BaseScan):
             UItem("figure", style="custom"),
         )
 
+
 COLOR_NAMES = [
     "black",
     "limegreen",
@@ -339,7 +340,6 @@ COLOR_NAMES = [
     "darkgreen",
     "aqua",
     "beige",
-
 ]
 
 
