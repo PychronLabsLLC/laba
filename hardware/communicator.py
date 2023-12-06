@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import time
 from threading import Lock
 
 from loggable import Loggable
@@ -29,6 +30,11 @@ def convert(m):
 class Communicator(Loggable):
     handle = None
     simulation = True
+    stale_seconds = 0.75
+
+    _last_message = None
+    _last_response = None
+    _last_time = None
 
     def __init__(self, *args, **kw):
         super(Communicator, self).__init__(*args, **kw)
@@ -47,10 +53,26 @@ class Communicator(Loggable):
 
     def ask(self, msg, *args, **kw):
         msg = self._prep_message(msg)
-        with self.ask_lock:
-            resp = self._ask(msg, *args, **kw)
+        resp = self._is_stale(msg)
+        if not resp:
+            with self.ask_lock:
+                resp = self._ask(msg, *args, **kw)
+
+                self._last_time = time.time()
+                self._last_response = resp
+                self._last_message = msg
+
         self._log_response(msg, resp)
         return resp
+
+    def _is_stale(self, msg):
+        if self._last_response is None:
+            return
+
+        if self._last_message == msg:
+            if time.time() - self._last_time < self.stale_seconds:
+                self.debug("using cached response")
+                return self._last_response
 
     def _prep_message(self, msg):
         wt = self.configobj.get("write_terminator")

@@ -19,6 +19,7 @@ from threading import Thread, Event
 
 from chaco import default_colors
 from chaco.data_view import DataView
+from enable import colors
 from enable.component_editor import ComponentEditor
 from enable.container import Container
 from numpy import array
@@ -312,6 +313,35 @@ class Scan(BaseScan):
             UItem("figure", style="custom"),
         )
 
+COLOR_NAMES = [
+    "black",
+    "limegreen",
+    "blue",
+    "violet",
+    "maroon",
+    "red",
+    "gray",
+    "green",
+    "aquamarine",
+    "silver",
+    "navy",
+    "plum",
+    "purple",
+    "blue violet",
+    "brown",
+    "firebrick",
+    "greenyellow",
+    "coral",
+    "brown",
+    "cyan",
+    "azure",
+    "darkgrey",
+    "darkgreen",
+    "aqua",
+    "beige",
+
+]
+
 
 colors = default_colors.palette11
 
@@ -327,6 +357,8 @@ class MultiScan(Scan):
             padding_top=20,
             padding_right=20,
         )
+        p.legend.visible = True
+        p.legend_alignment = "ul"
         for i, df in enumerate(self.device_functions):
             f.new_series(f"s{i}", color=colors[i % len(colors)])
 
